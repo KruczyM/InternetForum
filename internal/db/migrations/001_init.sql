@@ -100,13 +100,12 @@ CREATE TABLE IF NOT EXISTS comments (
         ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS votes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+CREATE TABLE IF NOT EXISTS likes (
     user_id TEXT NOT NULL,
-    target_type TEXT NOT NULL,         -- post | comment
+    target_type TEXT NOT NULL,
     target_id INTEGER NOT NULL,
     value INTEGER NOT NULL CHECK (value IN (1, -1)),
-    UNIQUE (user_id, target_type, target_id),
+    PRIMARY KEY (user_id, target_type, target_id),
     FOREIGN KEY (user_id)
         REFERENCES users(id)
         ON DELETE CASCADE
