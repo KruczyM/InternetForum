@@ -4,7 +4,7 @@ PRAGMA foreign_keys = ON;
 -- USERS & AUTH
 -- =========================
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,              -- UUID
     email TEXT NOT NULL UNIQUE,
     username TEXT NOT NULL UNIQUE,
@@ -14,7 +14,7 @@ CREATE TABLE users (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE sessions (
+CREATE TABLE IF NOT EXISTS sessions (
     id TEXT PRIMARY KEY,              -- UUID
     user_id TEXT NOT NULL,
     expires_at DATETIME NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE sessions (
 -- BOOKS & CATEGORIES
 -- =========================
 
-CREATE TABLE books (
+CREATE TABLE IF NOT EXISTS books (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     author TEXT NOT NULL,
@@ -35,13 +35,13 @@ CREATE TABLE books (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE categories (
+CREATE TABLE IF NOT EXISTS categories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
     kind TEXT NOT NULL                -- genre, theme, format, character, author
 );
 
-CREATE TABLE book_categories (
+CREATE TABLE IF NOT EXISTS book_categories (
     book_id INTEGER NOT NULL,
     category_id INTEGER NOT NULL,
     PRIMARY KEY (book_id, category_id),
@@ -57,7 +57,7 @@ CREATE TABLE book_categories (
 -- FORUM
 -- =========================
 
-CREATE TABLE posts (
+CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL,
     title TEXT NOT NULL,
@@ -74,7 +74,7 @@ CREATE TABLE posts (
         ON DELETE SET NULL
 );
 
-CREATE TABLE post_categories (
+CREATE TABLE IF NOT EXISTS post_categories (
     post_id INTEGER NOT NULL,
     category_id INTEGER NOT NULL,
     PRIMARY KEY (post_id, category_id),
@@ -86,7 +86,7 @@ CREATE TABLE post_categories (
         ON DELETE CASCADE
 );
 
-CREATE TABLE comments (
+CREATE TABLE IF NOT EXISTS comments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     post_id INTEGER NOT NULL,
     user_id TEXT NOT NULL,
@@ -100,7 +100,7 @@ CREATE TABLE comments (
         ON DELETE CASCADE
 );
 
-CREATE TABLE votes (
+CREATE TABLE IF NOT EXISTS votes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL,
     target_type TEXT NOT NULL,         -- post | comment
@@ -117,7 +117,7 @@ CREATE TABLE votes (
 -- =========================
 
 -- Explicit preferences (many-to-many, weighted)
-CREATE TABLE user_category_preferences (
+CREATE TABLE IF NOT EXISTS user_category_preferences (
     user_id TEXT NOT NULL,
     category_id INTEGER NOT NULL,
     weight INTEGER NOT NULL DEFAULT 1 CHECK (weight BETWEEN 1 AND 5),
@@ -131,7 +131,7 @@ CREATE TABLE user_category_preferences (
 );
 
 -- Implicit preferences (behavior-based)
-CREATE TABLE user_book_interactions (
+CREATE TABLE IF NOT EXISTS user_book_interactions (
     user_id TEXT NOT NULL,
     book_id INTEGER NOT NULL,
     clicks INTEGER NOT NULL DEFAULT 1,
@@ -146,7 +146,7 @@ CREATE TABLE user_book_interactions (
 );
 
 -- Optional ratings / likes
-CREATE TABLE user_book_preferences (
+CREATE TABLE IF NOT EXISTS user_book_preferences (
     user_id TEXT NOT NULL,
     book_id INTEGER NOT NULL,
     rating INTEGER CHECK (rating BETWEEN 1 AND 5),
@@ -165,7 +165,7 @@ CREATE TABLE user_book_preferences (
 -- CHAT
 -- =========================
 
-CREATE TABLE chat_messages (
+CREATE TABLE IF NOT EXISTS chat_messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL,
     content TEXT NOT NULL,
