@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Create Post</title>
+    </head>
+    <body>
+        <h1>Create a New Post</h1>
+        <form action="/post/create" method="POST">
+            <div>
+                <label>Title:</label><br>
+                <input type="text" name="title" required>
+            </div>
+            <div>
+                <label>Content:</label><br>
+                <textarea name="content" required></textarea>
+            </div>
+            <input type="hidden" name="user_id" value="1"><br>
+            <button type="submit">Post</button>
+        </form><br>
+        <a href="/"Back to HomePage></a>
+    </body>
+</html>
