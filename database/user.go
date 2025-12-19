@@ -43,6 +43,7 @@ type User struct {
 	Name     string
 	Surname  string
 	FullName string
+	Email    string
 	Password string // Store hashed password
 }
 
@@ -54,6 +55,7 @@ func CreateUserTable(db *sql.DB) error {
 		name TEXT NOT NULL,
 		surname TEXT NOT NULL,
 		fullname TEXT NOT NULL,
+		email TEXT NOT NULL UNIQUE,
 		password TEXT NOT NULL
 	);`
 	_, err := db.Exec(query)
@@ -62,8 +64,8 @@ func CreateUserTable(db *sql.DB) error {
 
 // inserts a new user into the database
 func InsertUser(db *sql.DB, user *User) (int64, error) {
-	query := `INSERT INTO users (username, name, surname, fullname, password) VALUES (?, ?, ?, ?, ?)`
-	result, err := db.Exec(query, user.Username, user.Name, user.Surname, user.FullName, user.Password)
+	query := `INSERT INTO users (username, name, surname, fullname, email, password) VALUES (?, ?, ?, ?, ?, ?)`
+	result, err := db.Exec(query, user.Username, user.Name, user.Surname, user.FullName, user.Email, user.Password)
 	if err != nil {
 		return 0, err
 	}
@@ -77,10 +79,10 @@ func InsertUser(db *sql.DB, user *User) (int64, error) {
 
 // retrieves a user by username
 func GetUserByUsername(db *sql.DB, username string) (*User, error) {
-	query := `SELECT id, username, name, surname, fullname, password FROM users WHERE username = ?`
+	query := `SELECT id, username, name, surname, fullname, email, password FROM users WHERE username = ?`
 	row := db.QueryRow(query, username)
 	var user User
-	if err := row.Scan(&user.ID, &user.Username, &user.Name, &user.Surname, &user.FullName, &user.Password); err != nil {
+	if err := row.Scan(&user.ID, &user.Username, &user.Name, &user.Surname, &user.FullName, &user.Email, &user.Password); err != nil {
 		return nil, err
 	}
 	return &user, nil
