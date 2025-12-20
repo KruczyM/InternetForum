@@ -7,7 +7,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 #copy the rest of code
 COPY . .
-RUN go build -o forum-server ./cmd/server/main.go
+RUN go build -o forum-server ./cmd/web/main.go
 #inform docker the party is on port 8080
 EXPOSE 8080
 CMD ["./forum-server"]
