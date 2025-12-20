@@ -1,38 +1,42 @@
 package handlers
 
 import (
-	"fmt"
+	// "fmt"
 	"forum/internal/models"
 	"html/template"
-	"log"
 	"net/http"
 )
 
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
-	}
 
-	posts, err := models.GetAllPosts(h.DB)
+	ts, err := template.ParseFiles("ui/html/home.html")
 	if err != nil {
-		log.Println("DB Error:", err)
-		http.Error(w, "Internal Server Error", 500)
+		h.ErrorLog.Println("Template Error:", err)
+		h.serverError(w, err)
 		return
 	}
+	ts.Execute(w, nil)
+	return
 
-	fmt.Fprintf(w, "Welcome to the Lion's Forum!\n\n")
-	for _, p := range posts {
-		fmt.Fprintf(w, "ID: %d | Title: %s | Content: %s\n", p.ID, p.Title, p.Content)
-	}
+	// posts, err := models.GetAllPosts(h.DB)
+	// if err != nil {
+	// 	h.ErrorLog.Println("DB Error:", err)
+	// 	h.serverError(w, err)
+	// 	return
+	// }
+
+	// fmt.Fprintf(w, "Welcome to the Lion's Forum!\n\n")
+	// for _, p := range posts {
+	// 	fmt.Fprintf(w, "ID: %d | Title: %s | Content: %s\n", p.ID, p.Title, p.Content)
+	// }
 }
 
 func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		ts, err := template.ParseFiles("ui/html/create.html")
 		if err != nil {
-			log.Println(err)
-			http.Error(w, "Internal Server Error", 500)
+			h.ErrorLog.Println("Template Error:", err)
+			h.serverError(w, err)
 			return
 		}
 		ts.Execute(w, nil)
@@ -46,8 +50,8 @@ func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 
 		err := models.CreatePost(h.DB, userID, title, content)
 		if err != nil {
-			log.Println(err)
-			http.Error(w, "Error saving post", 500)
+			h.ErrorLog.Println("DB Error:", err)
+			h.serverError(w, err)
 			return
 		}
 		http.Redirect(w, r, "/", http.StatusSeeOther)

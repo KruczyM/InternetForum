@@ -1,21 +1,30 @@
 package models
 
 import (
-	"crypto/sha256"
 	"database/sql"
-	"encoding/hex"
+	"golang.org/x/crypto/bcrypt"
 )
 
 
-//hashes a password using SHA-256 (for demo purposes only)
-func HashPassword(password string) string {
-	hash := sha256.Sum256([]byte(password))
-	return hex.EncodeToString(hash[:])
+//hashed password
+func HashPassword(password string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword(
+		[]byte(password),
+		bcrypt.DefaultCost,
+	)
+	if err != nil {
+		return "", err
+	}
+	return string(hash), nil
 }
 
 // compares a plain password with a hashed password
 func CheckPassword(password, hashed string) bool {
-	return HashPassword(password) == hashed
+	err := bcrypt.CompareHashAndPassword(
+		[]byte(hashed),
+		[]byte(password),
+	)
+	return err == nil
 }
 
 // inserts a new user into the database
@@ -37,6 +46,20 @@ func GetUserByUsername(db *sql.DB, username string) (*User, error) {
 	row := db.QueryRow(query, username)
 	var user User
 	if err := row.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName, &user.Email, &user.PasswordHash); err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+// retrieves a user by email
+func GetUserByEmail(db *sql.DB, email string) (*User, error) {
+	query := `
+	SELECT id, password_hash 
+	FROM users 
+	WHERE email = ?`
+	row := db.QueryRow(query, email)
+	var user User
+	if err := row.Scan(&user.Email, &user.PasswordHash); err != nil {
 		return nil, err
 	}
 	return &user, nil
