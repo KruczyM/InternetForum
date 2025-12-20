@@ -18,7 +18,7 @@ func main() {
 infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	
-db, err := database.InitDB("localData/forum.db")
+db, err := database.InitDB("data/forum.db")
 if err != nil {
 	log.Fatal(err)
 }
