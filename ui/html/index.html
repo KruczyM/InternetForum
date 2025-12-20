@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Forum Feed</title>
+    <style>
+        .post-card { border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; color: white; font-size: 0.8em; }
+        .badge-discussion { background-color: blue}
+        .badge-review { background-color: green}
+        .meta { color: #666; font-size: 0.9em; margin-bottom: 10px;}
+        .footer {margin-top: 15px; display: flex; gap: 15px; align-items: center; }
+        .vote-btn {cursor: pointer; background: none; border: 1px solid #ccc; padding: 2px 8px; }
+    </style>
+</head>
+<body>
+    <h1>Recent Posts</h1>
+    {{range .Posts}}
+    <div class="post-card">
+        <div class="header">
+            <span class="badge badge-{{.PostType}}">{{.PostType}}</span>
+            <h2>{{.Title}}</h2>
+        </div>
+        <div class="meta">
+            Posted by <strong>{{.AuthorName}}</strong> {{.FormattedDate}}
+        </div>
+
+        <div class="content">
+            <p>{{.Content}}</p>
+        </div>
+
+        {{if .BookID}}
+        <dic class="book-ref" style="background: £f9f9f9; padding: 5px;">
+            <em>Referencing Book ID: {{.BookID}}</em>
+            {{if .Chapter}} (Chapter: {{.Chapter}}) {{end}}
+        </div>
+        {{end}}
+
+        <div class="footer">
+            <div class="votes">
+                <button class="vote-btn">like</button>
+                <strong>{{.LikeCount}}</strong>
+                <button class="vote-btn">dislike</button>
+            </div>
+            <a href="/post/{{.ID}}">{{.CommentCount}} Comments</a>
+        </div>
+    </div>
+    {{else}}
+    <p>No posts found.</p>
+    {{end}}
+</body>
+</html>
