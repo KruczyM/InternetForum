@@ -14,14 +14,14 @@ CREATE TABLE IF NOT EXISTS users (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS sessions (
-    id TEXT PRIMARY KEY,              -- UUID
-    user_id TEXT NOT NULL,
-    expires_at DATETIME NOT NULL,
-    FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE
-);
+-- CREATE TABLE IF NOT EXISTS sessions (
+--     id TEXT PRIMARY KEY,              -- UUID
+--     user_id TEXT NOT NULL,
+--     expires_at DATETIME NOT NULL,
+--     FOREIGN KEY (user_id)
+--         REFERENCES users(id)
+--         ON DELETE CASCADE
+-- );
 
 -- =========================
 -- BOOKS & CATEGORIES
