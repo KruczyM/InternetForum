@@ -8,7 +8,7 @@ type PostModel struct {
 	DB *sql.DB
 }
 
-func (m *PostModel) GetAll() ([]PostView, error) {
+func (m *PostModel) GetAllPosts() ([]PostView, error) {
 	stmt := `SELECT
 			p.ID, p.title, p.content, p.post_type, p.book_id, p.chapter, p.created_at,
 			u.username,
@@ -56,7 +56,7 @@ func (m *PostModel) GetAll() ([]PostView, error) {
 	return posts, nil
 }
 
-func (m *PostModel) Get(id int) (*PostView, error) {
+func (m *PostModel) GetPost(id int) (*PostView, error) {
 	stmt := `SELECT p.id, p.title, p.content, p.post_type, p.book_id, p.chapter, p.created_at, u.username,
 	COALESCE(SUM(v.value), 0)
 	FROM posts p
@@ -111,3 +111,19 @@ func (m *PostModel) Get(id int) (*PostView, error) {
     return pv, nil
 }
 
+func (m *PostModel) InsertPost(userID string, title, content, postType string, bookID *int, chapter *string) (int, error) {
+	stmt := `
+	INSERT INTO posts (user_id, title, content, post_type. book_id, chapter, created_at)
+	VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`
+
+	result, err := m-DB.Exec(stmt, userID, title, content, postType, bookID, chapter)
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	return int(id), nil
+}
