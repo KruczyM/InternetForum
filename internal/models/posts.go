@@ -116,7 +116,7 @@ func (m *PostModel) InsertPost(userID string, title, content, postType string, b
 	INSERT INTO posts (user_id, title, content, post_type. book_id, chapter, created_at)
 	VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`
 
-	result, err := m-DB.Exec(stmt, userID, title, content, postType, bookID, chapter)
+	result, err := m.DB.Exec(stmt, userID, title, content, postType, bookID, chapter)
 	if err != nil {
 		return 0, err
 	}
