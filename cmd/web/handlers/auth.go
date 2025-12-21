@@ -11,7 +11,7 @@ import (
 )
 
 // i make i sepatare to make it easier to read
-func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) userRegister(w http.ResponseWriter, r *http.Request) {
 	ts, err := template.ParseFiles("ui/html/register.html")
 	if err != nil {
 		log.Println(err)
@@ -22,7 +22,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (h *Handler) RegisterPost(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) userRegisterPost(w http.ResponseWriter, r *http.Request) {
 
 	username := r.FormValue("username")
 	firstName := r.FormValue("first_name")
@@ -45,7 +45,6 @@ func (h *Handler) RegisterPost(w http.ResponseWriter, r *http.Request) {
 		Email:        email,
 		PasswordHash: hashedPassword,
 	}
-
 	err = models.InsertUser(h.DB, user)
 	if err != nil {
 		h.ErrorLog.Println("Registration failed:", err)
@@ -56,32 +55,59 @@ func (h *Handler) RegisterPost(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-	template, err := template.ParseFiles("ui/html/login.html")
+func (h *Handler) userLogin(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles("ui/html/login.html")
 	if err != nil {
 		h.ErrorLog.Println("Template Error:", err)
 		h.serverError(w, err)
 		return
 	}
-	template.Execute(w, nil)
+
+	flash := h.SessionManager.PopString(r.Context(), "flash")
+	data := struct{ Flash string }{Flash: flash}
+	if err := tmpl.Execute(w, data); err != nil {
+		h.serverError(w, err)
+	}
 }
 
-func (h *Handler) LoginPost(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	email := strings.TrimSpace(r.FormValue("email"))
 	password := r.FormValue("password")
 
 	user, err := models.GetUserByEmail(h.DB, email)
 	if err != nil {
-		h.ErrorLog.Println("DB Error:", err)
+		h.SessionManager.Put(r.Context(), "flash", "Invalid email or password")
+		h.ErrorLog.Println(err)
 		http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
+		return
 	}
 
 	if !models.CheckPassword(password, user.PasswordHash) {
-		h.clientError(w, http.StatusUnauthorized)
+		h.ErrorLog.Println("Invalid password")
+		h.SessionManager.Put(r.Context(), "flash", "Invalid email or password")
 		http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
+		return
 	}
 
-	//h.SessionManager.Put(r.Context(), "userID", user.ID)
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	h.SessionManager.Put(r.Context(), "authenticatedUserID", user.ID)
 
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (h *Handler) userLogoutPost(w http.ResponseWriter, r *http.Request) {
+	// Use the RenewToken() method on the current session to change the session
+	// ID again.
+	err := h.SessionManager.RenewToken(r.Context())
+	if err != nil {
+		h.serverError(w, err)
+		return
+	}
+	// Remove the authenticatedUserID from the session data so that the user is
+	// 'logged out'.
+	h.SessionManager.Remove(r.Context(), "authenticatedUserID")
+	// Add a flash message to the session to confirm to the user that they've been
+	// logged out.
+	h.SessionManager.Put(r.Context(), "flash", "You've been logged out successfully!")
+	// Redirect the user to the application home page.
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

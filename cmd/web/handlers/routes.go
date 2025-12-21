@@ -16,21 +16,23 @@ func (h *Handler) Routes() http.Handler {
 //Using router.Use(middleware) registers the middleware for all routes within the router.
 	router.Use(h.recoverPanic)
 	router.Use(h.logRequest)
+	router.Use(h.authenticate)
 
 //In the Chi router, we map handlers directly to HTTP methods. We use router.Get("/", handler) for retrieval, and similarly Post, Put, Patch, or Delete for other actions.
-	router.Get("/", h.Home)
+	router.Get("/", h.home)
 //Create a route group for /post, each sub will start from /post
 	router.Route("/post", func(router chi.Router) {
 		// .With(middleware) adds middleware to this one path
-		router.With(h.requireAuth).Post("/create", h.CreatePost)
+		router.With(h.requireAuth).Get("/create", h.createPost)
 		// router.Get("/{id}", h.ViewPost)
 	})
 
 	router.Route("/auth", func(router chi.Router) {
-		router.Get("/register", h.Register)
-		router.Post("/register", h.RegisterPost)
-		router.Get("/login", h.Login)
-		router.Post("/login", h.LoginPost)
+		router.Get("/register", h.userRegister)
+		router.Post("/register", h.userRegisterPost)
+		router.Get("/login", h.userLogin)
+		router.Post("/login", h.userLoginPost)
+		router.Post("/logout", h.userLogoutPost)
 	})
 
 	return router
