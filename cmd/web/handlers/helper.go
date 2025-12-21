@@ -31,11 +31,11 @@ func (h *Handler) notFound(w http.ResponseWriter) {
 	h.clientError(w, http.StatusNotFound)
 }
 
-// // Return true if the current request is from an authenticated user, otherwise return false.
-// func (h *Handler) isAuthenticated(r *http.Request) bool {
-// 	isAuthenticated, ok := r.Context().Value(isAuthenticatedContextKey).(bool)
-// 	if !ok {
-// 		return false
-// 	}
-// 	return isAuthenticated
-// }
+// Return true if the current request is from an authenticated user, otherwise return false.
+func (h *Handler) isAuthenticated(r *http.Request) bool {
+	isAuthenticated, ok := r.Context().Value("isAuthenticated").(bool)
+	if !ok {
+		return false
+	}
+	return isAuthenticated
+}

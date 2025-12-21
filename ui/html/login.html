@@ -7,6 +7,9 @@
 
 <body>
     <h1>Join the Forum</h1>
+    {{ if .Flash }}
+	<p class="error">{{ .Flash }}</p>
+{{ end }}
     <form action="/auth/login" method="POST">
         <div>
             <label>Email:</label><br>

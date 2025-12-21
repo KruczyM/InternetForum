@@ -59,8 +59,19 @@ func GetUserByEmail(db *sql.DB, email string) (*User, error) {
 	WHERE email = ?`
 	row := db.QueryRow(query, email)
 	var user User
-	if err := row.Scan(&user.Email, &user.PasswordHash); err != nil {
+	if err := row.Scan(&user.ID, &user.PasswordHash); err != nil {
 		return nil, err
 	}
 	return &user, nil
+}
+
+func ExistsUser(db *sql.DB, id string) (bool, error){
+	var exists bool
+	stmt :=`
+	SELECT EXISTS
+	(SELECT true 
+	FROM users 
+	WHERE id = ?)`
+	err := db.QueryRow(stmt,id).Scan(&exists)
+	return exists, err
 }

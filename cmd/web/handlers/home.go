@@ -1,13 +1,12 @@
 package handlers
 
 import (
-	// "fmt"
 	"forum/internal/models"
 	"html/template"
 	"net/http"
 )
 
-func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 
 	ts, err := template.ParseFiles("ui/html/home.html")
 	if err != nil {
@@ -15,7 +14,7 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 		h.serverError(w, err)
 		return
 	}
-	ts.Execute(w, nil)
+	ts.Execute(w, h.isAuthenticated(r))
 	return
 
 	// posts, err := models.GetAllPosts(h.DB)
@@ -31,7 +30,7 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 	// }
 }
 
-func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		ts, err := template.ParseFiles("ui/html/create.html")
 		if err != nil {

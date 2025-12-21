@@ -6,8 +6,19 @@
 </head>
 
 <body>
-    <a href="/auth/register">register</a>
-    <a href="/auth/login">login</a>
+    <nav>
+        <a href="/auth/register">register</a>
+        <a href="/auth/login">login</a>
+        
+        {{if .}}
+            <a href='/post/create'>Create snippet</a>
+            <form action='/auth/logout' method='POST'>
+                <button>Logout</button>
+            </form>
+        {{else}}
+            <span>Login to see content</span>
+        {{end}} 
+        </nav>
 </body>
 
 </html>

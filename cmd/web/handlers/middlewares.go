@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
+	"forum/internal/models"
 	"net/http"
 	"time"
 )
@@ -56,15 +58,40 @@ func (h *Handler) logRequest(next http.Handler) http.Handler {
 
 func (h *Handler) requireAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// session, err := h.SessionManager.Get(r, "session")
-		// if err != nil {
-		// 	h.serverError(w, err)
-		// 	return
-		// }
-		// if session == nil {
-		// 	http.Redirect(w, r, "/auth/register", http.StatusSeeOther)
-		// 	return
-		// }
+		// If the user is not authenticated, redirect them to the login page and return from the middleware chain so that no subsequent handlers in the chain are executed.
+		fmt.Printf("czy jest authen %v", h.isAuthenticated(r))
+		if !h.isAuthenticated(r){
+			http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
+			return
+		}
+		// Otherwise set the "Cache-Control: no-store" header so that pages require authentication are not stored in the users browser cache (or other intermediary cache).
+		w.Header().Add("Cache-Control", "no-store")
+		// just call next handler 
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (h *Handler) authenticate (next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Retrieve the authenticatedUserID value from the session using the GetString() method. This will return the "" value for an string ("") ifno
+		// "authenticatedUserID" value is in the session -- in which case we call the next handler in the chain as normal and return.
+		id := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+		if id == "" {
+			next.ServeHTTP(w, r)
+			return 
+		}
+		// Otherwise, we check to see if a user with that ID exists in our database.
+		exists, err := models.ExistsUser(h.DB, id)
+		if err != nil {
+			h.serverError(w,err)
+			return
+		}
+		// If a matching user is found, we know that the request is coming from an authenticated user who exists in our database. We create a new copy of the request (with an
+		//isAuthenticatedContextKey value of true in the request context) and assign it to r.
+		if exists{
+			ctx := context.WithValue(r.Context(), "isAuthenticated", true)
+			r = r.WithContext(ctx)
+		}
 		next.ServeHTTP(w, r)
 	})
 }
