@@ -20,9 +20,11 @@ func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := struct {
+		IsAuthenticatedOk	bool
 		Posts []models.PostView
 	}{
 		Posts: posts,
+		IsAuthenticatedOk: h.isAuthenticated(r),
 	}
 
 	ts, err := template.ParseFiles("ui/html/home.html")
