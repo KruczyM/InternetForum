@@ -57,13 +57,14 @@ func (m *PostModel) GetAllPosts() ([]PostView, error) {
 }
 
 func (m *PostModel) GetPost(id int) (*PostView, error) {
-	stmt := `SELECT p.id, p.title, p.content, p.post_type, p.book_id, p.chapter, p.created_at, u.username,
-	COALESCE(SUM(l.value), 0)
-	FROM posts p
-	LEFT JOIN users u ON p.user_id = u.id
-	LEFT JOIN likes l ON p.id = l.target.id AND l.target_type = 'post
-	WHERE p.id = ?
-	GROUP BY p.id, u.username`
+	stmt := `
+    SELECT p.id, p.title, p.content, p.post_type, p.book_id, p.chapter, p.created_at, u.username,
+    COALESCE(SUM(l.value), 0)
+    FROM posts p
+    LEFT JOIN users u ON p.user_id = u.id
+    LEFT JOIN likes l ON p.id = l.target_id AND l.target_type = 'post'
+    WHERE p.id = ?
+    GROUP BY p.id, u.username`
 
 	row := m.DB.QueryRow(stmt, id)
 
@@ -87,11 +88,11 @@ func (m *PostModel) GetPost(id int) (*PostView, error) {
 	pv.FormattedDate = pv.Post.CreatedAt.Format("Jul 09, 1990 at 5:04 PM")
 
 	commentStmt := `
-	SELECT c.id, c.content, c.created_at, u.username
-	FROM comments c
-	LEFT JOIN users u ON c.user_id u.id
-	WHERE c.post_id = ?
-	ORDER BY c.created_at ASC`
+    SELECT c.id, c.content, c.created_at, u.username
+    FROM comments c
+    LEFT JOIN users u ON c.user_id = u.id
+    WHERE c.post_id = ?
+    ORDER BY c.created_at ASC`
 
 	rows, err := m.DB.Query(commentStmt, id)
 	if err != nil {

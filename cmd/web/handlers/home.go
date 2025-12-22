@@ -50,7 +50,6 @@ func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodPost {
 
-		if r.Method == http.MethodPost {
 			err := r.ParseForm()
 			if err != nil {
 				h.serverError(w, err)
@@ -60,7 +59,7 @@ func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
 			title := r.FormValue("title")
 			content := r.FormValue("content")
 			category := r.FormValue("category")
-			userID := "1"
+			userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
 
 			var bookID *int
 
@@ -79,6 +78,8 @@ func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
 				chapter = &rawChapter
 			}
 
+			fmt.Printf("DEBUG: UserID is '%s\n", userID)
+
 			postsModel := &models.PostModel{DB: h.DB}
 
 			id, err := postsModel.InsertPost(userID, title, content, category, bookID, chapter)
@@ -89,6 +90,5 @@ func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
 			}
 
 			http.Redirect(w, r, fmt.Sprintf("/post/%d", id), http.StatusSeeOther)
-		}
 	}
 }
