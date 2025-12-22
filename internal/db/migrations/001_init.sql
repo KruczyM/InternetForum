@@ -73,6 +73,14 @@ CREATE TABLE IF NOT EXISTS posts (
         ON DELETE SET NULL
 );
 
+CREATE TRIGGER IF NOT EXISTS delete_post_likes
+AFTER DELETE ON posts
+BEGIN
+    DELETE FROM likes
+    WHERE target_type = 'post'
+      AND target_id = OLD.id;
+END;
+
 CREATE TABLE IF NOT EXISTS post_categories (
     post_id INTEGER NOT NULL,
     category_id INTEGER NOT NULL,
@@ -98,6 +106,14 @@ CREATE TABLE IF NOT EXISTS comments (
         REFERENCES users(id)
         ON DELETE CASCADE
 );
+
+CREATE TRIGGER IF NOT EXISTS delete_post_comments
+AFTER DELETE ON comments
+BEGIN
+    DELETE FROM likes
+    WHERE target_type = 'comment'
+      AND target_id = OLD.id;
+END;
 
 CREATE TABLE IF NOT EXISTS likes (
     user_id TEXT NOT NULL,
