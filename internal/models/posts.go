@@ -10,12 +10,12 @@ type PostModel struct {
 
 func (m *PostModel) GetAllPosts() ([]PostView, error) {
 	stmt := `SELECT
-			p.ID, p.title, p.content, p.post_type, p.book_id, p.chapter, p.created_at,
+			p.id, p.title, p.content, p.post_type, p.book_id, p.chapter, p.created_at,
 			u.username,
-			COALESCE(SUM(v.value), 0)
+			COALESCE(SUM(l.value), 0) as like_count
 			FROM posts p
-			LEFT JOIN users u ON p.user:id = u.id
-			LEFT JOIN votes v ON p.id = v.target_id AND v.target_type = 'post'
+			LEFT JOIN users u ON p.user_id = u.id
+			LEFT JOIN likes l ON p.id = l.target_id AND l.target_type = 'post'
 			GROUP BY p.id, u.username
 			ORDER BY p.created_at DESC`
 
@@ -58,10 +58,10 @@ func (m *PostModel) GetAllPosts() ([]PostView, error) {
 
 func (m *PostModel) GetPost(id int) (*PostView, error) {
 	stmt := `SELECT p.id, p.title, p.content, p.post_type, p.book_id, p.chapter, p.created_at, u.username,
-	COALESCE(SUM(v.value), 0)
+	COALESCE(SUM(l.value), 0)
 	FROM posts p
 	LEFT JOIN users u ON p.user_id = u.id
-	LEFT JOIN votes v ON p.id = v.target.id AND v.target_type = 'post
+	LEFT JOIN likes l ON p.id = l.target.id AND l.target_type = 'post
 	WHERE p.id = ?
 	GROUP BY p.id, u.username`
 
@@ -113,7 +113,7 @@ func (m *PostModel) GetPost(id int) (*PostView, error) {
 
 func (m *PostModel) InsertPost(userID string, title, content, postType string, bookID *int, chapter *string) (int, error) {
 	stmt := `
-	INSERT INTO posts (user_id, title, content, post_type. book_id, chapter, created_at)
+	INSERT INTO posts (user_id, title, content, post_type, book_id, chapter, created_at)
 	VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`
 
 	result, err := m.DB.Exec(stmt, userID, title, content, postType, bookID, chapter)
@@ -126,4 +126,16 @@ func (m *PostModel) InsertPost(userID string, title, content, postType string, b
 		return 0, err
 	}
 	return int(id), nil
+}
+
+func (m *PostModel) InsertComment(postID int, userID string, content string) error {
+	stmt := `
+	INSERT INTO comments (post_id, user_id, content, created_at)
+	VALUES (?, ?, ?, CURRENT_TIMESTAMP)`
+
+	_, err := m.DB.Exec(stmt, postID, userID, content)
+	if err != nil {
+		return err
+	}
+	return nil
 }

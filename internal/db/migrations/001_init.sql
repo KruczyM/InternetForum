@@ -173,3 +173,7 @@ CREATE TABLE IF NOT EXISTS chat_messages (
         REFERENCES users(id)
         ON DELETE CASCADE
 );
+
+
+INSERT OR IGNORE INTO users (id, email, username, first_name, last_name, password_hash) 
+VALUES ('1', 'test@example.com', 'TestUser', 'Test', 'User', 'placeholder_hash');

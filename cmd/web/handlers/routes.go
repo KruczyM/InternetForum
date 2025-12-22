@@ -24,6 +24,7 @@ func (h *Handler) Routes() http.Handler {
 		// .With(middleware) adds middleware to this one path
 		router.With(h.requireAuth).Post("/create", h.CreatePost)
 		// router.Get("/{id}", h.ViewPost)
+		router.With(h.requireAuth).Get("/create", h.CreatePost)
 	})
 
 	router.Route("/auth", func(router chi.Router) {
