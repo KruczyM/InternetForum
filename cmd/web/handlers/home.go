@@ -1,12 +1,29 @@
 package handlers
 
 import (
+	"fmt"
 	"forum/internal/models"
 	"html/template"
 	"net/http"
+	"strconv"
 )
 
 func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
+
+	postsModel := &models.PostModel{DB: h.DB}
+
+	posts, err := postsModel.GetAllPosts()
+	if err != nil {
+		h.ErrorLog.Println("DB Error:", err)
+		h.serverError(w, err)
+		return
+	}
+
+	data := struct {
+		Posts []models.PostView
+	}{
+		Posts: posts,
+	}
 
 	ts, err := template.ParseFiles("ui/html/home.html")
 	if err != nil {
@@ -14,20 +31,7 @@ func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 		h.serverError(w, err)
 		return
 	}
-	ts.Execute(w, h.isAuthenticated(r))
-	return
-
-	// posts, err := models.GetAllPosts(h.DB)
-	// if err != nil {
-	// 	h.ErrorLog.Println("DB Error:", err)
-	// 	h.serverError(w, err)
-	// 	return
-	// }
-
-	// fmt.Fprintf(w, "Welcome to the Lion's Forum!\n\n")
-	// for _, p := range posts {
-	// 	fmt.Fprintf(w, "ID: %d | Title: %s | Content: %s\n", p.ID, p.Title, p.Content)
-	// }
+	ts.Execute(w, data)
 }
 
 func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
@@ -43,16 +47,46 @@ func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodPost {
-		title := r.FormValue("title")
-		content := r.FormValue("content")
-		userID := r.FormValue("user_id")
 
-		err := models.CreatePost(h.DB, userID, title, content)
-		if err != nil {
-			h.ErrorLog.Println("DB Error:", err)
-			h.serverError(w, err)
-			return
+		if r.Method == http.MethodPost {
+			err := r.ParseForm()
+			if err != nil {
+				h.serverError(w, err)
+				return
+			}
+
+			title := r.FormValue("title")
+			content := r.FormValue("content")
+			category := r.FormValue("category")
+			userID := "1"
+
+			var bookID *int
+
+			rawBookID := r.FormValue("book_id")
+
+			if category == "book" && rawBookID != "" {
+				id, err := strconv.Atoi(rawBookID)
+				if err == nil {
+					bookID = &id
+				}
+			}
+
+			var chapter *string
+			rawChapter := r.FormValue("chapter")
+			if rawChapter != "" {
+				chapter = &rawChapter
+			}
+
+			postsModel := &models.PostModel{DB: h.DB}
+
+			id, err := postsModel.InsertPost(userID, title, content, category, bookID, chapter)
+			if err != nil {
+				h.ErrorLog.Println("DB Error:", err)
+				h.serverError(w, err)
+				return
+			}
+
+			http.Redirect(w, r, fmt.Sprintf("/post/%d", id), http.StatusSeeOther)
 		}
-		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }

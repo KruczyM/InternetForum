@@ -21,7 +21,7 @@ type Comment struct {
 }
 
 // one vote per person per post + 1 or -1
-type Vote struct {
+type Like struct {
 	ID         int
 	UserID     string
 	TargetType string // "post" | "comment"
