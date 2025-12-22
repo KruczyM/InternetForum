@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{.Post.Title}}</title>
+</head>
+<body>
+
+    <a href="/" class="back-link">← Back to Feed</a>
+
+    <div class="full-post">
+        <div class="post-header">
+            <span style="float: right; font-weight: bold;">{{.LikeCount}}</span>
+            <h1>{{.Post.Title}}</h1>
+            <div class="meta">
+                By {{.AuthorName}} {{.FormattedDate}}
+                {{if .Post.BookID}} | Book #{{.Post.BookID}} {{end}}
+            </div>
+        </div>
+
+        <div class="post-content">
+            {{.Post.Content}}
+        </div>
+    </div>
+
+    <div class="comments-area">
+        <h3>Comments ({{len .Comments}})</h3>
+
+        {{range .Comments}}
+            <div class="comment">
+                <div class="comment-author">
+                    {{.UserID}} <span class="comment-time">wrote on {{.CreatedAt.Format "Jul 09"}}</span>
+                </div>
+                <div>{{.Content}}</div>
+            </div>
+        {{else}}
+            <p>No comments yet.</p>
+        {{end}}
+    </div>
+</body>
+</html>

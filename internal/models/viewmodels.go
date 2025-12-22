@@ -6,6 +6,7 @@ type PostView struct {
 	LikeCount		int
 	CommentCount	int
 	FormattedDate	string
+	Comments		[]Comment
 }
 
 type PageData struct {

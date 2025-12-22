@@ -8,7 +8,7 @@ type PostModel struct {
 	DB *sql.DB
 }
 
-func (m *PostModel) GetAll() ([]PostView, error) {
+func (m *PostModel) GetAllPosts() ([]PostView, error) {
 	stmt := `SELECT
 			p.ID, p.title, p.content, p.post_type, p.book_id, p.chapter, p.created_at,
 			u.username,
@@ -54,4 +54,76 @@ func (m *PostModel) GetAll() ([]PostView, error) {
 		return nil, err
 	}
 	return posts, nil
+}
+
+func (m *PostModel) GetPost(id int) (*PostView, error) {
+	stmt := `SELECT p.id, p.title, p.content, p.post_type, p.book_id, p.chapter, p.created_at, u.username,
+	COALESCE(SUM(v.value), 0)
+	FROM posts p
+	LEFT JOIN users u ON p.user_id = u.id
+	LEFT JOIN votes v ON p.id = v.target.id AND v.target_type = 'post
+	WHERE p.id = ?
+	GROUP BY p.id, u.username`
+
+	row := m.DB.QueryRow(stmt, id)
+
+	pv := &PostView{}
+
+	err := row.Scan(
+		&pv.Post.ID,
+		&pv.Post.Title,
+		&pv.Post.Content,
+		&pv.Post.PostType,
+		&pv.Post.BookID,
+		&pv.Post.Chapter,
+		&pv.Post.CreatedAt,
+		&pv.AuthorName,
+		&pv.LikeCount,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	pv.FormattedDate = pv.Post.CreatedAt.Format("Jul 09, 1990 at 5:04 PM")
+
+	commentStmt := `
+	SELECT c.id, c.content, c.created_at, u.username
+	FROM comments c
+	LEFT JOIN users u ON c.user_id u.id
+	WHERE c.post_id = ?
+	ORDER BY c.created_at ASC`
+
+	rows, err := m.DB.Query(commentStmt, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var c Comment
+
+		err = rows.Scan(&c.ID, &c.Content, &c.CreatedAt, &c.UserID)
+		if err != nil {
+			return nil, err
+		}
+        pv.Comments = append(pv.Comments, c)
+    }
+    return pv, nil
+}
+
+func (m *PostModel) InsertPost(userID string, title, content, postType string, bookID *int, chapter *string) (int, error) {
+	stmt := `
+	INSERT INTO posts (user_id, title, content, post_type. book_id, chapter, created_at)
+	VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`
+
+	result, err := m.DB.Exec(stmt, userID, title, content, postType, bookID, chapter)
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	return int(id), nil
 }

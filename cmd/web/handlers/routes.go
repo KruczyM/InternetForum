@@ -37,3 +37,9 @@ func (h *Handler) Routes() http.Handler {
 
 	return router
 }
+	// Chat routes
+	router.Route("/chat", func(router chi.Router) {
+		router.Post("/message", h.PostChatMessage)
+		router.Get("/messages", h.GetChatMessages)
+		router.Get("/categories", h.GetChatCategories)
+	})
