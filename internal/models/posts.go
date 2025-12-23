@@ -58,7 +58,7 @@ func (m *PostModel) GetAllPosts() ([]PostView, error) {
 
 func (m *PostModel) GetPost(id int) (*PostView, error) {
 	stmt := `
-    SELECT p.id, p.title, p.content, p.post_type, p.book_id, p.chapter, p.created_at, u.username,
+    SELECT p.id, p.user_id, p.title, p.content, p.post_type, p.book_id, p.chapter, p.created_at, u.username,
     COALESCE(SUM(l.value), 0)
     FROM posts p
     LEFT JOIN users u ON p.user_id = u.id
@@ -72,6 +72,7 @@ func (m *PostModel) GetPost(id int) (*PostView, error) {
 
 	err := row.Scan(
 		&pv.Post.ID,
+		&pv.Post.UserID,
 		&pv.Post.Title,
 		&pv.Post.Content,
 		&pv.Post.PostType,
@@ -85,7 +86,7 @@ func (m *PostModel) GetPost(id int) (*PostView, error) {
 		return nil, err
 	}
 
-	pv.FormattedDate = pv.Post.CreatedAt.Format("Jul 09, 1990 at 5:04 PM")
+	pv.FormattedDate = pv.Post.CreatedAt.Format("Jan 02, 2006 at 3:04 PM")
 
 	commentStmt := `
     SELECT c.id, c.content, c.created_at, u.username
@@ -130,11 +131,29 @@ func (m *PostModel) InsertPost(userID string, title, content, postType string, b
 }
 
 func (m *PostModel) InsertComment(postID int, userID string, content string) error {
-	stmt := `
-	INSERT INTO comments (post_id, user_id, content, created_at)
-	VALUES (?, ?, ?, CURRENT_TIMESTAMP)`
+	stmt := `INSERT INTO comments (post_id, user_id, content, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)`
 
 	_, err := m.DB.Exec(stmt, postID, userID, content)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *PostModel) DeletePost(id int) error {
+	stmt := `DELETE FROM posts WHERE id = ?`
+
+	_, err := m.DB.Exec(stmt, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *PostModel) UpdatePost(id int, title, content string) error {
+	stmt := `UPDATE posts SET title = ?, content = ? WHERE id = ?`
+
+	_, err := m.DB.Exec(stmt, title, content, id)
 	if err != nil {
 		return err
 	}
