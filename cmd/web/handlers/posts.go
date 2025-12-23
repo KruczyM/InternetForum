@@ -9,6 +9,7 @@ import (
     "github.com/go-chi/chi/v5"
 	"forum/internal/models"
 	"fmt"
+    "strings"
 )
 
 func (h *Handler) ViewPost(w http.ResponseWriter, r *http.Request) {
@@ -34,9 +35,11 @@ func (h *Handler) ViewPost(w http.ResponseWriter, r *http.Request) {
     data := struct {
         Post              interface{}
         IsAuthenticatedOk bool
+        AuthenticatedUser string
     }{
         Post:              postView,
         IsAuthenticatedOk: h.isAuthenticated(r),
+        AuthenticatedUser: h.SessionManager.GetString(r.Context(), "authenticatedUserID"),
     }
 
     ts, err := template.ParseFiles("ui/html/post.html")
@@ -49,20 +52,21 @@ func (h *Handler) ViewPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
-	postIDStr := chi.URLParam(r, "id")
-	postID, err := strconv.Atoi(postIDStr)
-	if err != nil {
+	idStr := chi.URLParam(r, "id")
+	postID, err := strconv.Atoi(idStr)
+	if err != nil || postID < 1 {
+        h.notFound(w)
 		return
 	}
 
 	err = r.ParseForm()
 	if err != nil {
-		h.clientError(w, http.StatusBadRequest)
+		h.serverError(w, err)
 		return
 	}
 
 	content := r.FormValue("content")
-	if content == "" {
+	if strings.TrimSpace(content) == "" {
 		h.clientError(w, http.StatusBadRequest)
 		return
 	}
@@ -81,4 +85,124 @@ func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, fmt.Sprintf("/post/%d", postID), http.StatusSeeOther)
+}
+
+func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
+    idStr := chi.URLParam(r, "id")
+    id, err := strconv.Atoi(idStr)
+    if err != nil || id < 1 {
+        h.notFound(w)
+        return
+    }
+
+    currentUserID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+
+    postsModel := &models.PostModel{DB: h.DB}
+
+    post, err := postsModel.GetPost(id)
+    if err != nil {
+        if errors.Is(err, sql.ErrNoRows) {
+            h.notFound(w)
+        } else {
+            h.serverError(w, err)
+        }
+        return
+    }
+
+    if post.UserID != currentUserID {
+        h.clientError(w, http.StatusForbidden)
+        return
+    }
+
+    err = postsModel.DeletePost(id)
+    if err != nil {
+        h.serverError(w, err)
+        return
+    }
+
+    http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (h *Handler) EditPost(w http.ResponseWriter, r *http.Request) {
+    idStr := chi.URLParam(r, "id")
+    id, err := strconv.Atoi(idStr)
+    if err != nil || id < 1 {
+        h.notFound(w)
+        return
+    }
+
+    postModel := &models.PostModel{DB: h.DB}
+    postView, err := postModel.GetPost(id)
+    if err != nil {
+        if errors.Is(err, sql.ErrNoRows) {
+            h.notFound(w)
+        } else {
+            h.serverError(w, err)
+        }
+        return
+    }
+
+    currentUserID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+    if postView.Post.UserID != currentUserID {
+        h.clientError(w, http.StatusForbidden)
+        return
+    }
+
+    data := struct {
+        Post        interface{}
+        IsAuthenticatedOk bool
+    }{
+        Post:   postView,
+        IsAuthenticatedOk: h.isAuthenticated(r),
+    }
+
+    ts, err := template.ParseFiles("ui/html/edit.html")
+    if err != nil {
+        h.serverError(w, err)
+        return
+    }
+    ts.Execute(w, data)
+}
+
+func (h *Handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
+    idStr := chi.URLParam(r, "id")
+    id, err := strconv.Atoi(idStr)
+    if err != nil || id < 1 {
+        h.notFound(w)
+        return
+    }
+
+    err = r.ParseForm()
+    if err != nil {
+        h.serverError(w, err)
+        return
+    }
+
+    title := r.Form.Get("title")
+    content := r.Form.Get("content")
+
+    postsModel := &models.PostModel{DB: h.DB}
+    postView, err := postsModel.GetPost(id)
+    if err != nil {
+        if errors.Is(err, sql.ErrNoRows) {
+            h.notFound(w)
+        } else {
+            h.serverError(w, err)
+        }
+        return
+    }
+
+    currentUserID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+    if postView.Post.UserID != currentUserID {
+        h.clientError(w, http.StatusForbidden)
+        return
+    }
+
+    err = postsModel.UpdatePost(id, title, content)
+    if err != nil {
+        h.serverError(w, err)
+        return
+    }
+
+    http.Redirect(w, r, fmt.Sprintf("/post/%d", id), http.StatusSeeOther)
 }

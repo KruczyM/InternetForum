@@ -27,6 +27,9 @@ func (h *Handler) Routes() http.Handler {
 		router.With(h.requireAuth).Post("/create", h.createPost)
 		router.Get("/{id}", h.ViewPost)
 		router.With(h.requireAuth).Post("/{id}/comment", h.CreateComment)
+		router.With(h.requireAuth).Post("/{id}/delete", h.DeletePost)
+		router.With(h.requireAuth).Get("/{id}/edit", h.EditPost)
+		router.With(h.requireAuth).Get("/{id}/edit", h.UpdatePost)
 	})
 
 	router.Route("/auth", func(router chi.Router) {

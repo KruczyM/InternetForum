@@ -19,7 +19,6 @@ func (h *Handler) userRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ts.Execute(w, nil)
-	return
 }
 
 func (h *Handler) userRegisterPost(w http.ResponseWriter, r *http.Request) {
