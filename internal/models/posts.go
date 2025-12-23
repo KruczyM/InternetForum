@@ -151,7 +151,7 @@ func (m *PostModel) DeletePost(id int) error {
 }
 
 func (m *PostModel) UpdatePost(id int, title, content string) error {
-	stmt := `UPDATE posts SET title = ?, content = ?, WHERE id = ?`
+	stmt := `UPDATE posts SET title = ?, content = ? WHERE id = ?`
 
 	_, err := m.DB.Exec(stmt, title, content, id)
 	if err != nil {
