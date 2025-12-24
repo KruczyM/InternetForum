@@ -21,6 +21,12 @@
         <div class="post-content">
             {{.Post.Post.Content}}
         </div>
+        <div>
+                <form action="/post/{{.Post.Post.ID}}/like" method="POST">
+                    <button type="submit" style="cursor: pointer;">❤️</button>
+                </form>
+                <span style="font-weight: bold;">{{.Post.LikeCount}}Likes</span>
+            </div>
     </div>
 
     {{if eq .Post.Post.UserID .AuthenticatedUser}}
