@@ -23,7 +23,7 @@ body {
     box-shadow: none;
     border-radius: 0;
     padding: clamp(0px, 2vw, 0px);
-    width: 15%;
+    width: 100%;
     min-width: 320px;     
     max-width: 420px;    
 }
