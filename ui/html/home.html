@@ -17,11 +17,15 @@
             <a href="/auth/register">Register</a>
             <a href="/auth/login">Login</a>
         {{end}}
+
+        <form action="/" method="GET" style="display:inline; margin-left:20px;">
+            <input type="text" name="q" placeholder="Search posts..." value="{{.Query}}">
+            <button type="submit">🔍</button>
+        </form>
     </nav>
 
     <h1>Latest Posts</h1>
-
-    <div class="feed">
+    </form>
         {{if .Posts}}
             {{range .Posts}}
             <div class="post-summary">

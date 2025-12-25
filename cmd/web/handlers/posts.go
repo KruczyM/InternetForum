@@ -1,61 +1,62 @@
 package handlers
 
 import (
-    "database/sql"
-    "errors"
-    "net/http"
-    "strconv"
-    "html/template"
-    "github.com/go-chi/chi/v5"
-	"forum/internal/models"
+	"database/sql"
+	"errors"
 	"fmt"
-    "strings"
+	"forum/internal/models"
+	"html/template"
+	"net/http"
+	"strconv"
+	"strings"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func (h *Handler) ViewPost(w http.ResponseWriter, r *http.Request) {
-    idStr := chi.URLParam(r, "id")
-    id, err := strconv.Atoi(idStr)
-    if err != nil || id < 1 {
-        h.notFound(w)
-        return
-    }
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil || id < 1 {
+		h.notFound(w)
+		return
+	}
 
-    postsModel := &models.PostModel{DB: h.DB}
+	postsModel := &models.PostModel{DB: h.DB}
 
-    postView, err := postsModel.GetPost(id)
-    if err != nil {
-        if errors.Is(err, sql.ErrNoRows) {
-            h.notFound(w)
-        } else {
-            h.serverError(w, err)
-        }
-        return
-    }
+	postView, err := postsModel.GetPost(id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			h.notFound(w)
+		} else {
+			h.serverError(w, err)
+		}
+		return
+	}
 
-    data := struct {
-        Post              interface{}
-        IsAuthenticatedOk bool
-        AuthenticatedUser string
-    }{
-        Post:              postView,
-        IsAuthenticatedOk: h.isAuthenticated(r),
-        AuthenticatedUser: h.SessionManager.GetString(r.Context(), "authenticatedUserID"),
-    }
+	data := struct {
+		Post              interface{}
+		IsAuthenticatedOk bool
+		AuthenticatedUser string
+	}{
+		Post:              postView,
+		IsAuthenticatedOk: h.isAuthenticated(r),
+		AuthenticatedUser: h.SessionManager.GetString(r.Context(), "authenticatedUserID"),
+	}
 
-    ts, err := template.ParseFiles("ui/html/post.html")
-    if err != nil {
-        h.ErrorLog.Println("Template Error:", err)
-        h.serverError(w, err)
-        return
-    }
-    ts.Execute(w, data)
+	ts, err := template.ParseFiles("ui/html/post.html")
+	if err != nil {
+		h.ErrorLog.Println("Template Error:", err)
+		h.serverError(w, err)
+		return
+	}
+	ts.Execute(w, data)
 }
 
 func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	postID, err := strconv.Atoi(idStr)
 	if err != nil || postID < 1 {
-        h.notFound(w)
+		h.notFound(w)
 		return
 	}
 
@@ -88,146 +89,181 @@ func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
-    idStr := chi.URLParam(r, "id")
-    id, err := strconv.Atoi(idStr)
-    if err != nil || id < 1 {
-        h.notFound(w)
-        return
-    }
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil || id < 1 {
+		h.notFound(w)
+		return
+	}
 
-    currentUserID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+	currentUserID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
 
-    postsModel := &models.PostModel{DB: h.DB}
+	postsModel := &models.PostModel{DB: h.DB}
 
-    post, err := postsModel.GetPost(id)
-    if err != nil {
-        if errors.Is(err, sql.ErrNoRows) {
-            h.notFound(w)
-        } else {
-            h.serverError(w, err)
-        }
-        return
-    }
+	post, err := postsModel.GetPost(id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			h.notFound(w)
+		} else {
+			h.serverError(w, err)
+		}
+		return
+	}
 
-    if post.UserID != currentUserID {
-        h.clientError(w, http.StatusForbidden)
-        return
-    }
+	if post.UserID != currentUserID {
+		h.clientError(w, http.StatusForbidden)
+		return
+	}
 
-    err = postsModel.DeletePost(id)
-    if err != nil {
-        h.serverError(w, err)
-        return
-    }
+	err = postsModel.DeletePost(id)
+	if err != nil {
+		h.serverError(w, err)
+		return
+	}
 
-    http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (h *Handler) EditPost(w http.ResponseWriter, r *http.Request) {
-    idStr := chi.URLParam(r, "id")
-    id, err := strconv.Atoi(idStr)
-    if err != nil || id < 1 {
-        h.notFound(w)
-        return
-    }
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil || id < 1 {
+		h.notFound(w)
+		return
+	}
 
-    postModel := &models.PostModel{DB: h.DB}
-    postView, err := postModel.GetPost(id)
-    if err != nil {
-        if errors.Is(err, sql.ErrNoRows) {
-            h.notFound(w)
-        } else {
-            h.serverError(w, err)
-        }
-        return
-    }
+	postModel := &models.PostModel{DB: h.DB}
+	postView, err := postModel.GetPost(id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			h.notFound(w)
+		} else {
+			h.serverError(w, err)
+		}
+		return
+	}
 
-    currentUserID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
-    if postView.Post.UserID != currentUserID {
-        h.clientError(w, http.StatusForbidden)
-        return
-    }
+	currentUserID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+	if postView.Post.UserID != currentUserID {
+		h.clientError(w, http.StatusForbidden)
+		return
+	}
 
-    data := struct {
-        Post        interface{}
-        IsAuthenticatedOk bool
-    }{
-        Post:   postView,
-        IsAuthenticatedOk: h.isAuthenticated(r),
-    }
+	data := struct {
+		Post              interface{}
+		IsAuthenticatedOk bool
+	}{
+		Post:              postView,
+		IsAuthenticatedOk: h.isAuthenticated(r),
+	}
 
-    ts, err := template.ParseFiles("ui/html/edit.html")
-    if err != nil {
-        h.serverError(w, err)
-        return
-    }
-    ts.Execute(w, data)
+	ts, err := template.ParseFiles("ui/html/edit.html")
+	if err != nil {
+		h.serverError(w, err)
+		return
+	}
+	ts.Execute(w, data)
 }
 
 func (h *Handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
-    idStr := chi.URLParam(r, "id")
-    id, err := strconv.Atoi(idStr)
-    if err != nil || id < 1 {
-        h.notFound(w)
-        return
-    }
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil || id < 1 {
+		h.notFound(w)
+		return
+	}
 
-    err = r.ParseForm()
-    if err != nil {
-        h.serverError(w, err)
-        return
-    }
+	err = r.ParseForm()
+	if err != nil {
+		h.serverError(w, err)
+		return
+	}
 
-    title := r.Form.Get("title")
-    content := r.Form.Get("content")
+	title := r.Form.Get("title")
+	content := r.Form.Get("content")
 
-    postsModel := &models.PostModel{DB: h.DB}
-    postView, err := postsModel.GetPost(id)
-    if err != nil {
-        if errors.Is(err, sql.ErrNoRows) {
-            h.notFound(w)
-        } else {
-            h.serverError(w, err)
-        }
-        return
-    }
+	postsModel := &models.PostModel{DB: h.DB}
+	postView, err := postsModel.GetPost(id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			h.notFound(w)
+		} else {
+			h.serverError(w, err)
+		}
+		return
+	}
 
-    currentUserID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
-    if postView.Post.UserID != currentUserID {
-        h.clientError(w, http.StatusForbidden)
-        return
-    }
+	currentUserID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+	if postView.Post.UserID != currentUserID {
+		h.clientError(w, http.StatusForbidden)
+		return
+	}
 
-    err = postsModel.UpdatePost(id, title, content)
-    if err != nil {
-        h.serverError(w, err)
-        return
-    }
+	err = postsModel.UpdatePost(id, title, content)
+	if err != nil {
+		h.serverError(w, err)
+		return
+	}
 
-    http.Redirect(w, r, fmt.Sprintf("/post/%d", id), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/post/%d", id), http.StatusSeeOther)
 }
 
 func (h *Handler) PostLike(w http.ResponseWriter, r *http.Request) {
 
-    id, err := strconv.Atoi(chi.URLParam(r, "id"))
-    if err != nil || id < 1 {
-        h.notFound(w)
-        return
-    }
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil || id < 1 {
+		h.notFound(w)
+		return
+	}
 
-    userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
-    if userID == "" {
-        http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
-        return
-    }
+	userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+	if userID == "" {
+		http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
+		return
+	}
 
-    postsModel := &models.PostModel{DB: h.DB}
+	postsModel := &models.PostModel{DB: h.DB}
 
-    err = postsModel.ToggleLike(userID, id)
-    if err != nil {
-        h.serverError(w, err)
-        return
-    }
+	err = postsModel.ToggleLike(userID, id)
+	if err != nil {
+		h.serverError(w, err)
+		return
+	}
 
-    http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+}
+
+func (h *Handler) SearchPosts(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
+	if strings.TrimSpace(query) == "" {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	postsModel := &models.PostModel{DB: h.DB}
+	results, err := postsModel.SearchPosts(query)
+	if err != nil {
+		h.serverError(w, err)
+		return
+	}
+
+	data := struct {
+		Posts             []models.PostView
+		Query             string
+		IsAuthenticatedOk bool
+		AuthenticatedUser string
+	}{
+		Posts:             results,
+		Query:             query,
+		IsAuthenticatedOk: h.isAuthenticated(r),
+		AuthenticatedUser: h.SessionManager.GetString(r.Context(), "authenticatedUserID"),
+	}
+
+	ts, err := template.ParseFiles("ui/html/search.html")
+	if err != nil {
+		h.serverError(w, err)
+		return
+	}
+
+	ts.Execute(w, data)
 }
