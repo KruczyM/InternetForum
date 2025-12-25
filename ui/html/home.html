@@ -1,24 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <title>Register</title>
+    <meta charset="UTF-8">
+    <title>Home - Forum</title>
 </head>
-
 <body>
+
     <nav>
-        <a href="/auth/register">register</a>
-        <a href="/auth/login">login</a>
-        
+        <a href="/">Home</a>
         {{if .IsAuthenticatedOk}}
-            <a href='/post/create'>Create snippet</a>
-            <form action='/auth/logout' method='POST'>
-                <button>Logout</button>
+            <a href='/post/create'>Create Post</a>
+            <form action='/auth/logout' method='POST' style="display:inline;">
+                <button style="cursor:pointer;">Logout</button>
             </form>
         {{else}}
-            <span>Login to see content</span>
-        {{end}} 
-        </nav>
-</body>
+            <a href="/auth/register">Register</a>
+            <a href="/auth/login">Login</a>
+        {{end}}
+    </nav>
 
+    <h1>Latest Posts</h1>
+
+    <div class="feed">
+        {{if .Posts}}
+            {{range .Posts}}
+            <div class="post-summary">
+                
+                <h2 class="post-title">
+                    <a href="/post/{{.Post.ID}}">{{.Post.Title}}</a>
+                </h2>
+
+                <div class="meta">
+                    By <strong>{{.AuthorName}}</strong> on {{.FormattedDate}}
+                    {{if .Post.BookID}} | Book #{{.Post.BookID}} {{end}}
+                </div>
+
+                <p>{{.Post.Content}}</p>
+
+                <div class="stats">
+                    <form action="/post/{{.Post.ID}}/like" method="POST">
+                        <button class="like-btn" type="submit">❤️</button>
+                        <span>{{.LikeCount}} Likes</span>
+                    </form>
+                </div>
+
+            </div>
+            {{end}}
+        {{else}}
+            <p>No posts found. Create one!</p>
+        {{end}}
+    </div>
+
+</body>
 </html>

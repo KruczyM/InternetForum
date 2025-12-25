@@ -4,7 +4,8 @@
 <head>
     <title>Register · Book Forum</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/auth.css"></title>
+    <link rel="stylesheet" href="/static/auth.css">
+    </title>
 </head>
 
 <body>
@@ -13,39 +14,71 @@
             <h1>BOOK FORUM</h1>
             <p class="subtitle">Create your reading account</p>
 
-            <form action="/auth/register" method="POST">
+<form action="/auth/register" method="POST" novalidate>
 
-                <div class="input-group">
-                    <input type="text" name="username" placeholder=" " required>
-                    <span class="floating-text">USERNAME</span>
-                </div>
+    <div class="field">
+        {{with .Form.FieldErrors.user_name}}
+        <div class="error">{{.}}</div>
+        {{end}}
 
-                <div class="input-group">
-                    <input type="text" name="first_name" placeholder=" " required>
-                    <span class="floating-text">FIRST NAME</span>
-                </div>
+        <div class="input-group">
+            <input type="text" name="user_name" placeholder=" ">
+            <span class="floating-text">USERNAME</span>
+        </div>
+    </div>
 
-                <div class="input-group">
-                    <input type="text" name="last_name" placeholder=" " required>
-                    <span class="floating-text">LAST NAME</span>
-                </div>
+    <div class="field">
+        {{with .Form.FieldErrors.first_name}}
+        <div class="error">{{.}}</div>
+        {{end}}
 
-                <div class="input-group">
-                    <input type="email" name="email" placeholder=" " required>
-                    <span class="floating-text">EMAIL</span>
-                </div>
+        <div class="input-group">
+            <input type="text" name="first_name" placeholder=" ">
+            <span class="floating-text">FIRST NAME</span>
+        </div>
+    </div>
 
-                <div class="input-group">
-                    <input type="password" name="password" placeholder=" " required>
-                    <span class="floating-text">PASSWORD</span>
-                </div>
+    <div class="field">
+        {{with .Form.FieldErrors.last_name}}
+        <div class="error">{{.}}</div>
+        {{end}}
 
-                <button type="submit">Create account</button>
-            </form>
+        <div class="input-group">
+            <input type="text" name="last_name" placeholder=" ">
+            <span class="floating-text">LAST NAME</span>
+        </div>
+    </div>
+
+    <div class="field">
+        {{with .Form.FieldErrors.email}}
+        <div class="error">{{.}}</div>
+        {{end}}
+
+        <div class="input-group">
+            <input type="email" name="email" placeholder=" ">
+            <span class="floating-text">EMAIL</span>
+        </div>
+    </div>
+
+    <div class="field">
+        {{with .Form.FieldErrors.password}}
+        <div class="error">{{.}}</div>
+        {{end}}
+
+        <div class="input-group">
+            <input type="password" name="password" placeholder=" ">
+            <span class="floating-text">PASSWORD</span>
+        </div>
+    </div>
+
+    <button type="submit">Create account</button>
+</form>
+
 
             <a class="back-link" href="/">Back to Home</a>
         </div>
     </div>
+
 </body>
 
 </html>

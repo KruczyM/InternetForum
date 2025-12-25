@@ -206,3 +206,28 @@ func (h *Handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 
     http.Redirect(w, r, fmt.Sprintf("/post/%d", id), http.StatusSeeOther)
 }
+
+func (h *Handler) PostLike(w http.ResponseWriter, r *http.Request) {
+
+    id, err := strconv.Atoi(chi.URLParam(r, "id"))
+    if err != nil || id < 1 {
+        h.notFound(w)
+        return
+    }
+
+    userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+    if userID == "" {
+        http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
+        return
+    }
+
+    postsModel := &models.PostModel{DB: h.DB}
+
+    err = postsModel.ToggleLike(userID, id)
+    if err != nil {
+        h.serverError(w, err)
+        return
+    }
+
+    http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+}
