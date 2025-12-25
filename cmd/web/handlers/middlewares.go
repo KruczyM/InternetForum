@@ -59,7 +59,6 @@ func (h *Handler) logRequest(next http.Handler) http.Handler {
 func (h *Handler) requireAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// If the user is not authenticated, redirect them to the login page and return from the middleware chain so that no subsequent handlers in the chain are executed.
-		fmt.Printf("czy jest authen %v", h.isAuthenticated(r))
 		if !h.isAuthenticated(r){
 			http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 			return
