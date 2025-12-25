@@ -30,6 +30,7 @@ func (h *Handler) Routes() http.Handler {
 		router.With(h.requireAuth).Post("/{id}/delete", h.DeletePost)
 		router.With(h.requireAuth).Get("/{id}/edit", h.EditPost)
 		router.With(h.requireAuth).Post("/{id}/edit", h.UpdatePost)
+		router.With(h.requireAuth).Post("/{id}/like", h.PostLike)
 	})
 
 	router.Route("/auth", func(router chi.Router) {

@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 )
 
 type PostModel struct {
@@ -9,15 +10,14 @@ type PostModel struct {
 }
 
 func (m *PostModel) GetAllPosts() ([]PostView, error) {
-	stmt := `SELECT
-			p.id, p.title, p.content, p.post_type, p.book_id, p.chapter, p.created_at,
-			u.username,
-			COALESCE(SUM(l.value), 0) as like_count
-			FROM posts p
-			LEFT JOIN users u ON p.user_id = u.id
-			LEFT JOIN likes l ON p.id = l.target_id AND l.target_type = 'post'
-			GROUP BY p.id, u.username
-			ORDER BY p.created_at DESC`
+	stmt := `
+    SELECT p.id, p.user_id, p.title, p.content, p.post_type, p.book_id, p.chapter, p.created_at, u.username,
+    COALESCE(SUM(l.value), 0)
+    FROM posts p
+    LEFT JOIN users u ON p.user_id = u.id
+    LEFT JOIN likes l ON p.id = l.target_id AND l.target_type = 'post'
+    GROUP BY p.id, u.username
+    ORDER BY p.created_at DESC`
 
 	rows, err := m.DB.Query(stmt)
 	if err != nil {
@@ -30,18 +30,24 @@ func (m *PostModel) GetAllPosts() ([]PostView, error) {
 	for rows.Next() {
 		var pv PostView
 
+		var bookID sql.NullInt64
+		var chapter sql.NullString
+
+
 		err := rows.Scan(
 			&pv.Post.ID,
+			&pv.Post.UserID,
 			&pv.Post.Title,
 			&pv.Post.Content,
             &pv.Post.PostType,
-			&pv.Post.BookID,
-			&pv.Post.Chapter,
+			&bookID,
+			&chapter,
 			&pv.Post.CreatedAt,
 			&pv.AuthorName,
 			&pv.LikeCount,
 		)
 		if err != nil {
+			fmt.Println("Scan Error:", err)
 			return nil, err
 		}
 
@@ -158,4 +164,36 @@ func (m *PostModel) UpdatePost(id int, title, content string) error {
 		return err
 	}
 	return nil
+}
+
+func (m* PostModel) ToggleLike(userID string, postID int) error {
+	stmt := `SELECT value FROM likes WHERE user_id = ? AND target_type = 'post' AND target_id = ?`
+
+	var value int
+	err := m.DB.QueryRow(stmt, userID, postID).Scan(&value)
+
+	if err == sql.ErrNoRows {
+		stmt = `INSERT INTO likes (user_id, target_type, target_id, value) VALUES (?, 'post', ?, 1)`
+		_, err = m.DB.Exec(stmt, userID, postID)
+		return err
+	} else if err != nil {
+		return err
+	}
+
+	if value == 1 {
+		stmt := `DELETE FROM likes WHERE user_id = ? AND target_type = 'post' AND target_id = ?`
+		_, err = m.DB.Exec(stmt, userID, postID)
+
+	} else {
+		stmt := `UPDATE likes SET value = 1 WHERE user_id = ? AND target_type = 'post' AND target_id = ?`
+		_, err = m.DB.Exec(stmt, userID, postID)
+	}
+	return err
+}
+
+func (m *PostModel) GetLikeCount(postID int) (int, error) {
+	stmt := `SELECT COUNT(*) FROM likes WHERE target_type = 'post' AND target_id = ? AND value = 1`
+	var count int
+	err := m.DB.QueryRow(stmt, postID).Scan(&count)
+	return count, err
 }
