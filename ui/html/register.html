@@ -2,52 +2,83 @@
 <html lang="en">
 
 <head>
-    <title>Register</title>
+    <title>Register · Book Forum</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/auth.css">
+    </title>
 </head>
 
 <body>
-    <h1>Join the Forum</h1>
-    <form action="/auth/register" method="POST" novalidate>
-        <div>
-            <label>Username:</label><br>
-            {{with .Form.FieldErrors.user_name}}
-            <label class='error'>{{.}}</label>
-            {{end}}
-            <input type="text" name="user_name" >
-        </div>
-        <div>
-            <label>First Name:</label><br>
-            {{with .Form.FieldErrors.first_name}}
-            <label class='error'>{{.}}</label>
-            {{end}}
-            <input type="text" name="first_name" >
-        </div>
-        <div>
-            <label>Last Name:</label><br>
-            {{with .Form.FieldErrors.last_name}}
-            <label class='error'>{{.}}</label>
-            {{end}}
-            <input type="text" name="last_name" >
-        </div>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1>BOOK FORUM</h1>
+            <p class="subtitle">Create your reading account</p>
 
-        <div>
-            <label>Email:</label><br>
-            {{with .Form.FieldErrors.email}}
-            <label class='error'>{{.}}</label>
-            {{end}}
-            <input type="email" name="email" >
+<form action="/auth/register" method="POST" novalidate>
+
+    <div class="field">
+        {{with .Form.FieldErrors.user_name}}
+        <div class="error">{{.}}</div>
+        {{end}}
+
+        <div class="input-group">
+            <input type="text" name="user_name" placeholder=" ">
+            <span class="floating-text">USERNAME</span>
         </div>
-        <div>
-            <label>Password:</label><br>
-            {{with .Form.FieldErrors.password}}
-            <label class='error'>{{.}}</label>
-            {{end}}
-            <input type="password" name="password" >
+    </div>
+
+    <div class="field">
+        {{with .Form.FieldErrors.first_name}}
+        <div class="error">{{.}}</div>
+        {{end}}
+
+        <div class="input-group">
+            <input type="text" name="first_name" placeholder=" ">
+            <span class="floating-text">FIRST NAME</span>
         </div>
-        <br>
-        <button type="submit">Register</button>
-    </form>
-    <a href="/">Back to HomePage</a>
+    </div>
+
+    <div class="field">
+        {{with .Form.FieldErrors.last_name}}
+        <div class="error">{{.}}</div>
+        {{end}}
+
+        <div class="input-group">
+            <input type="text" name="last_name" placeholder=" ">
+            <span class="floating-text">LAST NAME</span>
+        </div>
+    </div>
+
+    <div class="field">
+        {{with .Form.FieldErrors.email}}
+        <div class="error">{{.}}</div>
+        {{end}}
+
+        <div class="input-group">
+            <input type="email" name="email" placeholder=" ">
+            <span class="floating-text">EMAIL</span>
+        </div>
+    </div>
+
+    <div class="field">
+        {{with .Form.FieldErrors.password}}
+        <div class="error">{{.}}</div>
+        {{end}}
+
+        <div class="input-group">
+            <input type="password" name="password" placeholder=" ">
+            <span class="floating-text">PASSWORD</span>
+        </div>
+    </div>
+
+    <button type="submit">Create account</button>
+</form>
+
+
+            <a class="back-link" href="/">Back to Home</a>
+        </div>
+    </div>
+
 </body>
 
 </html>

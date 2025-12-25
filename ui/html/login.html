@@ -2,35 +2,51 @@
 <html lang="en">
 
 <head>
-    <title>Register</title>
+    <title>Login · Book Forum</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/auth.css">
 </head>
 
 <body>
-    {{ if .Flash }}
-    <p class="flash">{{ .Flash }}</p>
-    {{ end }}
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1>BOOK FORUM</h1>
+            <p class="subtitle">Welcome back to your reading space</p>
+            {{ if .Flash }}
+            <p class="error">{{ .Flash }}</p>
+            {{ end }}
 
-    <h1>Join the Forum</h1>
+            <form action="/auth/login" method="POST" novalidate>
 
-    <form action="/auth/login" method="POST" novalidate>
-        <div>
-            <label>Email:</label><br>
-            {{with .Form.FieldErrors.email}}
-            <label class='error'>{{.}}</label>
-            {{end}}
-            <input type="email" name="email" >
+                <div class="field">
+                    {{with .Form.FieldErrors.email}}
+                    <div class="error">{{.}}</div>
+                    {{end}}
+
+                    <div class="input-group">
+                        <input type="email" name="email" placeholder=" ">
+                        <span class="floating-text">EMAIL</span>
+                    </div>
+                </div>
+
+
+                <div class="field">
+                    {{with .Form.FieldErrors.password}}
+                    <div class="error">{{.}}</div>
+                    {{end}}
+
+                    <div class="input-group">
+                        <input type="password" name="password" placeholder=" ">
+                        <span class="floating-text">PASSWORD</span>
+                    </div>
+                </div>
+
+                <button type="submit">Log in</button>
+            </form>
+
+            <a class="back-link" href="/">Back to Home</a>
         </div>
-        <div>
-            <label>Password:</label><br>
-            {{with .Form.FieldErrors.password}}
-            <label class='error'>{{.}}</label>
-            {{end}}
-            <input type="password" name="password" >
-        </div>
-        <br>
-        <button type="submit">Login</button>
-    </form>
-    <a href="/">Back to HomePage</a>
+    </div>
 </body>
 
 </html>
