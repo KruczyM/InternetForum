@@ -10,7 +10,6 @@
 
     <div class="full-post">
         <div class="post-header">
-            <span style="float: right; font-weight: bold;">{{.Post.LikeCount}} Likes</span>
             <h1>{{.Post.Post.Title}}</h1>
             <div class="meta">
                 By {{.Post.AuthorName}} {{.Post.FormattedDate}}
@@ -50,7 +49,7 @@
         {{range .Post.Comments}}
             <div class="comment">
                 <div class="comment-author">
-                    <strong>User {{.UserID}}</strong> 
+                    <strong>{{.UserID}}</strong> 
                     <span class="comment-time">wrote on {{.CreatedAt.Format "Jan 02, 2006"}}</span>
                 </div>
                 <div>{{.Content}}</div>
