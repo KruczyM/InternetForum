@@ -49,10 +49,21 @@
         {{range .Post.Comments}}
             <div class="comment">
                 <div class="comment-author">
-                    <strong>{{.UserID}}</strong> 
+                    <strong>{{.UserName}}</strong> 
                     <span class="comment-time">wrote on {{.CreatedAt.Format "Jan 02, 2006"}}</span>
+
+                   {{if eq .UserID $.AuthenticatedUser}}
+                        <form action ="/comment/{{.ID}}/delete?post_id={{$.Post.Post.ID}}" method="POST" style="display: inline;">
+                            <button type="submit">Delete comment</button>
+                        </form>
+                    {{end}}
                 </div>
                 <div>{{.Content}}</div>
+                <div>
+                    <form action="/comment/{{.ID}}/like?post_id={{$.Post.Post.ID}}" method="POST" style="display:inline;">
+                        <button type="submit" style="cursor:pointer">❤️ {{.LikeCount}}</button>
+                    </form>
+                </div>
             </div>
         {{else}}
             <p>No comments yet.</p>
