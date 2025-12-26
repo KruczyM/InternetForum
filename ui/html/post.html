@@ -13,7 +13,9 @@
             <h1>{{.Post.Post.Title}}</h1>
             <div class="meta">
                 By {{.Post.AuthorName}} {{.Post.FormattedDate}}
-                {{if .Post.Post.BookID}} | Book #{{.Post.Post.BookID}} {{end}}
+                {{if .Post.BookID}} | Book: <strong>{{.Post.BookTitle}}</strong>
+                {{if .Post.Post.Chapter}} (Ch. {{.Post.Post.Chapter}}) {{end}}
+                {{end}}
             </div>
         </div>
 

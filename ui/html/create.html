@@ -11,6 +11,38 @@
                 <label>Title:</label><br>
                 <input type="text" name="title" required>
             </div>
+
+            <div>
+                <label>Category</label>
+                <select name="post_type" required>
+                    <option value="Fantasy_SciFi_Horror">Fantasy/ Science Fiction/ Horror</option>
+                    <option value="Classics">Classics</option>
+                    <option value="General_Fiction">General Fiction</option>
+                    <option value="Crime_Mystery_Thriller">Crime/ Mystery/ Thriller</option>
+                    <option value="Womens_Fiction">Women's Fiction/ Chick Lit</option>
+                    <option value="Childrens">Children's/ Young Adult</option>
+                    <option value="Poetry_Plays">Poetry, Plays and Short Stories</option>
+                    <option value="Non_Fiction">Non-Fiction</option>
+                    <option value="Historical_Fiction">Historical Fiction</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Related Book:</label>
+                <select name="book_id">
+                    <option value="0">No Specific Book</option>
+                    {{range .Books}}
+                    <option value="{{.ID}}">{{.Title}}</option>
+                    {{end}}
+                </select>
+                <div class="hint">Linking a book makes your post appear in that book's category filter.</div>
+            </div>
+
+            <div>
+                <label>Chapter: </label>
+                <input type="text" name="chapter" placeholder="e.g. Chapter 4">
+            </div>
+
             <div>
                 <label>Content:</label><br>
                 <textarea name="content" required></textarea>
