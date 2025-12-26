@@ -10,17 +10,24 @@
 
     <div class="full-post">
         <div class="post-header">
-            <span style="float: right; font-weight: bold;">{{.Post.LikeCount}} Likes</span>
             <h1>{{.Post.Post.Title}}</h1>
             <div class="meta">
                 By {{.Post.AuthorName}} {{.Post.FormattedDate}}
-                {{if .Post.Post.BookID}} | Book #{{.Post.Post.BookID}} {{end}}
+                {{if .Post.BookID}} | Book: <strong>{{.Post.BookTitle}}</strong>
+                {{if .Post.Post.Chapter}} (Ch. {{.Post.Post.Chapter}}) {{end}}
+                {{end}}
             </div>
         </div>
 
         <div class="post-content">
             {{.Post.Post.Content}}
         </div>
+        <div>
+                <form action="/post/{{.Post.Post.ID}}/like" method="POST">
+                    <button type="submit" style="cursor: pointer;">❤️</button>
+                </form>
+                <span style="font-weight: bold;">{{.Post.LikeCount}}Likes</span>
+            </div>
     </div>
 
     {{if eq .Post.Post.UserID .AuthenticatedUser}}
@@ -44,10 +51,21 @@
         {{range .Post.Comments}}
             <div class="comment">
                 <div class="comment-author">
-                    <strong>User {{.UserID}}</strong> 
+                    <strong>{{.UserName}}</strong> 
                     <span class="comment-time">wrote on {{.CreatedAt.Format "Jan 02, 2006"}}</span>
+
+                   {{if eq .UserID $.AuthenticatedUser}}
+                        <form action ="/comment/{{.ID}}/delete?post_id={{$.Post.Post.ID}}" method="POST" style="display: inline;">
+                            <button type="submit">Delete comment</button>
+                        </form>
+                    {{end}}
                 </div>
                 <div>{{.Content}}</div>
+                <div>
+                    <form action="/comment/{{.ID}}/like?post_id={{$.Post.Post.ID}}" method="POST" style="display:inline;">
+                        <button type="submit" style="cursor:pointer">❤️ {{.LikeCount}}</button>
+                    </form>
+                </div>
             </div>
         {{else}}
             <p>No comments yet.</p>
