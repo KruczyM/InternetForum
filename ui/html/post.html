@@ -10,6 +10,7 @@
 
     <div class="full-post">
         <div class="post-header">
+            <span style="float: right; font-weight: bold;">{{.Post.LikeCount}} Likes</span>
             <h1>{{.Post.Post.Title}}</h1>
             <div class="meta">
                 By {{.Post.AuthorName}} {{.Post.FormattedDate}}
@@ -20,12 +21,6 @@
         <div class="post-content">
             {{.Post.Post.Content}}
         </div>
-        <div>
-                <form action="/post/{{.Post.Post.ID}}/like" method="POST">
-                    <button type="submit" style="cursor: pointer;">❤️</button>
-                </form>
-                <span style="font-weight: bold;">{{.Post.LikeCount}}Likes</span>
-            </div>
     </div>
 
     {{if eq .Post.Post.UserID .AuthenticatedUser}}
@@ -49,7 +44,7 @@
         {{range .Post.Comments}}
             <div class="comment">
                 <div class="comment-author">
-                    <strong>{{.UserID}}</strong> 
+                    <strong>User {{.UserID}}</strong> 
                     <span class="comment-time">wrote on {{.CreatedAt.Format "Jan 02, 2006"}}</span>
                 </div>
                 <div>{{.Content}}</div>

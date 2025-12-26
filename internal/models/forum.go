@@ -16,8 +16,10 @@ type Comment struct {
 	ID        int
 	PostID    int
 	UserID    string
+	UserName  string
 	Content   string
 	CreatedAt time.Time
+	LikeCount int
 }
 
 // one vote per person per post + 1 or -1
