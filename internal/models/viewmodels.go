@@ -3,6 +3,7 @@ package models
 type PostView struct {
 	Post		
 	AuthorName		string
+	BookTitle		string
 	LikeCount		int
 	CommentCount	int
 	FormattedDate	string
