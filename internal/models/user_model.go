@@ -2,8 +2,10 @@ package models
 
 import (
 	"database/sql"
+	"strings"
 	"golang.org/x/crypto/bcrypt"
 )
+
 
 
 //hashed password
@@ -29,12 +31,24 @@ func CheckPassword(password, hashed string) bool {
 
 // inserts a new user into the database
 func InsertUser(db *sql.DB, user *User) ( error ) {
+
 	// id will be genrated by UUID package - so it will be random number
 	query := `
 	INSERT INTO users (id, username, first_name, last_name, email, password_hash) 
 	VALUES (?, ?, ?, ?, ?, ?)`
 	_, err := db.Exec(query, user.ID, user.Username, user.FirstName, user.LastName, user.Email, user.PasswordHash)
-	return err
+	if err != nil {
+		// SQLite UNIQUE constraint
+		if strings.Contains(err.Error(), "users.email") {
+			return ErrDuplicateEmail
+		}
+		if strings.Contains(err.Error(), "users.username") {
+			return ErrDuplicateUsername
+		}
+		return err
+	}
+
+	return nil
 }
 
 // retrieves a user by username

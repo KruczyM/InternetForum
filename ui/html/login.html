@@ -2,27 +2,51 @@
 <html lang="en">
 
 <head>
-    <title>Register</title>
+    <title>Login · Book Forum</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/auth.css">
 </head>
 
 <body>
-    <h1>Join the Forum</h1>
-    {{ if .Flash }}
-	<p class="error">{{ .Flash }}</p>
-{{ end }}
-    <form action="/auth/login" method="POST">
-        <div>
-            <label>Email:</label><br>
-            <input type="email" name="email" required>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1>BOOK FORUM</h1>
+            <p class="subtitle">Welcome back to your reading space</p>
+            {{ if .Flash }}
+            <p class="error">{{ .Flash }}</p>
+            {{ end }}
+
+            <form action="/auth/login" method="POST" novalidate>
+
+                <div class="field">
+                    {{with .Form.FieldErrors.email}}
+                    <div class="error">{{.}}</div>
+                    {{end}}
+
+                    <div class="input-group">
+                        <input type="email" name="email" placeholder=" ">
+                        <span class="floating-text">EMAIL</span>
+                    </div>
+                </div>
+
+
+                <div class="field">
+                    {{with .Form.FieldErrors.password}}
+                    <div class="error">{{.}}</div>
+                    {{end}}
+
+                    <div class="input-group">
+                        <input type="password" name="password" placeholder=" ">
+                        <span class="floating-text">PASSWORD</span>
+                    </div>
+                </div>
+
+                <button type="submit">Log in</button>
+            </form>
+
+            <a class="back-link" href="/">Back to Home</a>
         </div>
-        <div>
-            <label>Password:</label><br>
-            <input type="password" name="password" required>
-        </div>
-        <br>
-        <button type="submit">Login</button>
-    </form>
-    <a href="/">Back to HomePage</a>
+    </div>
 </body>
 
 </html>

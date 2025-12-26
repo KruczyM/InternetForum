@@ -36,12 +36,17 @@ sessionManager.Cookie.Secure = false
 
 // it will manage the sessions and store them in the database
 sessionManager.Store = sqlite3store.New(db)
+templateCache, err := handlers.NewTemplateCache()
+	if err != nil {
+		errorLog.Fatal(err)
+	}
 
 handler := &handlers.Handler{
 	DB:       db,
 	InfoLog:  infoLog,
 	ErrorLog: errorLog,
 	SessionManager: sessionManager,
+	TemplateCache:  templateCache,
 }
 	
 
