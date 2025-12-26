@@ -34,11 +34,11 @@ func (h *Handler) ViewPost(w http.ResponseWriter, r *http.Request) {
 
     data := struct {
         Post              interface{}
-        IsAuthenticatedOk bool
+        IsAuthenticated bool
         AuthenticatedUser string
     }{
         Post:              postView,
-        IsAuthenticatedOk: h.isAuthenticated(r),
+        IsAuthenticated: h.isAuthenticated(r),
         AuthenticatedUser: h.SessionManager.GetString(r.Context(), "authenticatedUserID"),
     }
 
@@ -150,10 +150,10 @@ func (h *Handler) EditPost(w http.ResponseWriter, r *http.Request) {
 
     data := struct {
         Post        interface{}
-        IsAuthenticatedOk bool
+        IsAuthenticated bool
     }{
         Post:   postView,
-        IsAuthenticatedOk: h.isAuthenticated(r),
+        IsAuthenticated: h.isAuthenticated(r),
     }
 
     ts, err := template.ParseFiles("ui/html/edit.html")
@@ -306,12 +306,12 @@ func (h *Handler) SearchPosts(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		Posts             []models.PostView
 		Query             string
-		IsAuthenticatedOk bool
+		IsAuthenticated bool
 		AuthenticatedUser string
 	}{
 		Posts:             results,
 		Query:             query,
-		IsAuthenticatedOk: h.isAuthenticated(r),
+		IsAuthenticated: h.isAuthenticated(r),
 		AuthenticatedUser: h.SessionManager.GetString(r.Context(), "authenticatedUserID"),
 	}
 

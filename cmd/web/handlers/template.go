@@ -16,7 +16,7 @@ type templateData struct {
 	Books		[]models.Book
 	CurrentYear int
 	Flash		*FlashMessage
-	IsAuthenticatedOk bool
+	IsAuthenticated bool
 	AuthenticatedUser string
 	Form		any
 }
@@ -24,7 +24,7 @@ type templateData struct {
 func (h *Handler) newTemplateData(r *http.Request) *templateData {
 	data := &templateData {
 		CurrentYear:	2025,
-		IsAuthenticatedOk: h.isAuthenticated(r),
+		IsAuthenticated: h.isAuthenticated(r),
 		AuthenticatedUser: h.SessionManager.GetString(r.Context(), "authenticatedUserID"),
 	}
 

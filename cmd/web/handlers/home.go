@@ -44,14 +44,14 @@ func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := struct {
-		IsAuthenticatedOk bool
+		IsAuthenticated bool
 		Posts             []models.PostView
 		Books             []models.Book
 		Query             string	
 	}{
 		Posts:             posts,
 		Books:             books,
-		IsAuthenticatedOk: h.isAuthenticated(r),
+		IsAuthenticated: h.isAuthenticated(r),
 		Query:             query,
 	}
 
@@ -134,10 +134,10 @@ func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
 
 		data := struct {
 			Books             []models.Book
-			IsAuthenticatedOk bool
+			IsAuthenticated bool
 		}{
 			Books:             books,
-			IsAuthenticatedOk: h.isAuthenticated(r),
+			IsAuthenticated: h.isAuthenticated(r),
 		}
 
 		ts, err := template.ParseFiles("ui/html/create.html")
