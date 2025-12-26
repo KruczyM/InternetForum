@@ -231,3 +231,60 @@ func (h *Handler) PostLike(w http.ResponseWriter, r *http.Request) {
 
     http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
 }
+
+func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
+    fmt.Println("--- DEBUG: HANDLER WAS HIT! ---")
+    idStr := chi.URLParam(r, "id")
+
+    id, err := strconv.Atoi(idStr)
+    if err != nil || id < 1 {
+        h.notFound(w)
+        return
+    }
+
+    userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+    if userID == "" {
+        http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
+        return
+    }
+
+    postsModel := &models.PostModel{DB: h.DB}
+
+    err = postsModel.DeleteComment(id, userID)
+    if err != nil {
+        if err == sql.ErrNoRows {
+            h.notFound(w)
+        } else {
+            h.serverError(w, err)
+        }
+        return
+    }
+
+    postID :=r.URL.Query().Get("post_id")
+    http.Redirect(w, r, "/post/"+postID, http.StatusSeeOther)
+}
+
+func (h *Handler) CommentLike(w http.ResponseWriter, r *http.Request) {
+    idStr := chi.URLParam(r, "id")
+    id, err := strconv.Atoi(idStr)
+    if err != nil || id < 1 {
+        h.notFound(w)
+        return
+    }
+
+    userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+    if userID == "" {
+        http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
+        return
+    }
+
+    postsModel := &models.PostModel{DB: h.DB}
+    err = postsModel.LikeComment(id, userID)
+    if err != nil {
+        h.serverError(w, err)
+        return
+    }
+
+    postID := r.URL.Query().Get("post_id")
+    http.Redirect(w, r, "/post/"+postID, http.StatusSeeOther)
+}
