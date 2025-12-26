@@ -194,5 +194,5 @@ INSERT OR IGNORE INTO users (id, email, username, first_name, last_name, passwor
 VALUES ('1', 'test@example.com', 'TestUser', 'Test', 'User', 'placeholder_hash');
 
 --book example to test the new feature
-INSERT INTO books (id, title, author, created_at) 
+INSERT OR IGNORE INTO books (id, title, author, created_at)
 VALUES (1, 'The Go Programming Language', 'Alan Donovan', CURRENT_TIMESTAMP);

@@ -132,6 +132,16 @@ button:hover {
     border-radius: 8px;
     font-size: 0.9em;
     margin: 0 0 0.4em 0.4em;
+    text-align: center;
+}
+
+.success {
+    background: #EAF7EE;
+    color: #2F7A45;
+    border-radius: 8px;
+    font-size: 0.9em;
+    margin: 0 0 0.4em 0.4em;
+    text-align: center;
 }
 
 @media (max-width: 480px) {

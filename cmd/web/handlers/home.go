@@ -9,7 +9,7 @@ import (
 )
 
 func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
-
+	
 	category := r.URL.Query().Get("category")
 	bookIDStr := r.URL.Query().Get("book_id")
 	bookID := 0
@@ -22,12 +22,18 @@ func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 	}
 
 	postsModel := &models.PostModel{DB: h.DB}
-
-	posts, err := postsModel.GetAllPosts(category, bookID)
-	if err != nil {
-		h.ErrorLog.Println("DB Error:", err)
-		h.serverError(w, err)
-		return
+	var posts []models.PostView
+	var err error
+	query := r.URL.Query().Get("q")
+	if query != "" {
+		posts, err = postsModel.SearchPosts(query)
+	} else {
+		posts, err = postsModel.GetAllPosts(category, bookID)
+		if err != nil {
+			h.ErrorLog.Println("DB Error:", err)
+			h.serverError(w, err)
+			return
+		}
 	}
 
 	books, err := postsModel.GetAllBooks()
@@ -38,13 +44,15 @@ func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := struct {
-		IsAuthenticatedOk	bool
-		Posts []models.PostView
-		Books []models.Book
+		IsAuthenticated bool
+		Posts             []models.PostView
+		Books             []models.Book
+		Query             string	
 	}{
-		Posts: posts,
-		Books: books,
-		IsAuthenticatedOk: h.isAuthenticated(r),
+		Posts:             posts,
+		Books:             books,
+		IsAuthenticated: h.isAuthenticated(r),
+		Query:             query,
 	}
 
 	ts, err := template.ParseFiles("ui/html/home.html")
@@ -70,117 +78,117 @@ func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodPost {
 
-			err := r.ParseForm()
-			if err != nil {
-				h.serverError(w, err)
-				return
+		err := r.ParseForm()
+		if err != nil {
+			h.serverError(w, err)
+			return
+		}
+
+		title := r.FormValue("title")
+		content := r.FormValue("content")
+		category := r.FormValue("category")
+		userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+
+		var bookID *int
+
+		rawBookID := r.FormValue("book_id")
+
+		if category == "book" && rawBookID != "" {
+			id, err := strconv.Atoi(rawBookID)
+			if err == nil {
+				bookID = &id
 			}
+		}
 
-			title := r.FormValue("title")
-			content := r.FormValue("content")
-			category := r.FormValue("category")
-			userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+		var chapter *string
+		rawChapter := r.FormValue("chapter")
+		if rawChapter != "" {
+			chapter = &rawChapter
+		}
 
-			var bookID *int
+		fmt.Printf("DEBUG: UserID is '%s\n", userID)
 
-			rawBookID := r.FormValue("book_id")
+		postsModel := &models.PostModel{DB: h.DB}
 
-			if category == "book" && rawBookID != "" {
-				id, err := strconv.Atoi(rawBookID)
-				if err == nil {
-					bookID = &id
-				}
-			}
+		id, err := postsModel.InsertPost(userID, title, content, category, bookID, chapter)
+		if err != nil {
+			h.ErrorLog.Println("DB Error:", err)
+			h.serverError(w, err)
+			return
+		}
 
-			var chapter *string
-			rawChapter := r.FormValue("chapter")
-			if rawChapter != "" {
-				chapter = &rawChapter
-			}
-
-			fmt.Printf("DEBUG: UserID is '%s\n", userID)
-
-			postsModel := &models.PostModel{DB: h.DB}
-
-			id, err := postsModel.InsertPost(userID, title, content, category, bookID, chapter)
-			if err != nil {
-				h.ErrorLog.Println("DB Error:", err)
-				h.serverError(w, err)
-				return
-			}
-
-			http.Redirect(w, r, fmt.Sprintf("/post/%d", id), http.StatusSeeOther)
+		http.Redirect(w, r, fmt.Sprintf("/post/%d", id), http.StatusSeeOther)
 	}
 }*/
 
 func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
 
-    if r.Method == http.MethodGet {
-        
-        postsModel := &models.PostModel{DB: h.DB}
-        books, err := postsModel.GetAllBooks()
-        if err != nil {
-            h.serverError(w, err)
-            return
-        }
+	if r.Method == http.MethodGet {
 
-        data := struct {
-            Books []models.Book
-            IsAuthenticatedOk bool
-        }{
-            Books: books,
-            IsAuthenticatedOk: h.isAuthenticated(r),
-        }
+		postsModel := &models.PostModel{DB: h.DB}
+		books, err := postsModel.GetAllBooks()
+		if err != nil {
+			h.serverError(w, err)
+			return
+		}
 
-        ts, err := template.ParseFiles("ui/html/create.html")
-        if err != nil {
-            h.ErrorLog.Println("Template Error:", err)
-            h.serverError(w, err)
-            return
-        }
-        ts.Execute(w, data)
-        return
-    }
+		data := struct {
+			Books             []models.Book
+			IsAuthenticated bool
+		}{
+			Books:             books,
+			IsAuthenticated: h.isAuthenticated(r),
+		}
 
-    if r.Method == http.MethodPost {
+		ts, err := template.ParseFiles("ui/html/create.html")
+		if err != nil {
+			h.ErrorLog.Println("Template Error:", err)
+			h.serverError(w, err)
+			return
+		}
+		ts.Execute(w, data)
+		return
+	}
 
-        err := r.ParseForm()
-        if err != nil {
-            h.serverError(w, err)
-            return
-        }
+	if r.Method == http.MethodPost {
 
-        title := r.FormValue("title")
-        content := r.FormValue("content")
-        
-        category := r.FormValue("post_type") 
-        
-        userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+		err := r.ParseForm()
+		if err != nil {
+			h.serverError(w, err)
+			return
+		}
 
-        var bookID *int
-        rawBookID := r.FormValue("book_id")
+		title := r.FormValue("title")
+		content := r.FormValue("content")
 
-        if rawBookID != "" && rawBookID != "0" {
-            id, err := strconv.Atoi(rawBookID)
-            if err == nil {
-                bookID = &id
-            }
-        }
+		category := r.FormValue("post_type")
 
-        var chapter *string
-        rawChapter := r.FormValue("chapter")
-        if rawChapter != "" {
-            chapter = &rawChapter
-        }
+		userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
 
-        postsModel := &models.PostModel{DB: h.DB}
-        id, err := postsModel.InsertPost(userID, title, content, category, bookID, chapter)
-        if err != nil {
-            h.ErrorLog.Println("DB Error:", err)
-            h.serverError(w, err)
-            return
-        }
+		var bookID *int
+		rawBookID := r.FormValue("book_id")
 
-        http.Redirect(w, r, fmt.Sprintf("/post/%d", id), http.StatusSeeOther)
-    }
+		if rawBookID != "" && rawBookID != "0" {
+			id, err := strconv.Atoi(rawBookID)
+			if err == nil {
+				bookID = &id
+			}
+		}
+
+		var chapter *string
+		rawChapter := r.FormValue("chapter")
+		if rawChapter != "" {
+			chapter = &rawChapter
+		}
+
+		postsModel := &models.PostModel{DB: h.DB}
+		id, err := postsModel.InsertPost(userID, title, content, category, bookID, chapter)
+		if err != nil {
+			h.ErrorLog.Println("DB Error:", err)
+			h.serverError(w, err)
+			return
+		}
+
+		http.Redirect(w, r, fmt.Sprintf("/post/%d", id), http.StatusSeeOther)
+	}
 }

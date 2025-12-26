@@ -47,20 +47,6 @@ func (h *Handler) isAuthenticated(r *http.Request) bool {
 	return isAuthenticated
 }
 
-type templateData struct {
-	Form            any
-	Flash           string
-	IsAuthenticated bool
-	//CSRFToken       string
-}
-
-func (h *Handler) newTemplateData(r *http.Request) *templateData {
-	return &templateData{
-		Flash:           h.SessionManager.PopString(r.Context(), "flash"),
-		IsAuthenticated: h.isAuthenticated(r),
-		// CSRFToken:       nosurf.Token(r),
-	}
-}
 
 func (h *Handler) render(w http.ResponseWriter, status int, page string, data *templateData) {
 	ts, ok := h.TemplateCache[page]
