@@ -78,6 +78,53 @@ func GetUserByEmail(db *sql.DB, email string) (*User, error) {
 	}
 	return &user, nil
 }
+// retrieves a user by id
+func GetUserByID(db *sql.DB, id string) (*User, error) {
+	query := `
+	SELECT id, email, username, first_name, last_name, password_hash, created_at
+	FROM users 
+	WHERE id = ?`
+	var user User
+	if err := db.QueryRow(query, id).Scan(&user.ID, &user.Email, &user.Username, &user.FirstName, &user.LastName,&user.PasswordHash, &user.CreatedAt,); err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func UpdateUserNameFields(db *sql.DB, userID, firstName, lastName string) error {
+	query := `UPDATE users SET first_name = ?, last_name = ? WHERE id = ?`
+	_, err := db.Exec(query, firstName, lastName, userID)
+	return err
+}
+
+func UpdateUserPasswordHash(db *sql.DB, userID, newHash string) error {
+	query := `UPDATE users SET password_hash = ? WHERE id = ?`
+	_, err := db.Exec(query, newHash, userID)
+	return err
+}
+
+func CountUserLikes(db *sql.DB, userID string) (int, error) {
+	query := `SELECT COUNT(*) FROM likes WHERE user_id = ?`
+	var count int
+	err := db.QueryRow(query, userID).Scan(&count)
+	return count, err
+}
+
+func CountUserPosts(db *sql.DB, userID string) (int, error) {
+	query := `SELECT COUNT(*) FROM posts WHERE user_id = ?`
+	var count int
+	err := db.QueryRow(query, userID).Scan(&count)
+	return count, err
+}
+
+func CountUserComments(db *sql.DB, userID string) (int, error) {
+	query := `SELECT COUNT(*) FROM comments WHERE user_id = ?`
+	var count int
+	err := db.QueryRow(query, userID).Scan(&count)
+	return count, err
+}
+
+
 
 func ExistsUser(db *sql.DB, id string) (bool, error){
 	var exists bool
