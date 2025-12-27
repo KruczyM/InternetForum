@@ -15,8 +15,12 @@ func (h *Handler) Routes() http.Handler {
 
 	router := chi.NewRouter()
 
-	//Middlewares function like layers of an onion—the request passes through them from the outermost layer to the innermost.
-	//Using router.Use(middleware) registers the middleware for all routes within the router.
+    router.NotFound(func(w http.ResponseWriter, r *http.Request) {
+        http.Redirect(w, r, "/", http.StatusSeeOther) 
+    })
+
+//Middlewares function like layers of an onion—the request passes through them from the outermost layer to the innermost.
+//Using router.Use(middleware) registers the middleware for all routes within the router.
 	router.Use(h.recoverPanic)
 	router.Use(h.logRequest)
 	router.Use(h.authenticate)
