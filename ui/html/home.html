@@ -2,81 +2,113 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Home - Forum</title>
+    <title>Home – Book Forum</title>
+    <link rel="stylesheet" href="/static/main.css">
 </head>
 <body>
 
-    <nav>
-        <a href="/">Home</a>
-        {{if .IsAuthenticated}}
-            <a href='/post/create'>Create Post</a>
-            <a href='/profile'>My Profile</a>
-            <form action='/auth/logout' method='POST' style="display:inline;">
-                <button style="cursor:pointer;">Logout</button>
-            </form>
-        {{else}}
-            <a href="/auth/register">Register</a>
-            <a href="/auth/login">Login</a>
-        {{end}}
+<div class="forum-shell">
 
-        <form action="/" method="GET" style="display:inline; margin-left:20px;">
-            <input type="text" name="q" placeholder="Search posts..." value="{{.Query}}">
-            <button type="submit">🔍</button>
-        </form>
-    </nav>
+    <!-- Header -->
+    <header class="forum-header">
 
-    <h1>Latest Posts</h1>
+     <div class="header-left">
+      <div class="logo">BOOK FORUM</div>
+      <nav class="main-nav">
+          <a href="/" class="nav-link">Posts</a>
+          <a href="#" class="nav-link">Chat</a>
+          <a href="#" class="nav-link">My Profile</a>
+      </nav>
+  </div>
 
-    <div>
-        <strong>Filter by Category:</strong>
-        <a href="/">All</a>
-            <a href="/?category=Fantasy_SciFi_Horror">Fantasy/Sci-Fi</a>
-            <a href="/?category=Classics">Classics</a>
-            <a href="/?category=General_Fiction">General Fiction</a>
-            <a href="/?category=Crime_Mystery_Thriller">Crime/Thriller</a>
-            <a href="/?category=Womens_Fiction">Women's Fiction</a>
-            <a href="/?category=Childrens">Children's</a>
-            <a href="/?category=Poetry_Plays">Poetry/Plays</a>
-            <a href="/?category=Non_Fiction">Non-Fiction</a>
-            <a href="/?category=Historical_Fiction">Historical Fiction</a>
-        <span>|</span>
+ <div class="header-tools">
+      <div class="nav-dropdown">
+          <button class="nav-link dropdown-toggle" type="button">
+              Categories ▾
+          </button>
+          <div class="dropdown-menu">
+              <a href="/">All</a>
+              <a href="/?category=Classics">Classics</a>
+              <a href="/?category=General_Fiction">General Fiction</a>
+              <a href="/?category=Crime_Mystery_Thriller">Crime / Thriller</a>
+              <a href="/?category=Womens_Fiction">Women's Fiction</a>
+              <a href="/?category=Childrens">Children's</a>
+              <a href="/?category=Poetry_Plays">Poetry / Plays</a>
+              <a href="/?category=Non_Fiction">Non-Fiction</a>
+              <a href="/?category=Historical_Fiction">Historical Fiction</a>
+          </div>
+      </div>
+      <form action="/" method="GET" class="search-box header-search">
+          <input type="text" name="q" placeholder="Search...">
+      </form>
+  </div>
 
-        <strong>Filter by Book:</strong>
-        <a href="/">All Books</a>
-        {{range .Books}}
-         <a href="/?book_id={{.ID}}">{{.Title}}</a>
-         {{end}}
-    </div>
+    <div class="auth-links">
+      {{if .IsAuthenticated}}
+          <form action="/auth/logout" method="POST">
+              <button class="text-btn">Logout</button>
+          </form>
+      {{else}}
+          <a href="/auth/register">Register</a>
+          <a href="/auth/login">Login</a>
+      {{end}}
+  </div>
 
-    <div class="feed">
-        {{if .Posts}}
-            {{range .Posts}}
-            <div class="post-summary">
-                
-                <h2 class="post-title">
-                    <a href="/post/{{.Post.ID}}">{{.Post.Title}}</a>
-                </h2>
+</header>
 
-                <div class="meta">
-                    By <strong>{{.AuthorName}}</strong> on {{.FormattedDate}}
-                    {{if .Post.BookID}} | Book #{{.Post.BookID}} {{end}}
-                </div>
+    <!-- Grid -->
+    <div class="forum-grid">
 
-                <p>{{.Post.Content}}</p>
+        <!-- Center -->
+        <main class="center-panel">
+            
+            <a href="/post/create" class="primary-btn">+ Create Post</a>
 
-                <div class="stats">
-                    <form action="/post/{{.Post.ID}}/like" method="POST">
-                        <button class="like-btn" type="submit">❤️</button>
-                        <span>{{.LikeCount}} Likes</span>
-                    </form>
-                </div>
+            <div class="feed">
+                {{if .Posts}}
+                {{range .Posts}}
+                <article class="post-card">
 
+                    <div class="post-header">
+                        <h3>
+                            <a href="/post/{{.Post.ID}}">
+                                {{.Post.Title}}
+                            </a>
+                        </h3>
+                        <span class="post-date">{{.FormattedDate}}</span>
+                    </div>
+
+                    <p class="post-meta">
+                        By <strong>{{.AuthorName}}</strong>
+                        {{if .Post.BookID}} · Book #{{.Post.BookID}} {{end}}
+                    </p>
+
+                    <p class="post-preview">
+                        {{.Post.Content}}
+                    </p>
+
+                    <div class="post-footer">
+                        <form action="/post/{{.Post.ID}}/like" method="POST">
+                            <button class="like-btn" type="submit">
+                                ❤️ <span>{{.LikeCount}}</span>
+                            </button>
+                        </form>
+
+                        <a href="/post/{{.Post.ID}}" class="read-more">
+                            Read →
+                        </a>
+                    </div>
+
+                </article>
+                {{end}}
+                {{else}}
+                    <p>No posts found. Create one!</p>
+                {{end}}
             </div>
-            {{end}}
-        {{else}}
-            <p>No posts found. Create one!</p>
-        {{end}}
+
+        </main>
     </div>
+</div>
 
 </body>
 </html>
