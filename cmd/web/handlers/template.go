@@ -19,6 +19,7 @@ type templateData struct {
 	IsAuthenticated bool
 	AuthenticatedUser string
 	Form		any
+	AnyData		map[string]any
 }
 
 func (h *Handler) newTemplateData(r *http.Request) *templateData {
@@ -26,6 +27,7 @@ func (h *Handler) newTemplateData(r *http.Request) *templateData {
 		CurrentYear:	2025,
 		IsAuthenticated: h.isAuthenticated(r),
 		AuthenticatedUser: h.SessionManager.GetString(r.Context(), "authenticatedUserID"),
+		AnyData: make(map[string]any),
 	}
 
 		flash := h.SessionManager.Pop(r.Context(), "flash")

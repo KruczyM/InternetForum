@@ -10,6 +10,7 @@
         <a href="/">Home</a>
         {{if .IsAuthenticated}}
             <a href='/post/create'>Create Post</a>
+            <a href='/profile'>My Profile</a>
             <form action='/auth/logout' method='POST' style="display:inline;">
                 <button style="cursor:pointer;">Logout</button>
             </form>
