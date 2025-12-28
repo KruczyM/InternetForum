@@ -7,7 +7,6 @@ body {
     min-height: 100vh;
 }
 
-/* Shell */
 .forum-shell {
     max-width: 1100px;
     margin: 40px auto;
@@ -16,7 +15,6 @@ body {
     overflow: visible;
 }
 
-/* Header */
 .forum-header {
     display: flex;
     justify-content: space-between;
@@ -27,6 +25,7 @@ body {
     font-family: "Inter", "Segoe UI", sans-serif;
 }
 
+/* Header left side */
 .header-left {
     display: flex;
     align-items: center;
@@ -57,7 +56,7 @@ body {
     text-decoration: underline
 }
 
-/* Navigation */
+/* Header right side (Register, Login, Category, Search) */
 .main-nav {
     display: flex;
     gap: 22px;
@@ -70,7 +69,6 @@ body {
     position: relative;
 }
 
-/* Hover underline */
 .nav-link::after {
     content: "";
     position: absolute;
@@ -86,7 +84,6 @@ body {
     width: 100%;
 }
 
-/* Header tools (categories + search) */
 .header-tools {
     display: flex;
     align-items: center;
@@ -94,7 +91,6 @@ body {
     margin-left: 250px;
 }
 
-/* Search in header */
 .header-search input {
     width: 100px;
     padding: 6px 10px;
@@ -109,12 +105,10 @@ body {
     box-shadow: 0 0 0 2px rgba(168, 122, 79, 0.3); 
 }
 
-/* Dropdown container */
 .nav-dropdown {
     position: relative;
 }
 
-/* Toggle button */
 .dropdown-toggle {
     background: none;
     border: none;
@@ -125,7 +119,6 @@ body {
     font-family: "Inter", "Segoe UI", sans-serif;
 }
 
-/* Menu */
 .dropdown-menu {
     position: absolute;
     top: 140%;
@@ -144,7 +137,6 @@ body {
     z-index: 20;
 }
 
-/* Links inside dropdown */
 .dropdown-menu a {
     display: block;
     padding: 10px 18px;
@@ -157,7 +149,6 @@ body {
     background: rgba(198, 156, 109, 0.15);
 }
 
-/* Show on hover or focus */
 .nav-dropdown:focus-within .dropdown-menu {
     opacity: 1;
     transform: translateY(0);
@@ -169,7 +160,7 @@ body {
     padding: 28px;
 }
 
-/* Button */
+/* Everything related to post show*/
 .primary-btn {
     font-family: "Libre Baskerville", Georgia, serif;
     display: block;
@@ -181,9 +172,14 @@ body {
     color: white;
     text-decoration: none;
     text-align: center;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* Post Card */
+.primary-btn:hover, .create-post-form button.primary-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(168, 122, 79, 0.4);
+}
+
 .post-card {
     background: #FFF;
     border: 1px solid #E6D6C5;
@@ -192,7 +188,6 @@ body {
     margin-bottom: 20px;
 }
 
-/* Post Header */
 .post-header {
     display: flex;
     justify-content: space-between;
@@ -220,7 +215,6 @@ body {
     line-height: 1.4;
 }
 
-/* Footer */
 .post-footer {
     display: flex;
     justify-content: space-between;
@@ -228,7 +222,6 @@ body {
     margin-top: 14px;
 }
 
-/* Like */
 .like-btn {
     background: none;
     border: 1px solid #D7C3AF;
@@ -237,11 +230,80 @@ body {
     cursor: pointer;
 }
 
-/* Read more */
 .read-more {
     font-size: 0.85em;
     color: #8C5E3C;
     text-decoration: none;
+}
+
+/* Everything related to post creation */
+.create-post-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.create-post-form .form-group {
+    display: flex;
+    flex-direction: column; 
+    align-items: flex-start; 
+    margin-bottom: 14px;
+}
+
+.create-post-form-container h1 {
+    text-align: center;     
+    margin-top: 20px;       
+    margin-bottom: 30px; 
+    padding: 18px 24px;   
+    font-size: 2em;
+    gap: 20px;
+    position: relative;
+    top: -20px; 
+}
+
+.create-post-form input[type="text"],
+.create-post-form select,
+.create-post-form textarea {
+    padding: 10px 14px;
+    border: 1px solid #D7C3AF;
+    border-radius: 8px;
+    font-size: 0.95em;
+    font-family: "Libre Baskerville", Georgia, serif;
+    outline: none;
+    position: relative;
+    top: -26px; 
+    display: inline-block; 
+    vertical-align: middle;          
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto 8px auto;  
+    box-sizing: border-box;
+}
+
+.create-post-form textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.create-post-form button.primary-btn {
+    border: none;
+    border-radius: 50px;
+    width: 100%; 
+    max-width: 200px;
+    background: linear-gradient(180deg, #C69C6D, #A87A4F);
+    color: #fff;
+    font-size: 1em;
+    text-align: center;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.create-post-form input:focus,
+.create-post-form select:focus,
+.create-post-form textarea:focus {
+    border-color: #A87A4F;
+    box-shadow: 0 0 0 2px rgba(168, 122, 79, 0.2);
 }
 
 /* Mobile */
