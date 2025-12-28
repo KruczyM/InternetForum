@@ -1,7 +1,7 @@
 /*  Base  */
 body {
     margin: 0;
-    font-family: 'Georgia', serif;
+    font-family: "Libre Baskerville", Georgia, serif;
     background: linear-gradient(135deg, #FFF8F0, #F3E6D8);
     color: #4A3428;
     min-height: 100vh;
@@ -82,7 +82,7 @@ h1 {
 .input-group input:focus {
     outline: none;
     border-color: #A87A4F;
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
+    box-shadow: 0 0 0 2px rgba(168, 122, 79, 0.3); 
 }
 
 /* Move text up */
