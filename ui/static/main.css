@@ -306,6 +306,27 @@ body {
     box-shadow: 0 0 0 2px rgba(168, 122, 79, 0.2);
 }
 
+.create-post-form select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: #ffffff;
+    border-color: #E6D6C5;
+    padding: 10px 42px 10px 14px;
+    cursor: pointer;
+}
+
+.form-group {
+    position: relative;
+}
+
+.create-post-form select option {
+    background: #FFFAF4;
+    color: #4A3428;
+    font-family: "Libre Baskerville", Georgia, serif;
+}
+
+
 /* Mobile */
 @media (max-width: 900px) {
 }
