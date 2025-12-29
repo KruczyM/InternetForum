@@ -326,6 +326,19 @@ body {
     font-family: "Libre Baskerville", Georgia, serif;
 }
 
+/* Everything related to post edit */
+.back-link {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.9em;
+    color: #8B6A4A;
+    text-decoration: none;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
 
 /* Mobile */
 @media (max-width: 900px) {
