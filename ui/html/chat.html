@@ -1,0 +1,65 @@
+{{define "chat"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Chat</title>
+    <link rel="stylesheet" href="/static/main.css">
+    <meta http-equiv="refresh" content="5">
+</head>
+<body>
+<div class="forum-shell">
+    <header class="forum-header">
+        <div class="header-left">
+            <div class="logo">BOOK FORUM</div>
+            <nav class="main-nav">
+                <a href="/" class="nav-link">Posts</a>
+                <a href="/chat/" class="nav-link nav-link-active">Chat</a>
+                <a href="/profile" class="nav-link">My Profile</a>
+            </nav>
+        </div>
+        <div class="auth-links">
+            {{if .IsAuthenticated}}
+                <form action="/auth/logout" method="POST">
+                    <button class="text-btn">Logout</button>
+                </form>
+            {{else}}
+                <a href="/auth/register">Register</a>
+                <a href="/auth/login">Login</a>
+            {{end}}
+        </div>
+    </header>
+    <div class="forum-grid">
+        <main class="center-panel">
+            <h2>Book Chat</h2>
+            <form method="GET" action="/chat/" style="margin-bottom: 1em; display: flex; gap: 0.5em; align-items: center;">
+                <label for="category">Category:</label>
+                <select name="category" id="category" onchange="this.form.submit()">
+                    {{range .Categories}}
+                        <option value="{{.}}" {{if eq $.CurrentCategory .}}selected{{end}}>{{.}}</option>
+                    {{end}}
+                </select>
+                <noscript><button type="submit">Load</button></noscript>
+            </form>
+            <div id="chat-box" style="border: 1px solid #E6D6C5; height: 300px; overflow-y: scroll; padding: 1em; margin-bottom: 1em; background: #FFFAF4; border-radius: 10px;">
+                {{range .Messages}}
+                    <div class="chat-message">
+                        <span class="chat-meta" style="color: #888; font-size: 0.9em;">[{{.UserID}}] ({{.CreatedAt.Format "15:04:05"}}):</span> {{.Content}}
+                    </div>
+                {{else}}
+                    <div class="chat-message">No messages yet.</div>
+                {{end}}
+            </div>
+            <form method="POST" action="/chat/" style="display: flex; gap: 0.5em; align-items: center;">
+                <input type="hidden" name="category" value="{{.CurrentCategory}}">
+                <input type="text" name="user_id" placeholder="User ID" required style="width: 8em;">
+                <input type="text" name="content" placeholder="Type a message..." required style="flex:1;">
+                <button type="submit" class="primary-btn" style="margin: 0;">Send</button>
+            </form>
+        </main>
+    </div>
+</div>
+</body>
+</html>
+{{end}}
