@@ -7,6 +7,7 @@ type Post struct {
 	UserID string
 	Title   string
 	Content string
+	ImagePath	string
 	PostType string // "discussion", "analysis", "review"
 	BookID  *int    // can be null
 	Chapter *string // can be null

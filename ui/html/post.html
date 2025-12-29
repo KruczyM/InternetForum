@@ -21,6 +21,12 @@
 
         <div class="post-content">
             {{.Post.Post.Content}}
+
+            {{if .Post.Post.ImagePath}}
+            <div class="post-image">
+                <img src="{{.Post.Post.ImagePath}}" alt="Post Image">
+            </div>
+            {{end}}
         </div>
         <div>
                 <form action="/post/{{.Post.Post.ID}}/like" method="POST">

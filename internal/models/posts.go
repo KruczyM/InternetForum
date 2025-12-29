@@ -157,10 +157,10 @@ func (m *PostModel) GetPost(id int) (*PostView, error) {
     return pv, nil
 }
 
-func (m *PostModel) InsertPost(userID string, title, content, postType string, bookID *int, chapter *string) (int, error) {
+func (m *PostModel) InsertPost(userID string, title, content, imagePath string, postType string, bookID *int, chapter *string) (int, error) {
 	stmt := `
-	INSERT INTO posts (user_id, title, content, post_type, book_id, chapter, created_at)
-	VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`
+	INSERT INTO posts (user_id, title, content, image_path, post_type, book_id, chapter, created_at)
+	VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`
 
 	result, err := m.DB.Exec(stmt, userID, title, content, postType, bookID, chapter)
 	if err != nil {
