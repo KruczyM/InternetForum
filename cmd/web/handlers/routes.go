@@ -34,6 +34,10 @@ func (h *Handler) Routes() http.Handler {
 	fileServer := http.FileServer(http.FS(staticFS))
 	router.Handle("/static/*", http.StripPrefix("/static/", fileServer))
 
+	//live img upload
+	uploadServer := http.FileServer(http.Dir("./ui/static/uploads"))
+	router.Handle("/static/uploads/*", http.StripPrefix("/static/uploads/", uploadServer))
+
 	//In the Chi router, we map handlers directly to HTTP methods. We use router.Get("/", handler) for retrieval, and similarly Post, Put, Patch, or Delete for other actions.
 	router.Get("/", h.home)
 	//Create a route group for /post, each sub will start from /post
@@ -51,6 +55,9 @@ func (h *Handler) Routes() http.Handler {
 	})
 	router.With(h.requireAuth).Post("/comment/{id}/delete", h.DeleteComment)
 	router.With(h.requireAuth).Post("/comment/{id}/like", h.CommentLike)
+
+	router.With(h.requireAuth).Get("/book/create", h.CreateBook)
+	router.With(h.requireAuth).Post("/book/create", h.CreateBook)
 
 	router.Route("/auth", func(router chi.Router) {
 		router.Get("/register", h.userRegister)

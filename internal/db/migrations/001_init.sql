@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS posts (
     user_id TEXT NOT NULL,
     title TEXT NOT NULL,
     content TEXT NOT NULL,
+    image_path TEXT DEFAULT '',
     post_type TEXT NOT NULL DEFAULT 'discussion', -- discussion | analysis | review
     book_id INTEGER,                              -- nullable
     chapter TEXT,                                 -- nullable
