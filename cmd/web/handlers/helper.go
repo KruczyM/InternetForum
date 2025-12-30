@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"runtime/debug"
+	"strings"
 
 	"github.com/alexedwards/scs/v2"
 )
@@ -55,49 +56,34 @@ func (h *Handler) render(w http.ResponseWriter, status int, page string, data *t
 		       return
 	       }
 
-	       buf := new(bytes.Buffer)
-		// For chat.html, pass Chat data directly if present
-		if page == "chat.html" && data != nil && data.AnyData != nil {
-			if chat, ok := data.AnyData["Chat"]; ok {
-				err := ts.Execute(buf, chat)
-				if err != nil {
-					h.serverError(w, err)
-					return
-				}
-				w.WriteHeader(status)
-				buf.WriteTo(w)
-				return
-			}
-		}
-	       err := ts.Execute(buf, data)
-	       if err != nil {
-		       h.serverError(w, err)
-		       return
-	       }
-	       w.WriteHeader(status)
-	       buf.WriteTo(w)
+		       buf := new(bytes.Buffer)
+		       err := ts.Execute(buf, data)
+		       if err != nil {
+			       h.serverError(w, err)
+			       return
+		       }
+		       w.WriteHeader(status)
+		       buf.WriteTo(w)
 }
 
 func NewTemplateCache() (map[string]*template.Template, error) {
-	cache := map[string]*template.Template{}
-	// Use fs.Glob() to get a slice of all filepaths in the ui.Files embedded filesystem which match the pattern 'html/*.tmpl'. This essentially
-	// gives us a slice of all the 'page' templates for the application
-	pages, err := fs.Glob(ui.Files, "html/*.html")
-	if err != nil {
-		return nil, err
-	}
+       cache := map[string]*template.Template{}
+       funcMap := template.FuncMap{
+	       "upper": strings.ToUpper,
+       }
+       pages, err := fs.Glob(ui.Files, "html/*.html")
+       if err != nil {
+	       return nil, err
+       }
 
-	for _, page := range pages {
-		// it will give us the name of the file without the extension
-		name := filepath.Base(page)
-		// Use template.New() to create a new template with the given name. This will return an error if the template name is invalid.
-		templateSet, err := template.New(name).ParseFS(ui.Files, page)
-		if err != nil {
-			return nil, err
-		}
+       for _, page := range pages {
+	       name := filepath.Base(page)
+	       templateSet, err := template.New(name).Funcs(funcMap).ParseFS(ui.Files, page)
+	       if err != nil {
+		       return nil, err
+	       }
+	       cache[name] = templateSet
+       }
 
-		cache[name] = templateSet
-	}
-
-	return cache, nil
+       return cache, nil
 }

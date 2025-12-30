@@ -67,7 +67,10 @@ func (h *Handler) Routes() http.Handler {
 		router.Post("/logout", h.userLogoutPost)
 	})
 
-	// Chat route (Go-only)
+	// Chat routes
+	router.Get("/chat", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/chat/", http.StatusMovedPermanently)
+	})
 	router.Route("/chat", func(router chi.Router) {
 		router.MethodFunc("GET", "/", h.ChatHandler)
 		router.MethodFunc("POST", "/", h.ChatHandler)
