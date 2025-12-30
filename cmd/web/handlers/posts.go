@@ -34,11 +34,11 @@ func (h *Handler) ViewPost(w http.ResponseWriter, r *http.Request) {
 
     data := struct {
         Post              interface{}
-        IsAuthenticatedOk bool
+        IsAuthenticated bool
         AuthenticatedUser string
     }{
         Post:              postView,
-        IsAuthenticatedOk: h.isAuthenticated(r),
+        IsAuthenticated: h.isAuthenticated(r),
         AuthenticatedUser: h.SessionManager.GetString(r.Context(), "authenticatedUserID"),
     }
 
@@ -150,10 +150,10 @@ func (h *Handler) EditPost(w http.ResponseWriter, r *http.Request) {
 
     data := struct {
         Post        interface{}
-        IsAuthenticatedOk bool
+        IsAuthenticated bool
     }{
         Post:   postView,
-        IsAuthenticatedOk: h.isAuthenticated(r),
+        IsAuthenticated: h.isAuthenticated(r),
     }
 
     ts, err := template.ParseFiles("ui/html/edit.html")
@@ -287,4 +287,39 @@ func (h *Handler) CommentLike(w http.ResponseWriter, r *http.Request) {
 
     postID := r.URL.Query().Get("post_id")
     http.Redirect(w, r, "/post/"+postID, http.StatusSeeOther)
+}
+
+func (h *Handler) SearchPosts(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
+	if strings.TrimSpace(query) == "" {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	postsModel := &models.PostModel{DB: h.DB}
+	results, err := postsModel.SearchPosts(query)
+	if err != nil {
+		h.serverError(w, err)
+		return
+	}
+
+	data := struct {
+		Posts             []models.PostView
+		Query             string
+		IsAuthenticated bool
+		AuthenticatedUser string
+	}{
+		Posts:             results,
+		Query:             query,
+		IsAuthenticated: h.isAuthenticated(r),
+		AuthenticatedUser: h.SessionManager.GetString(r.Context(), "authenticatedUserID"),
+	}
+
+	ts, err := template.ParseFiles("ui/html/search.html")
+	if err != nil {
+		h.serverError(w, err)
+		return
+	}
+
+	ts.Execute(w, data)
 }

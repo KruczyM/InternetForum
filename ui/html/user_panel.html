@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>My Profile · Book Forum</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/profile.css">
+</head>
+
+<body>
+
+<div class="profile-container">
+
+    <h1>My Profile</h1>
+
+    {{ with .Flash }}
+        <p class="{{ .Type }}">{{ .Msg }}</p>
+    {{ end }}
+
+    <!-- My STATS -->
+    <div class="stats">
+        <a href="/my-posts">
+            My posts ({{ index .AnyData "postsCount" }})
+        </a>
+        |
+        <a href="/my-comments">
+            My comments ({{ index .AnyData "commentsCount" }})
+        </a>
+        |
+        <span>
+        <a href="/my-likes">
+            Likes given ({{ index .AnyData "likesCount" }})
+        </a>
+        </span>
+    </div>
+
+    <hr>
+
+    <!-- PROFILE INFO -->
+    <section>
+        <h2>Profile information</h2>
+
+        {{ if eq (index .AnyData "editMode") "profile" }}
+
+        <form method="POST" action="/profile/edit" novalidate>
+
+            {{ with .Form.FieldErrors.first_name }}
+            <div class="error">{{ . }}</div>
+            {{ end }}
+            <input
+                type="text"
+                name="first_name"
+                value="{{ (index .AnyData "user").FirstName }}"
+                placeholder="First name"
+            >
+
+            {{ with .Form.FieldErrors.last_name }}
+            <div class="error">{{ . }}</div>
+            {{ end }}
+            <input
+                type="text"
+                name="last_name"
+                value="{{ (index .AnyData "user").LastName }}"
+                placeholder="Last name"
+            >
+
+            <button type="submit">Save</button>
+            <a href="/profile">Cancel</a>
+        </form>
+
+        {{ else }}
+
+        <p><strong>Email:</strong> {{ (index .AnyData "user").Email }}</p>
+        <p><strong>First name:</strong> {{ (index .AnyData "user").FirstName }}</p>
+        <p><strong>Last name:</strong> {{ (index .AnyData "user").LastName }}</p>
+
+        <a href="/profile?edit=profile">Edit profile</a>
+
+        {{ end }}
+    </section>
+
+    <hr>
+
+    <!-- SECURITY -->
+    <section>
+        <h2>Security</h2>
+
+        {{ if eq (index .AnyData "editMode") "password" }}
+
+        <form method="POST" action="/profile/password" novalidate>
+
+            {{ with .Form.FieldErrors.current_password }}
+            <div class="error">{{ . }}</div>
+            {{ end }}
+            <input
+                type="password"
+                name="current_password"
+                placeholder="Current password"
+            >
+
+            {{ with .Form.FieldErrors.new_password }}
+            <div class="error">{{ . }}</div>
+            {{ end }}
+            <input
+                type="password"
+                name="new_password"
+                placeholder="New password"
+            >
+
+            {{ with .Form.FieldErrors.confirm_password }}
+            <div class="error">{{ . }}</div>
+            {{ end }}
+            <input
+                type="password"
+                name="confirm_password"
+                placeholder="Confirm new password"
+            >
+
+            <button type="submit">Change password</button>
+            <a href="/profile">Cancel</a>
+        </form>
+
+        {{ else }}
+
+        <p>Password: ••••••••</p>
+        <a href="/profile?edit=password">Change password</a>
+
+        {{ end }}
+    </section>
+
+</div>
+
+</body>
+</html>

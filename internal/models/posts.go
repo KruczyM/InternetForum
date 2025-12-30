@@ -46,7 +46,6 @@ func (m *PostModel) GetAllPosts(category string, bookID int) ([]PostView, error)
 		var bookIDNull sql.NullInt64
         var chapterNull sql.NullString
 
-
 		err := rows.Scan(
 			&pv.Post.ID,
 			&pv.Post.UserID,
@@ -157,9 +156,9 @@ func (m *PostModel) GetPost(id int) (*PostView, error) {
 		if err != nil {
 			return nil, err
 		}
-        pv.Comments = append(pv.Comments, c)
-    }
-    return pv, nil
+		pv.Comments = append(pv.Comments, c)
+	}
+	return pv, nil
 }
 
 func (m *PostModel) InsertPost(userID string, title, content, imagePath string, postType string, bookID *int, chapter *string) (int, error) {
@@ -209,7 +208,7 @@ func (m *PostModel) UpdatePost(id int, title, content string) error {
 	return nil
 }
 
-func (m* PostModel) ToggleLike(userID string, postID int) error {
+func (m *PostModel) ToggleLike(userID string, postID int) error {
 	stmt := `SELECT value FROM likes WHERE user_id = ? AND target_type = 'post' AND target_id = ?`
 
 	var value int
@@ -300,4 +299,57 @@ func (m *PostModel) GetAllBooks() ([]Book, error) {
 	}
 	return books, nil
 
+}
+
+
+func (m *PostModel) SearchPosts(query string) ([]PostView, error) {
+	stmt := `
+    SELECT p.id, p.user_id, p.title, p.content, p.post_type, p.book_id, p.chapter, p.created_at, u.username,
+    COALESCE(SUM(l.value), 0)
+    FROM posts p
+    LEFT JOIN users u ON p.user_id = u.id
+    LEFT JOIN likes l ON p.id = l.target_id AND l.target_type = 'post'
+    WHERE p.title LIKE ? OR p.content LIKE ? OR u.username LIKE ?
+    GROUP BY p.id, u.username
+    ORDER BY p.created_at DESC`
+
+	likeQuery := "%" + query + "%"
+	fmt.Println("jestem")
+	rows, err := m.DB.Query(stmt, likeQuery, likeQuery, likeQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []PostView
+
+	for rows.Next() {
+		var pv PostView
+		var bookID sql.NullInt64
+		var chapter sql.NullString
+
+		err := rows.Scan(
+			&pv.Post.ID,
+			&pv.Post.UserID,
+			&pv.Post.Title,
+			&pv.Post.Content,
+			&pv.Post.PostType,
+			&bookID,
+			&chapter,
+			&pv.Post.CreatedAt,
+			&pv.AuthorName,
+			&pv.LikeCount,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		pv.FormattedDate = pv.Post.CreatedAt.Format("Jan 02, 2006 at 3:04 PM")
+		posts = append(posts, pv)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return posts, nil
 }

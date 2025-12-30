@@ -99,7 +99,10 @@ func (h *Handler) userRegisterPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.SessionManager.Put(r.Context(), "flash", "Your signup was successful. Please log in.")
+	h.SessionManager.Put(r.Context(), "flash", &FlashMessage{
+		Type: "success",
+		Msg:  "Your signup was successful. Please log in.",
+	})
 	http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 
 }
@@ -133,10 +136,12 @@ func (h *Handler) userLoginPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	user, err := models.GetUserByEmail(h.DB, form.email)
 	if err != nil {
-		h.SessionManager.Put(r.Context(), "flash", "Invalid email or password")
+		h.SessionManager.Put(r.Context(), "flash", &FlashMessage{
+			Type: "error",
+			Msg:  "Invalid email or password",
+		})
 		h.ErrorLog.Println(err)
 		http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 		return
@@ -144,7 +149,11 @@ func (h *Handler) userLoginPost(w http.ResponseWriter, r *http.Request) {
 
 	if !models.CheckPassword(form.password, user.PasswordHash) {
 		h.ErrorLog.Println("Invalid password")
-		h.SessionManager.Put(r.Context(), "flash", "Invalid email or password")
+		h.SessionManager.Put(r.Context(), "flash", &FlashMessage{
+			Type: "error",
+			Msg:  "Invalid email or password",
+		})
+		h.ErrorLog.Println(err)
 		http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 		return
 	}
@@ -167,7 +176,10 @@ func (h *Handler) userLogoutPost(w http.ResponseWriter, r *http.Request) {
 	h.SessionManager.Remove(r.Context(), "authenticatedUserID")
 	// Add a flash message to the session to confirm to the user that they've been
 	// logged out.
-	h.SessionManager.Put(r.Context(), "flash", "You've been logged out successfully!")
+	h.SessionManager.Put(r.Context(), "flash", &FlashMessage{
+		Type: "success",
+		Msg:  "You've been logged out successfully!",
+	})
 	// Redirect the user to the application home page.
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

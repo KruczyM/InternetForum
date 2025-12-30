@@ -1,25 +1,39 @@
 package handlers
 
 import (
-    "forum/internal/models"
-    "net/http"
+	"forum/internal/models"
+	"net/http"
 )
-type templateData struct {
-    Post              *models.PostView
-    Posts             []models.PostView
-    Books             []models.Book
-    CurrentYear       int
-    Flash             string
-    IsAuthenticated   bool   
-    AuthenticatedUser string
-    Form              any
+
+type FlashMessage struct {
+	Type string
+	Msg  string
 }
 
-func (h *Handler) TemplateData(r *http.Request) *templateData {
-    return &templateData {
-        CurrentYear:       2025,
-        IsAuthenticated:   h.isAuthenticated(r),
-        AuthenticatedUser: h.SessionManager.GetString(r.Context(), "authenticatedUserID"),
-        Flash:             h.SessionManager.PopString(r.Context(), "flash"),
-    }
+type templateData struct {
+	Post		*models.PostView
+	Posts		[]models.PostView
+	Books		[]models.Book
+	CurrentYear int
+	Flash		*FlashMessage
+	IsAuthenticated bool
+	AuthenticatedUser string
+	Form		any
+	AnyData		map[string]any
 }
+
+func (h *Handler) newTemplateData(r *http.Request) *templateData {
+	data := &templateData {
+		CurrentYear:	2025,
+		IsAuthenticated: h.isAuthenticated(r),
+		AuthenticatedUser: h.SessionManager.GetString(r.Context(), "authenticatedUserID"),
+		AnyData: make(map[string]any),
+	}
+
+		flash := h.SessionManager.Pop(r.Context(), "flash")
+	if f, ok := flash.(*FlashMessage); ok {
+		data.Flash = f
+	}
+	return data
+}
+

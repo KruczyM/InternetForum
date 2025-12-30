@@ -15,12 +15,12 @@ func (h *Handler) Routes() http.Handler {
 
 	router := chi.NewRouter()
 
-    router.NotFound(func(w http.ResponseWriter, r *http.Request) {
+	router.NotFound(func(w http.ResponseWriter, r *http.Request) {
         http.Redirect(w, r, "/", http.StatusSeeOther) 
     })
 
-//Middlewares function like layers of an onion—the request passes through them from the outermost layer to the innermost.
-//Using router.Use(middleware) registers the middleware for all routes within the router.
+	//Middlewares function like layers of an onion—the request passes through them from the outermost layer to the innermost.
+	//Using router.Use(middleware) registers the middleware for all routes within the router.
 	router.Use(h.recoverPanic)
 	router.Use(h.logRequest)
 	router.Use(h.authenticate)
@@ -67,12 +67,20 @@ func (h *Handler) Routes() http.Handler {
 		router.Post("/logout", h.userLogoutPost)
 	})
 
-	// Chat routes
+	// Chat route (Go-only)
 	router.Route("/chat", func(router chi.Router) {
-		router.Post("/message", h.PostChatMessage)
-		router.Get("/messages", h.GetChatMessages)
-		router.Get("/categories", h.GetChatCategories)
+		router.MethodFunc("GET", "/", h.ChatHandler)
+		router.MethodFunc("POST", "/", h.ChatHandler)
 	})
+
+	//user_panel
+	router.Route("/profile", func(r chi.Router) {
+	r.Use(h.requireAuth)
+
+	r.Get("/", h.userProfile)
+	r.Post("/edit", h.userProfileEditPost)
+	r.Post("/password", h.userProfilePasswordPost)
+})
 
 	return router
 }

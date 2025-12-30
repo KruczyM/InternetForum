@@ -47,30 +47,35 @@ func (h *Handler) isAuthenticated(r *http.Request) bool {
 	return isAuthenticated
 }
 
-func (h *Handler) newTemplateData(r *http.Request) *templateData {
-	return &templateData{
-		Flash:           h.SessionManager.PopString(r.Context(), "flash"),
-		IsAuthenticated: h.isAuthenticated(r),
-		// CSRFToken:       nosurf.Token(r),
-	}
-}
 
 func (h *Handler) render(w http.ResponseWriter, status int, page string, data *templateData) {
-	ts, ok := h.TemplateCache[page]
-	if !ok {
-		h.serverError(w, fmt.Errorf("template %s does not exist", page))
-		return
-	}
+	       ts, ok := h.TemplateCache[page]
+	       if !ok {
+		       h.serverError(w, fmt.Errorf("template %s does not exist", page))
+		       return
+	       }
 
-	buf := new(bytes.Buffer)
-	err := ts.Execute(buf, data)
-	if err != nil {
-		h.serverError(w, err)
-		return
-	}
-
-	w.WriteHeader(status)
-	buf.WriteTo(w)
+	       buf := new(bytes.Buffer)
+		// For chat.html, pass Chat data directly if present
+		if page == "chat.html" && data != nil && data.AnyData != nil {
+			if chat, ok := data.AnyData["Chat"]; ok {
+				err := ts.Execute(buf, chat)
+				if err != nil {
+					h.serverError(w, err)
+					return
+				}
+				w.WriteHeader(status)
+				buf.WriteTo(w)
+				return
+			}
+		}
+	       err := ts.Execute(buf, data)
+	       if err != nil {
+		       h.serverError(w, err)
+		       return
+	       }
+	       w.WriteHeader(status)
+	       buf.WriteTo(w)
 }
 
 func NewTemplateCache() (map[string]*template.Template, error) {
