@@ -34,6 +34,10 @@ func (h *Handler) Routes() http.Handler {
 	fileServer := http.FileServer(http.FS(staticFS))
 	router.Handle("/static/*", http.StripPrefix("/static/", fileServer))
 
+	//live img upload
+	uploadServer := http.FileServer(http.Dir("./ui/static/uploads"))
+	router.Handle("/static/uploads/*", http.StripPrefix("/static/uploads/", uploadServer))
+
 	//In the Chi router, we map handlers directly to HTTP methods. We use router.Get("/", handler) for retrieval, and similarly Post, Put, Patch, or Delete for other actions.
 	router.Get("/", h.home)
 	//Create a route group for /post, each sub will start from /post
