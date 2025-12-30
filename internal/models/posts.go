@@ -11,7 +11,7 @@ type PostModel struct {
 
 func (m *PostModel) GetAllPosts(category string, bookID int) ([]PostView, error) {
 	stmt := `
-    SELECT p.id, p.user_id, p.title, p.content, p.post_type, p.book_id, p.chapter, p.created_at, u.username,
+    SELECT p.id, p.user_id, p.title, p.content, p.image_path, p.post_type, p.book_id, p.chapter, p.created_at, u.username,
     COALESCE(SUM(l.value), 0)
     FROM posts p
     LEFT JOIN users u ON p.user_id = u.id
@@ -52,6 +52,7 @@ func (m *PostModel) GetAllPosts(category string, bookID int) ([]PostView, error)
 			&pv.Post.UserID,
 			&pv.Post.Title,
 			&pv.Post.Content,
+			&pv.Post.ImagePath,
             &pv.Post.PostType,
 			&bookIDNull,
 			&chapterNull,
@@ -63,6 +64,8 @@ func (m *PostModel) GetAllPosts(category string, bookID int) ([]PostView, error)
 			fmt.Println("Scan Error:", err)
 			return nil, err
 		}
+
+		fmt.Printf("Post ID: %d, ImagePath: '%s'\n", pv.Post.ID, pv.Post.ImagePath)
 
 		if bookIDNull.Valid {
     		bID := int(bookIDNull.Int64)
@@ -90,7 +93,8 @@ func (m *PostModel) GetPost(id int) (*PostView, error) {
         p.id, 
         p.user_id, 
         p.title, 
-        p.content, 
+        p.content,
+		p.image_path,
         p.post_type, 
         COALESCE(b.title, '') as book_title,
 		p.book_id,
@@ -112,6 +116,7 @@ func (m *PostModel) GetPost(id int) (*PostView, error) {
 		&pv.Post.UserID,
 		&pv.Post.Title,
 		&pv.Post.Content,
+		&pv.Post.ImagePath,
 		&pv.Post.PostType,
 		&pv.BookTitle,
 		&pv.BookID,
