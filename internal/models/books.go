@@ -1,13 +1,15 @@
 package models
 
-import "time"
+import (
+	"time"
+	"database/sql"
+)
 
 type Book struct {
 	ID          int
 	Title       string
 	Author      string
 	Description string
-
 	CreatedAt time.Time
 }
 
@@ -23,3 +25,14 @@ type Category struct {
 	Kind string // "genre", "theme", "format", "character", "author"
 }
 
+type BookModel struct {
+	DB *sql.DB
+}
+
+func (m *BookModel) AddBook(title, author, description string) error {
+	stmt := `INSERT INTO books (title, author, description, created_at)
+    VALUES(?, ?, ?, datetime('now'))`
+
+	_, err := m.DB.Exec(stmt, title, author, description)
+	return err
+}
