@@ -2,133 +2,215 @@
 <html lang="en">
 
 <head>
-    <title>My Profile · Book Forum</title>
+    <meta charset="UTF-8">
+    <title>My Account · Book Forum</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/profile.css">
+    <link rel="stylesheet" href="/static/main.css">
 </head>
 
 <body>
 
-<div class="profile-container">
+        {{ $tab := index .AnyData "tab" }}
+        {{ $user := index .AnyData "user" }}
+    <div class="forum-shell">
+        <!-- Header -->
+        <header class="forum-header">
+            <div class="header-left">
+                <div class="logo">BOOK FORUM</div>
+                <nav class="main-nav">
+                    <a href="/" class="nav-link">Posts</a>
+                    <a href="/chat/" class="nav-link">Chat</a>
+                    <div class="nav-dropdown">
+                        <button class="nav-link dropdown-toggle" type="button">
+                            My Account ▾
+                        </button>
+                        <div class="dropdown-menu">
+                            <a href="/profile?tab=profile" {{if eq $tab "profile" }}style="font-weight:bold;"
+                                {{end}}>Profile</a>
+                            <a href="/profile?tab=posts" {{if eq $tab "posts" }}style="font-weight:bold;" {{end}}>My
+                                Posts</a>
+                            <a href="/profile?tab=comments" {{if eq $tab "comments" }}style="font-weight:bold;" {{end}}>My
+                                Comments</a>
+                            <a href="/profile?tab=likes" {{if eq $tab "likes" }}style="font-weight:bold;" {{end}}>My
+                                Likes</a>
+                        </div>
+                    </div>
 
-    <h1>My Profile</h1>
+                </nav>
+            </div>
 
-    {{ with .Flash }}
-        <p class="{{ .Type }}">{{ .Msg }}</p>
-    {{ end }}
 
-    <!-- My STATS -->
-    <div class="stats">
-        <a href="/my-posts">
-            My posts ({{ index .AnyData "postsCount" }})
-        </a>
-        |
-        <a href="/my-comments">
-            My comments ({{ index .AnyData "commentsCount" }})
-        </a>
-        |
-        <span>
-        <a href="/my-likes">
-            Likes given ({{ index .AnyData "likesCount" }})
-        </a>
-        </span>
+            <div class="header-tools">
+            </div>
+
+            <div class="auth-links">
+                {{if .IsAuthenticated}}
+                <form action="/auth/logout" method="POST">
+                    <button class="text-btn">Logout</button>
+                </form>
+                {{else}}
+                <a href="/auth/register">Register</a>
+                <a href="/auth/login">Login</a>
+                {{end}}
+            </div>
+        </header>
+        <main class="center-panel">
+
+            {{ with .Flash }}
+            <div class="flash {{ .Type }}">{{ .Msg }}</div>
+            {{ end }}
+
+            <!--  PROFILE -->
+            {{ if eq $tab "profile" }}
+
+            <h1>My Profile</h1>
+
+            <section class="profile-block">
+                <h3>Avatar</h3>
+
+                <img class="avatar"
+                    src="{{if $user.AvatarPath}}{{$user.AvatarPath}}{{else}}/static/uploads/avatars/default.png{{end}}"
+                    alt="Avatar">
+                {{if eq (index .AnyData "editMode") "avatar"}}
+                <form action="/profile/avatar" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="avatar" accept="image/jpeg,image/png,image/gif">
+                    <button type="submit">Upload avatar</button>
+                </form>
+                {{else}}
+                <a class="link" href="/profile?tab=profile&edit=avatar">Edit avatar</a>
+                {{end}}
+            </section>
+
+            <section class="profile-block">
+                <h3>Profile information</h3>
+
+                {{ if eq (index .AnyData "editMode") "profile" }}
+
+                <form method="POST" action="/profile/edit" novalidate>
+
+                    {{ with .Form.FieldErrors.first_name }}
+                    <div class="error">{{ . }}</div>
+                    {{ end }}
+                    <input type="text" name="first_name" value="{{ $user.FirstName }}" placeholder="First name">
+
+                    {{ with .Form.FieldErrors.last_name }}
+                    <div class="error">{{ . }}</div>
+                    {{ end }}
+                    <input type="text" name="last_name" value="{{ $user.LastName }}" placeholder="Last name">
+
+                    <button type="submit">Save</button>
+                    <a class="link" href="/me?tab=profile">Cancel</a>
+                </form>
+
+                {{ else }}
+
+                <p><strong>Email:</strong> {{ $user.Email }}</p>
+                <p><strong>First name:</strong> {{ $user.FirstName }}</p>
+                <p><strong>Last name:</strong> {{ $user.LastName }}</p>
+
+                <a class="link" href="/profile?tab=profile&edit=profile">Edit profile</a>
+
+                {{ end }}
+            </section>
+
+            <section class="profile-block">
+                <h3>Security</h3>
+
+                {{ if eq (index .AnyData "editMode") "password" }}
+
+                <form method="POST" action="/profile/password" novalidate>
+
+                    {{ with .Form.FieldErrors.current_password }}
+                    <div class="error">{{ . }}</div>
+                    {{ end }}
+                    <input type="password" name="current_password" placeholder="Current password">
+
+                    {{ with .Form.FieldErrors.new_password }}
+                    <div class="error">{{ . }}</div>
+                    {{ end }}
+                    <input type="password" name="new_password" placeholder="New password">
+
+                    {{ with .Form.FieldErrors.confirm_password }}
+                    <div class="error">{{ . }}</div>
+                    {{ end }}
+                    <input type="password" name="confirm_password" placeholder="Confirm new password">
+
+                    <button type="submit">Change password</button>
+                    <a class="link" href="/me?tab=profile">Cancel</a>
+                </form>
+
+                {{ else }}
+
+                <p>Password: ••••••••</p>
+                <a class="link" href="/profile?tab=profile&edit=password">Change password</a>
+
+                {{ end }}
+            </section>
+
+            {{ end }}
+
+            <!-- POSTS  -->
+            {{ if eq $tab "posts" }}
+
+            <h1>My Posts</h1>
+
+            {{ range index .AnyData "posts" }}
+            <article class="post-card">
+                <a href="/post/{{ .ID }}"><strong>{{ .Title }}</strong></a>
+                <p class="post-meta">{{ .CreatedAt }}</p>
+                <a class="link" href="/post/{{ .ID }}/edit">Edit</a>
+            </article>
+            {{ else }}
+            <p>You haven't written any posts yet.</p>
+            {{ end }}
+
+            {{ end }}
+
+            <!--  COMMENTS  -->
+            {{ if eq $tab "comments" }}
+
+            <h1>My Comments</h1>
+
+            {{ range index .AnyData "comments" }}
+             <article class="post-card">
+                <p>Comment content: {{ .Content }}</p>
+                <a class="link" href="/post/{{ .PostID }}">Go to post</a>
+            </article>
+            {{ else }}
+            <p>You haven't written any comments yet.</p>
+            {{ end }}
+
+            {{ end }}
+
+            <!-- LIKES -->
+            {{ if eq $tab "likes" }}
+
+            <h1>My Likes</h1>
+
+            {{ range index .AnyData "likes" }}
+           <article class="post-card" id="likes-list">
+                <a href="/post/{{ .PostID }}"> </a>
+
+                {{ if eq .TargetType "post" }}
+                 <span class="badge post">💬POST</span>
+                     <a href="/post/{{ .PostID }}"> {{ .Title }} </a>
+                     <p>Post content: {{ .Content }}</p>
+                {{ else if eq .TargetType "comment" }}
+                <span class="badge post">❤️COMMENT</span>
+                    <a href="/post/{{ .PostID }}"> {{ .Title }}</a>
+                    <p>Comment content: {{ .Content }}</p>
+                {{end}}
+                    
+                
+             </article>
+            {{ else }}
+            <p>You haven't liked any posts yet.</p>
+            {{ end }}
+
+            {{ end }}
+
+        </main>
     </div>
-
-    <hr>
-
-    <!-- PROFILE INFO -->
-    <section>
-        <h2>Profile information</h2>
-
-        {{ if eq (index .AnyData "editMode") "profile" }}
-
-        <form method="POST" action="/profile/edit" novalidate>
-
-            {{ with .Form.FieldErrors.first_name }}
-            <div class="error">{{ . }}</div>
-            {{ end }}
-            <input
-                type="text"
-                name="first_name"
-                value="{{ (index .AnyData "user").FirstName }}"
-                placeholder="First name"
-            >
-
-            {{ with .Form.FieldErrors.last_name }}
-            <div class="error">{{ . }}</div>
-            {{ end }}
-            <input
-                type="text"
-                name="last_name"
-                value="{{ (index .AnyData "user").LastName }}"
-                placeholder="Last name"
-            >
-
-            <button type="submit">Save</button>
-            <a href="/profile">Cancel</a>
-        </form>
-
-        {{ else }}
-
-        <p><strong>Email:</strong> {{ (index .AnyData "user").Email }}</p>
-        <p><strong>First name:</strong> {{ (index .AnyData "user").FirstName }}</p>
-        <p><strong>Last name:</strong> {{ (index .AnyData "user").LastName }}</p>
-
-        <a href="/profile?edit=profile">Edit profile</a>
-
-        {{ end }}
-    </section>
-
-    <hr>
-
-    <!-- SECURITY -->
-    <section>
-        <h2>Security</h2>
-
-        {{ if eq (index .AnyData "editMode") "password" }}
-
-        <form method="POST" action="/profile/password" novalidate>
-
-            {{ with .Form.FieldErrors.current_password }}
-            <div class="error">{{ . }}</div>
-            {{ end }}
-            <input
-                type="password"
-                name="current_password"
-                placeholder="Current password"
-            >
-
-            {{ with .Form.FieldErrors.new_password }}
-            <div class="error">{{ . }}</div>
-            {{ end }}
-            <input
-                type="password"
-                name="new_password"
-                placeholder="New password"
-            >
-
-            {{ with .Form.FieldErrors.confirm_password }}
-            <div class="error">{{ . }}</div>
-            {{ end }}
-            <input
-                type="password"
-                name="confirm_password"
-                placeholder="Confirm new password"
-            >
-
-            <button type="submit">Change password</button>
-            <a href="/profile">Cancel</a>
-        </form>
-
-        {{ else }}
-
-        <p>Password: ••••••••</p>
-        <a href="/profile?edit=password">Change password</a>
-
-        {{ end }}
-    </section>
-
-</div>
-
 </body>
+
 </html>

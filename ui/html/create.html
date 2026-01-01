@@ -9,16 +9,26 @@
 
 <div class="forum-shell">
 
-  <!-- Header -->
-  <header class="forum-header">
-    <div class="header-left">
-      <div class="logo">BOOK FORUM</div>
-      <nav class="main-nav">
-        <a href="/" class="nav-link">Posts</a>
-        <a href="#" class="nav-link">Chat</a>
-        <a href="/profile" class="nav-link">My Profile</a>
-      </nav>
-    </div>
+    <!-- Header -->
+    <header class="forum-header">
+      <div class="header-left">
+        <div class="logo">BOOK FORUM</div>
+        <nav class="main-nav">
+          <a href="/" class="nav-link">Posts</a>
+          <a href="/chat/" class="nav-link">Chat</a>
+          <div class="nav-dropdown">
+            <button class="nav-link dropdown-toggle" type="button">
+              My Account ▾
+            </button>
+            <div class="dropdown-menu">
+              <a href="/profile?tab=profile">Profile</a>
+              <a href="/profile?tab=posts">My Posts</a>
+              <a href="/profile?tab=comments">My Comments</a>
+              <a href="/profile?tab=likes">My Likes</a>
+            </div>
+          </div>
+        </nav>
+      </div>
 
     <div class="header-tools">
       <form action="/" method="GET" class="search-box header-search">

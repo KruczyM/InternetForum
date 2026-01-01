@@ -148,7 +148,7 @@ func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
 				filepath.Base(handler.Filename),
 			)
 
-			uploadDir := "./ui/static/uploads"
+			uploadDir := "./ui/static/uploads/posts_img"
 			filePath := filepath.Join(uploadDir, fileName)
 
 			if err := os.MkdirAll(uploadDir, 0755); err != nil {
@@ -168,7 +168,7 @@ func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			imagePath = "/static/uploads/" + fileName
+			imagePath = "/static/uploads/posts_img/" + fileName
 		}
 
 		postsModel := &models.PostModel{DB: h.DB}
