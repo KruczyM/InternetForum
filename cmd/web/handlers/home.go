@@ -31,7 +31,7 @@ func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 	var err error
 
 	if query != "" {
-		posts, err = postsModel.SearchPosts(query)
+		posts, err = postsModel.SearchPosts(query, category)
 	} else {
 		posts, err = postsModel.GetAllPosts(category, bookID)
 	}
