@@ -86,6 +86,69 @@ func (m *PostModel) GetAllPosts(category string, bookID int) ([]PostView, error)
 	return posts, nil
 }
 
+
+func (m *PostModel) GetPostsByUserID(userID string) ([]PostView, error) {
+	stmt := `
+	SELECT 
+		p.id, p.user_id, p.title, p.content, p.image_path,
+		p.post_type, p.book_id, p.chapter, p.created_at,
+		u.username,
+		COALESCE(SUM(l.value), 0)
+	FROM posts p
+	JOIN users u ON p.user_id = u.id
+	LEFT JOIN likes l ON p.id = l.target_id AND l.target_type = 'post'
+	WHERE p.user_id = ?
+	GROUP BY p.id, u.username
+	ORDER BY p.created_at DESC
+	`
+
+	rows, err := m.DB.Query(stmt, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []PostView
+
+	for rows.Next() {
+		var pv PostView
+		var bookID sql.NullInt64
+		var chapter sql.NullString
+
+		err := rows.Scan(
+			&pv.Post.ID,
+			&pv.Post.UserID,
+			&pv.Post.Title,
+			&pv.Post.Content,
+			&pv.Post.ImagePath,
+			&pv.Post.PostType,
+			&bookID,
+			&chapter,
+			&pv.Post.CreatedAt,
+			&pv.AuthorName,
+			&pv.LikeCount,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if bookID.Valid {
+			id := int(bookID.Int64)
+			pv.Post.BookID = &id
+		}
+		if chapter.Valid {
+			c := chapter.String
+			pv.Post.Chapter = &c
+		}
+
+		pv.FormattedDate = pv.Post.CreatedAt.Format("Jan 02, 2006 at 3:04 PM")
+		posts = append(posts, pv)
+	}
+
+	return posts, rows.Err()
+}
+
+
 func (m *PostModel) GetPost(id int) (*PostView, error) {
 	stmt := `
     SELECT 
@@ -352,4 +415,114 @@ func (m *PostModel) SearchPosts(query string) ([]PostView, error) {
 		return nil, err
 	}
 	return posts, nil
+}
+
+type CommentView struct {
+	ID            int
+	Content       string
+	PostID        int
+	PostTitle     string
+}
+
+
+func (m *PostModel) GetCommentsByUserID(userID string) ([]CommentView, error) {
+	stmt := `
+	SELECT 
+		c.id, c.content,
+		p.id, p.title
+	FROM comments c
+	JOIN posts p ON c.post_id = p.id
+	WHERE c.user_id = ?
+	ORDER BY c.created_at DESC
+	`
+ 
+	rows, err := m.DB.Query(stmt, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var comments []CommentView
+
+	for rows.Next() {
+		var cv CommentView
+
+		err := rows.Scan(
+			&cv.ID,
+			&cv.Content,
+			&cv.PostID,
+			&cv.PostTitle,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		comments = append(comments, cv)
+	}
+
+	return comments, rows.Err()
+}
+
+type LikeView struct {
+	TargetType string // "post" | "comment"
+	TargetID   int
+	PostID     int
+	Title      string
+	Content    string
+}
+
+func (m *PostModel) GetLikesByUserID(userID string) ([]LikeView, error) {
+	stmt := `
+	-- liked POSTS
+	SELECT 
+		'post' AS target_type,
+		p.id AS target_id,
+		p.id AS post_id,
+		p.title,
+		p.content
+	FROM likes l
+	JOIN posts p ON l.target_id = p.id
+	WHERE l.user_id = ? AND l.target_type = 'post'
+
+	UNION ALL
+
+	-- liked COMMENTS
+	SELECT
+		'comment' AS target_type,
+		c.id AS target_id,
+		p.id AS post_id,
+		p.title,
+		c.content
+	FROM likes l
+	JOIN comments c ON l.target_id = c.id
+	JOIN posts p ON c.post_id = p.id
+	WHERE l.user_id = ? AND l.target_type = 'comment'
+
+	ORDER BY post_id DESC
+	`
+
+	rows, err := m.DB.Query(stmt, userID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var likes []LikeView
+
+	for rows.Next() {
+		var lv LikeView
+		err := rows.Scan(
+			&lv.TargetType,
+			&lv.TargetID,
+			&lv.PostID,
+			&lv.Title,
+			&lv.Content,
+		)
+		if err != nil {
+			return nil, err
+		}
+		likes = append(likes, lv)
+	}
+
+	return likes, rows.Err()
 }

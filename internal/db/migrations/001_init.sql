@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,              -- UUID
     email TEXT NOT NULL UNIQUE,
     username TEXT NOT NULL UNIQUE,
+    avatar_path TEXT DEFAULT '',
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL,
     password_hash TEXT NOT NULL,

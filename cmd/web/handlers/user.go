@@ -1,10 +1,15 @@
 package handlers
 
 import (
+	"fmt"
 	"forum/internal/models"
 	"forum/internal/validator"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
+	"time"
 )
 
 type userProfileForm struct {
@@ -27,23 +32,43 @@ func (h *Handler) userProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tab := r.URL.Query().Get("tab")
+	if tab == "" {
+		tab = "profile"
+	}
+
+	editMode := r.URL.Query().Get("edit")
+
 	user, err := models.GetUserByID(h.DB, userID)
 	if err != nil {
 		h.serverError(w, err)
 		return
 	}
 
-	postsCount, _ := models.CountUserPosts(h.DB, userID)
-	commentsCount, _ := models.CountUserComments(h.DB, userID)
-	likesCount, _ := models.CountUserLikes(h.DB, userID)
-
 	data := h.newTemplateData(r)
+
 	data.Form = &validator.Validator{}
+
+	data.AnyData["tab"] = tab
+	data.AnyData["editMode"] = editMode
 	data.AnyData["user"] = user
-	data.AnyData["postsCount"] = postsCount
-	data.AnyData["commentsCount"] = commentsCount
-	data.AnyData["likesCount"] = likesCount
-	data.AnyData["editMode"] = r.URL.Query().Get("edit")
+	data.AnyData["postsCount"], _ = models.CountUserPosts(h.DB, userID)
+	data.AnyData["commentsCount"], _ = models.CountUserComments(h.DB, userID)
+	data.AnyData["likesCount"], _ = models.CountUserLikes(h.DB, userID)
+
+	postsModel := &models.PostModel{DB: h.DB}
+
+	switch tab {
+	case "posts":
+		data.AnyData["posts"], _ = postsModel.GetPostsByUserID(userID)
+
+	case "comments":
+		data.AnyData["comments"], _ = postsModel.GetCommentsByUserID(userID)
+
+	case "likes":
+		data.AnyData["likes"], _ = postsModel.GetLikesByUserID(userID)
+	}
+
 	h.render(w, http.StatusOK, "user_panel.html", data)
 }
 
@@ -64,8 +89,16 @@ func (h *Handler) userProfileEditPost(w http.ResponseWriter, r *http.Request) {
 
 	if !form.Valid() {
 		data := h.newTemplateData(r)
+		data.AnyData = map[string]any{}
 		data.Form = form
+
+		userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+		user, _ := models.GetUserByID(h.DB, userID)
+
+		data.AnyData["tab"] = "profile"
 		data.AnyData["editMode"] = "profile"
+		data.AnyData["user"] = user
+
 		h.render(w, http.StatusUnprocessableEntity, "user_panel.html", data)
 		return
 	}
@@ -82,7 +115,7 @@ func (h *Handler) userProfileEditPost(w http.ResponseWriter, r *http.Request) {
 		Msg:  "Profile updated successfully",
 	})
 
-	http.Redirect(w, r, "/profile", http.StatusSeeOther)
+	http.Redirect(w, r, "/me?tab=profile", http.StatusSeeOther)
 }
 
 func (h *Handler) userProfilePasswordPost(w http.ResponseWriter, r *http.Request) {
@@ -103,18 +136,19 @@ func (h *Handler) userProfilePasswordPost(w http.ResponseWriter, r *http.Request
 	form.CheckField(validator.MinChars(form.newPassword, 5), "new_password", "Password must be at least 5 characters")
 	form.CheckField(form.newPassword == form.confirmPassword, "confirm_password", "Passwords do not match")
 
+	userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+	user, _ := models.GetUserByID(h.DB, userID)
+
 	if !form.Valid() {
 		data := h.newTemplateData(r)
+		data.AnyData = map[string]any{}
 		data.Form = form
-		data.AnyData["editMode"] = "password"
-		h.render(w, http.StatusUnprocessableEntity, "user_panel.html", data)
-		return
-	}
 
-	userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
-	user, err := models.GetUserByID(h.DB, userID)
-	if err != nil {
-		h.serverError(w, err)
+		data.AnyData["tab"] = "profile"
+		data.AnyData["editMode"] = "password"
+		data.AnyData["user"] = user
+
+		h.render(w, http.StatusUnprocessableEntity, "user_panel.html", data)
 		return
 	}
 
@@ -122,8 +156,13 @@ func (h *Handler) userProfilePasswordPost(w http.ResponseWriter, r *http.Request
 		form.AddFieldError("current_password", "Incorrect current password")
 
 		data := h.newTemplateData(r)
+		data.AnyData = map[string]any{}
 		data.Form = form
+
+		data.AnyData["tab"] = "profile"
 		data.AnyData["editMode"] = "password"
+		data.AnyData["user"] = user
+
 		h.render(w, http.StatusUnprocessableEntity, "user_panel.html", data)
 		return
 	}
@@ -145,5 +184,68 @@ func (h *Handler) userProfilePasswordPost(w http.ResponseWriter, r *http.Request
 		Msg:  "Password changed successfully",
 	})
 
-	http.Redirect(w, r, "/profile", http.StatusSeeOther)
+	http.Redirect(w, r, "/me?tab=profile", http.StatusSeeOther)
+}
+
+func (h *Handler) changeAvatar(w http.ResponseWriter, r *http.Request) {
+
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		h.serverError(w, err)
+		return
+	}
+
+	var imagePath string
+
+	file, handler, err := r.FormFile("avatar")
+	if err != nil && err != http.ErrMissingFile {
+		h.serverError(w, err)
+		return
+	}
+
+	if file != nil {
+		defer file.Close()
+
+		fileName := fmt.Sprintf(
+			"%d_%s",
+			time.Now().UnixNano(),
+			filepath.Base(handler.Filename),
+		)
+
+		uploadDir := "./ui/static/uploads/avatars"
+		filePath := filepath.Join(uploadDir, fileName)
+
+		if err := os.MkdirAll(uploadDir, 0755); err != nil {
+			h.serverError(w, err)
+			return
+		}
+
+		dst, err := os.Create(filePath)
+		if err != nil {
+			h.serverError(w, err)
+			return
+		}
+		defer dst.Close()
+
+		if _, err := io.Copy(dst, file); err != nil {
+			h.serverError(w, err)
+			return
+		}
+
+		imagePath = "/static/uploads/avatars/" + fileName
+	}
+
+	userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+
+	err = models.UpdateUserAvatarPath(h.DB, userID, imagePath)
+	if err != nil {
+		h.serverError(w, err)
+		return
+	}
+
+	h.SessionManager.Put(r.Context(), "flash", &FlashMessage{
+		Type: "success",
+		Msg:  "Avatart changed successfully",
+	})
+
+	http.Redirect(w, r, "/profile?tab=profile", http.StatusSeeOther)
 }
