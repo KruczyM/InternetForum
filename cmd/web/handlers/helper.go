@@ -28,7 +28,9 @@ func (h *Handler) serverError(w http.ResponseWriter, err error) {
 	//its giveing whole stack trace so we know in which line in code it happening
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
 	h.ErrorLog.Output(2, trace)
-	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	
+	w.WriteHeader(http.StatusInternalServerError)
+	h.render(w, http.StatusInternalServerError, "error.html", nil)
 }
 
 // just to make work a little bit easier and faster
@@ -86,4 +88,8 @@ func NewTemplateCache() (map[string]*template.Template, error) {
        }
 
        return cache, nil
+}
+
+func (h *Handler) test500(w http.ResponseWriter, r *http.Request) {
+	panic("test 500 error")
 }
