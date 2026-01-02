@@ -171,7 +171,7 @@
 
             {{ range index .AnyData "comments" }}
             <article class="post-card">
-                <p>Comment: {{ .Content }}</p>
+                <p class="txt-content">Comment: {{ .Content }}</p>
                 <a class="link" href="/post/{{ .PostID }}">Go to post</a>
             </article>
             {{ else }}
@@ -192,11 +192,11 @@
                 {{ if eq .TargetType "post" }}
                 <span class="badge post">💬POST</span>
                 <a href="/post/{{ .PostID }}"> {{ .Title }} </a>
-                <p>Post content: {{ .Content }}</p>
+                <p class="txt-content">Post content: {{ .Content }}</p>
                 {{ else if eq .TargetType "comment" }}
                 <span class="badge post">❤️COMMENT</span>
                 <a href="/post/{{ .PostID }}"> {{ .Title }}</a>
-                <p>Comment content: {{ .Content }}</p>
+                <p class="txt-content">Comment content: {{ .Content }}</p>
                 {{end}}
 
 

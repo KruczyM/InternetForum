@@ -105,7 +105,7 @@
                 Post Title: <a href="/post/{{ .ID }}">
                     <strong>{{ .PostTitle }}</strong>
                 </a>
-                <p>Comment: {{ .Content }}</p>
+                <p class="txt-content">Comment: {{ .Content }}</p>
             </article>
             {{ else }}
             <p class="empty">This user hasn’t written any comments yet.</p>
@@ -121,7 +121,7 @@
                 {{ if eq .TargetType "post" }}
                 <span class="badge post">💬POST</span>
                 <a href="/post/{{ .PostID }}"> {{ .Title }} </a>
-                <p>Post content: {{ .Content }}</p>
+                <p class="txt-content">Post content: {{ .Content }}</p>
                 {{ else if eq .TargetType "comment" }}
                 <span class="badge post">❤️COMMENT</span>
                 <a href="/post/{{ .PostID }}"> {{ .Title }}</a>
