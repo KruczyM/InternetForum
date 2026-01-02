@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type userProfileForm struct {
@@ -248,4 +250,40 @@ func (h *Handler) changeAvatar(w http.ResponseWriter, r *http.Request) {
 	})
 
 	http.Redirect(w, r, "/profile?tab=profile", http.StatusSeeOther)
+}
+
+func (h *Handler) publicUserProfile(w http.ResponseWriter, r *http.Request) {
+    username := chi.URLParam(r, "username")
+    if username == "" {
+        h.notFound(w)
+        return
+    }
+
+    tab := r.URL.Query().Get("tab")
+    if tab == "" {
+        tab = "posts"
+    }
+
+    user, err := models.GetUserByUsername(h.DB, username)
+    if err != nil {
+        h.notFound(w)
+        return
+    }
+
+    data := h.newTemplateData(r)
+    data.AnyData["user"] = user
+    data.AnyData["tab"] = tab
+
+    postsModel := &models.PostModel{DB: h.DB}
+
+    switch tab {
+    case "posts":
+        data.AnyData["posts"], _ = postsModel.GetPostsByUserID(user.ID)
+    case "comments":
+        data.AnyData["comments"], _ = postsModel.GetCommentsByUserID(user.ID)
+    case "likes":
+        data.AnyData["likes"], _ = postsModel.GetLikesByUserID(user.ID)
+    }
+
+    h.render(w, http.StatusOK, "public_user_panel.html", data)
 }
