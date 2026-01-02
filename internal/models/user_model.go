@@ -6,8 +6,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-
-
 //hashed password
 func HashPassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword(
@@ -81,11 +79,11 @@ func GetUserByEmail(db *sql.DB, email string) (*User, error) {
 // retrieves a user by id
 func GetUserByID(db *sql.DB, id string) (*User, error) {
 	query := `
-	SELECT id, email, username, first_name, last_name, password_hash, created_at
+	SELECT id, email,avatar_path, username, first_name, last_name, password_hash, created_at
 	FROM users 
 	WHERE id = ?`
 	var user User
-	if err := db.QueryRow(query, id).Scan(&user.ID, &user.Email, &user.Username, &user.FirstName, &user.LastName,&user.PasswordHash, &user.CreatedAt,); err != nil {
+	if err := db.QueryRow(query, id).Scan(&user.ID, &user.Email, &user.AvatarPath, &user.Username, &user.FirstName, &user.LastName,&user.PasswordHash, &user.CreatedAt,); err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -100,6 +98,12 @@ func UpdateUserNameFields(db *sql.DB, userID, firstName, lastName string) error 
 func UpdateUserPasswordHash(db *sql.DB, userID, newHash string) error {
 	query := `UPDATE users SET password_hash = ? WHERE id = ?`
 	_, err := db.Exec(query, newHash, userID)
+	return err
+}
+
+func UpdateUserAvatarPath(db *sql.DB, userID, newPath string) error {
+	query := `UPDATE users SET avatar_path = ? WHERE id = ?`
+	_, err := db.Exec(query, newPath, userID)
 	return err
 }
 
@@ -125,7 +129,6 @@ func CountUserComments(db *sql.DB, userID string) (int, error) {
 }
 
 
-
 func ExistsUser(db *sql.DB, id string) (bool, error){
 	var exists bool
 	stmt :=`
@@ -136,3 +139,7 @@ func ExistsUser(db *sql.DB, id string) (bool, error){
 	err := db.QueryRow(stmt,id).Scan(&exists)
 	return exists, err
 }
+
+
+
+

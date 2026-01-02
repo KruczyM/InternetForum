@@ -1,4 +1,3 @@
-{{define "chat"}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,11 +11,21 @@
 <div class="forum-shell">
     <header class="forum-header">
         <div class="header-left">
-            <div class="logo">BOOK FORUM</div>
+            <div class="logo" style="font-family: 'Georgia', serif; font-size: 2.2em; color: #7B3F00; letter-spacing: 2px;">Book Review Chat</div>
             <nav class="main-nav">
                 <a href="/" class="nav-link">Posts</a>
                 <a href="/chat/" class="nav-link nav-link-active">Chat</a>
-                <a href="/profile" class="nav-link">My Profile</a>
+                 <div class="nav-dropdown">
+            <button class="nav-link dropdown-toggle" type="button">
+              My Account ▾
+            </button>
+            <div class="dropdown-menu">
+              <a href="/profile?tab=profile">Profile</a>
+              <a href="/profile?tab=posts">My Posts</a>
+              <a href="/profile?tab=comments">My Comments</a>
+              <a href="/profile?tab=likes">My Likes</a>
+            </div>
+          </div>
             </nav>
         </div>
         <div class="auth-links">
@@ -31,35 +40,26 @@
         </div>
     </header>
     <div class="forum-grid">
-        <main class="center-panel">
-            <h2>Book Chat</h2>
-            <form method="GET" action="/chat/" style="margin-bottom: 1em; display: flex; gap: 0.5em; align-items: center;">
-                <label for="category">Category:</label>
-                <select name="category" id="category" onchange="this.form.submit()">
-                    {{range .Categories}}
-                        <option value="{{.}}" {{if eq $.CurrentCategory .}}selected{{end}}>{{.}}</option>
-                    {{end}}
-                </select>
-                <noscript><button type="submit">Load</button></noscript>
-            </form>
-            <div id="chat-box" style="border: 1px solid #E6D6C5; height: 300px; overflow-y: scroll; padding: 1em; margin-bottom: 1em; background: #FFFAF4; border-radius: 10px;">
-                {{range .Messages}}
-                    <div class="chat-message">
-                        <span class="chat-meta" style="color: #888; font-size: 0.9em;">[{{.UserID}}] ({{.CreatedAt.Format "15:04:05"}}):</span> {{.Content}}
+        <main class="center-panel" style="background: #F9F6F1; border-radius: 12px; box-shadow: 0 2px 8px #e6d6c5; padding: 2em 2em 1em 2em; margin-top: 2em;">
+            <h2 style="font-family: 'Georgia', serif; color: #7B3F00; margin-bottom: 0.5em;">📚 Book Review Chat Room</h2>
+            <p style="color: #6B4F2B; font-size: 1.1em; margin-bottom: 1.5em;">Share your thoughts, reviews, and favorite quotes from books with fellow readers!</p>
+            <div id="chat-box" style="border: 2px solid #C9B79C; height: 340px; overflow-y: scroll; padding: 1.2em; margin-bottom: 1.5em; background: #FFF8F0; border-radius: 12px; box-shadow: 0 1px 4px #e6d6c5;">
+                {{range .AnyData.Chat.Messages}}
+                    <div class="chat-message" style="margin-bottom: 1.1em; display: flex; align-items: flex-start;">
+                        <span class="chat-meta" style="color: #7B3F00; font-size: 1.08em; font-weight: bold; margin-right: 0.5em;">{{.UserID}}:</span>
+                        <span style="color: #BFA77A; font-size: 0.95em; margin-right: 0.7em;">({{.CreatedAt.Format "15:04"}})</span>
+                        <span style="color: #3E2C13; font-size: 1.08em; background: #FFF3E6; border-radius: 7px; padding: 0.5em 0.9em; box-shadow: 0 1px 2px #e6d6c5; flex:1;">{{.Content}}</span>
                     </div>
                 {{else}}
-                    <div class="chat-message">No messages yet.</div>
+                    <div class="chat-message" style="color: #BFA77A; text-align: center;">No messages yet. Be the first to share your book thoughts!</div>
                 {{end}}
             </div>
-            <form method="POST" action="/chat/" style="display: flex; gap: 0.5em; align-items: center;">
-                <input type="hidden" name="category" value="{{.CurrentCategory}}">
-                <input type="text" name="user_id" placeholder="User ID" required style="width: 8em;">
-                <input type="text" name="content" placeholder="Type a message..." required style="flex:1;">
-                <button type="submit" class="primary-btn" style="margin: 0;">Send</button>
+            <form method="POST" action="/chat/" style="display: flex; gap: 0.7em; align-items: center; margin-top: 0.5em;">
+                <input type="text" name="content" placeholder="Type your book review, thought, or quote..." required style="flex:1; padding: 0.7em 1em; border-radius: 8px; border: 1.5px solid #C9B79C; background: #FFF8F0; font-size: 1.08em; color: #3E2C13;">
+                <button type="submit" class="primary-btn" style="margin: 0; background: #7B3F00; color: #fff; border-radius: 8px; padding: 0.7em 1.5em; font-size: 1.08em;">Send</button>
             </form>
         </main>
     </div>
 </div>
 </body>
 </html>
-{{end}}

@@ -8,45 +8,38 @@ import (
 
 
 type ChatData struct {
-	Categories      []string
-	CurrentCategory string
-	Messages        []models.ChatMessage
+	Messages []models.ChatMessage
 }
 
 
 // ChatHandler serves the chat page and handles form submissions
 func (h *Handler) ChatHandler(w http.ResponseWriter, r *http.Request) {
-       // Get all categories
-       categories := models.GetAllCategories()
-       var currentCategory string
-       if len(categories) > 0 {
-	       currentCategory = categories[0]
-       }
-       // Allow category selection via GET or POST
-       if cat := r.FormValue("category"); cat != "" {
-	       currentCategory = cat
-       }
-
+       data := h.newTemplateData(r)
        // Handle POST (send message)
        if r.Method == http.MethodPost {
-	       userID := strings.TrimSpace(r.FormValue("user_id"))
+	       userID := data.AuthenticatedUser
 	       content := strings.TrimSpace(r.FormValue("content"))
-	       if userID != "" && content != "" && currentCategory != "" {
-		       models.AddChatMessage(userID, content, currentCategory)
+	       if userID != "" && content != "" {
+		       // Fetch first name for chat display
+		       user, err := models.GetUserByID(h.DB, userID)
+		       name := userID
+		       if err == nil && user != nil && user.FirstName != "" {
+			       name = user.FirstName
+		       }
+		       models.AddChatMessage(name, content, "")
 	       }
 	       // Redirect to GET to avoid resubmission
-	       http.Redirect(w, r, "/chat/?category="+currentCategory, http.StatusSeeOther)
+	       http.Redirect(w, r, "/chat/", http.StatusSeeOther)
 	       return
        }
 
-       // Load messages for the selected category
-       messages := models.GetChatMessages(currentCategory)
+       // Load all messages (no categories)
+       messages := models.GetChatMessages("")
 
-       data := &ChatData{
-	       Categories:      categories,
-	       CurrentCategory: currentCategory,
-	       Messages:        messages,
+       chatData := &ChatData{
+	       Messages: messages,
        }
+       data.AnyData["Chat"] = chatData
        // Render the chat template
-       h.render(w, http.StatusOK, "chat.html", &templateData{AnyData: map[string]any{"Chat": data}})
+       h.render(w, http.StatusOK, "chat.html", data)
 }

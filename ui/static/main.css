@@ -588,6 +588,11 @@ body {
   box-shadow: 0 6px 14px rgba(168, 122, 79, 0.35);
 }
 
+#likes-list {
+  display: flex;
+  flex-direction: column;
+}
+
 /* Mobile */
 @media (max-width: 900px) {
 }
