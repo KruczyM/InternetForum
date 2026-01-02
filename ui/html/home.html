@@ -32,29 +32,25 @@
       </div>
 
     <div class="header-tools">
-      <div class="nav-dropdown">
-        <button class="nav-link dropdown-toggle" type="button">
-          Categories ▾
-        </button>
-        <div class="dropdown-menu">
-          <a href="/">All</a>
-          <a href="/?category=Classics">Classics</a>
-          <a href="/?category=General_Fiction">General Fiction</a>
-          <a href="/?category=Crime_Mystery_Thriller">Crime / Thriller</a>
-          <a href="/?category=Womens_Fiction">Women's Fiction</a>
-          <a href="/?category=Childrens">Children's</a>
-          <a href="/?category=Poetry_Plays">Poetry / Plays</a>
-          <a href="/?category=Non_Fiction">Non-Fiction</a>
-          <a href="/?category=Historical_Fiction">Historical Fiction</a>
-        </div>
-      </div>
+  <div class="nav-dropdown">
+  <button class="nav-link dropdown-toggle" type="button">
+    Categories ▾
+  </button>
+  <div class="dropdown-menu">
+    <a href="/">All</a>
+    <a href="/?category=Classics{{if .Query}}&q={{.Query}}{{end}}">Classics</a>
+    <a href="/?category=General_Fiction{{if .Query}}&q={{.Query}}{{end}}">General Fiction</a>
+    <a href="/?category=Crime_Mystery_Thriller{{if .Query}}&q={{.Query}}{{end}}">Crime / Thriller</a>
+    <a href="/?category=Womens_Fiction{{if .Query}}&q={{.Query}}{{end}}">Women's Fiction</a>
+    <a href="/?category=Childrens{{if .Query}}&q={{.Query}}{{end}}">Children's</a>
+    <a href="/?category=Poetry_Plays{{if .Query}}&q={{.Query}}{{end}}">Poetry / Plays</a>
+    <a href="/?category=Non_Fiction{{if .Query}}&q={{.Query}}{{end}}">Non-Fiction</a>
+    <a href="/?category=Historical_Fiction{{if .Query}}&q={{.Query}}{{end}}">Historical Fiction</a>
+  </div>
+</div>
 
       <form action="/" method="GET" class="search-box header-search">
-        <input
-          type="text"
-          name="q"
-          placeholder="Search..."
-          value="{{.Query}}">
+        <input type="text" name="q" placeholder="Search..." value="{{.Query}}">
       </form>
     </div>
 

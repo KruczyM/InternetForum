@@ -17,7 +17,7 @@ func (m *PostModel) GetAllPosts(category string, bookID int) ([]PostView, error)
     LEFT JOIN users u ON p.user_id = u.id
     LEFT JOIN likes l ON p.id = l.target_id AND l.target_type = 'post'
 	WHERE 1=1`
-	
+
 	var args []interface{}
 
 	if category != "" {
@@ -44,7 +44,7 @@ func (m *PostModel) GetAllPosts(category string, bookID int) ([]PostView, error)
 		var pv PostView
 
 		var bookIDNull sql.NullInt64
-        var chapterNull sql.NullString
+		var chapterNull sql.NullString
 
 		err := rows.Scan(
 			&pv.Post.ID,
@@ -52,7 +52,7 @@ func (m *PostModel) GetAllPosts(category string, bookID int) ([]PostView, error)
 			&pv.Post.Title,
 			&pv.Post.Content,
 			&pv.Post.ImagePath,
-            &pv.Post.PostType,
+			&pv.Post.PostType,
 			&bookIDNull,
 			&chapterNull,
 			&pv.Post.CreatedAt,
@@ -67,11 +67,11 @@ func (m *PostModel) GetAllPosts(category string, bookID int) ([]PostView, error)
 		fmt.Printf("Post ID: %d, ImagePath: '%s'\n", pv.Post.ID, pv.Post.ImagePath)
 
 		if bookIDNull.Valid {
-    		bID := int(bookIDNull.Int64)
+			bID := int(bookIDNull.Int64)
 			pv.Post.BookID = &bID
 		}
 		if chapterNull.Valid {
-    		chap := chapterNull.String
+			chap := chapterNull.String
 			pv.Post.Chapter = &chap
 		}
 
@@ -364,34 +364,44 @@ func (m *PostModel) GetAllBooks() ([]Book, error) {
 
 }
 
-
-func (m *PostModel) SearchPosts(query string) ([]PostView, error) {
-	stmt := `
+func (m *PostModel) SearchPosts(query, category string) ([]PostView, error) {
+	baseStmt := `
     SELECT p.id, p.user_id, p.title, p.content, p.post_type, p.book_id, p.chapter, p.created_at, u.username,
-    COALESCE(SUM(l.value), 0)
+           COALESCE(SUM(l.value), 0)
     FROM posts p
     LEFT JOIN users u ON p.user_id = u.id
     LEFT JOIN likes l ON p.id = l.target_id AND l.target_type = 'post'
-    WHERE p.title LIKE ? OR p.content LIKE ? OR u.username LIKE ?
-    GROUP BY p.id, u.username
-    ORDER BY p.created_at DESC`
+    WHERE (p.title LIKE ? OR u.username LIKE ?)
+    `
 
-	likeQuery := "%" + query + "%"
-	fmt.Println("jestem")
-	rows, err := m.DB.Query(stmt, likeQuery, likeQuery, likeQuery)
+	// Используем query% для поиска, который начинается с введённой строки
+	likeQuery := query + "%"
+	args := []interface{}{likeQuery, likeQuery}
+
+	// Фильтр по категории
+	if category != "" {
+		baseStmt += " AND p.post_type = ?"
+		args = append(args, category)
+	}
+
+	baseStmt += `
+    GROUP BY p.id, u.username
+    ORDER BY p.created_at DESC
+    `
+
+	rows, err := m.DB.Query(baseStmt, args...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	var posts []PostView
-
 	for rows.Next() {
 		var pv PostView
 		var bookID sql.NullInt64
 		var chapter sql.NullString
 
-		err := rows.Scan(
+		if err := rows.Scan(
 			&pv.Post.ID,
 			&pv.Post.UserID,
 			&pv.Post.Title,
@@ -402,8 +412,7 @@ func (m *PostModel) SearchPosts(query string) ([]PostView, error) {
 			&pv.Post.CreatedAt,
 			&pv.AuthorName,
 			&pv.LikeCount,
-		)
-		if err != nil {
+		); err != nil {
 			return nil, err
 		}
 
