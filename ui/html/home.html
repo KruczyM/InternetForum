@@ -1,125 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Home – Book Forum</title>
-  <link rel="stylesheet" href="/static/main.css">
-</head>
-<body>
-
-<div class="forum-shell">
-    <!-- Header -->
-    <header class="forum-header">
-      <div class="header-left">
-        <div class="logo"><a href="/" class="clean-link">BOOK FORUM</a></div>
-        <nav class="main-nav">
-          <a href="/" class="nav-link">Posts</a>
-            {{if .IsAuthenticated}}
-          <a href="/chat/" class="nav-link">Chat</a>
-          <div class="nav-dropdown">
-            <button class="nav-link dropdown-toggle" type="button">
-              My Account ▾
-            </button>
-            <div class="dropdown-menu">
-              <a href="/profile?tab=profile">Profile</a>
-              <a href="/profile?tab=posts">My Posts</a>
-              <a href="/profile?tab=comments">My Comments</a>
-              <a href="/profile?tab=likes">My Likes</a>
+   <head>
+      <meta charset="UTF-8">
+      <title>Home – Book Forum</title>
+      <link rel="stylesheet" href="/static/main.css">
+   </head>
+   <body>
+      <div class="forum-shell">
+         <!-- Header -->
+         <header class="forum-header">
+            <div class="header-left">
+               <div class="logo"><a href="/" class="clean-link">BOOK FORUM</a></div>
+               <nav class="main-nav">
+                  <a href="/" class="nav-link">Posts</a>
+                  {{if .IsAuthenticated}}
+                  <a href="/chat/" class="nav-link">Chat</a>
+                  <div class="nav-dropdown">
+                     <button class="nav-link dropdown-toggle" type="button">
+                     My Account ▾
+                     </button>
+                     <div class="dropdown-menu">
+                        <a href="/profile?tab=profile">Profile</a>
+                        <a href="/profile?tab=posts">My Posts</a>
+                        <a href="/profile?tab=comments">My Comments</a>
+                        <a href="/profile?tab=likes">My Likes</a>
+                     </div>
+                  </div>
+                  {{end}}
+               </nav>
             </div>
-          </div>
-          {{end}}
-        </nav>
+            <div class="header-tools">
+               <div class="nav-dropdown">
+                  <button class="nav-link dropdown-toggle" type="button">
+                  Categories ▾
+                  </button>
+                  <div class="dropdown-menu">
+                     <a href="/">All</a>
+                     <a href="/?category=Classics{{if .Query}}&q={{.Query}}{{end}}">Classics</a>
+                     <a href="/?category=General_Fiction{{if .Query}}&q={{.Query}}{{end}}">General Fiction</a>
+                     <a href="/?category=Crime_Mystery_Thriller{{if .Query}}&q={{.Query}}{{end}}">Crime / Thriller</a>
+                     <a href="/?category=Womens_Fiction{{if .Query}}&q={{.Query}}{{end}}">Women's Fiction</a>
+                     <a href="/?category=Childrens{{if .Query}}&q={{.Query}}{{end}}">Children's</a>
+                     <a href="/?category=Poetry_Plays{{if .Query}}&q={{.Query}}{{end}}">Poetry / Plays</a>
+                     <a href="/?category=Non_Fiction{{if .Query}}&q={{.Query}}{{end}}">Non-Fiction</a>
+                     <a href="/?category=Historical_Fiction{{if .Query}}&q={{.Query}}{{end}}">Historical Fiction</a>
+                  </div>
+               </div>
+               <form action="/" method="GET" class="search-box header-search">
+                  <input type="text" name="q" placeholder="Search..." value="{{.Query}}">
+               </form>
+            </div>
+            <div class="auth-links">
+               {{if .IsAuthenticated}}
+               <form action="/auth/logout" method="POST">
+                  <button class="text-btn">Logout</button>
+               </form>
+               {{else}}
+               <a href="/auth/register">Register</a>
+               <a href="/auth/login">Login</a>
+               {{end}}
+            </div>
+         </header>
+         <!-- Content -->
+         <main class="center-panel">
+            {{if .IsAuthenticated}}
+            <a href="/post/create" class="primary-btn">+ Create Post</a>
+            {{end}}
+            <div class="feed">
+               {{if .Posts}}
+               {{range .Posts}}
+               <article class="post-card">
+                  <div class="post-header">
+                     <h3>
+                        <a href="/post/{{.Post.ID}}">
+                        {{.Post.Title}}
+                        </a>
+                     </h3>
+                     <span class="post-date">{{.FormattedDate}}</span>
+                  </div>
+                  <p class="post-meta">
+                     <a href="/u/{{.AuthorName}}" class="clean-link"><strong> By {{.AuthorName}}</strong></a>
+                     {{if .Post.BookID}} · Book #{{.Post.BookID}} {{end}}
+                  </p>
+                  {{if .Post.ImagePath}}
+                  <div class="post-image">
+                     <img src="{{.Post.ImagePath}}" alt="Post image">
+                  </div>
+                  {{end}}
+                  <p class="post-preview">
+                     {{.Post.Content}}
+                  </p>
+                  <div class="post-footer">
+                     <form action="/post/{{.Post.ID}}/like" method="POST">
+                        <button class="like-btn" type="submit">
+                        ❤️ <span>{{.LikeCount}}</span>
+                        </button>
+                     </form>
+                     <a href="/post/{{.Post.ID}}" class="read-more secondary-btn">
+                     Full Post
+                     </a>
+                  </div>
+               </article>
+               {{end}}
+               {{else}}
+               <p>No posts found. Create one!</p>
+               {{end}}
+            </div>
+         </main>
       </div>
-
-    <div class="header-tools">
-  <div class="nav-dropdown">
-  <button class="nav-link dropdown-toggle" type="button">
-    Categories ▾
-  </button>
-  <div class="dropdown-menu">
-    <a href="/">All</a>
-    <a href="/?category=Classics{{if .Query}}&q={{.Query}}{{end}}">Classics</a>
-    <a href="/?category=General_Fiction{{if .Query}}&q={{.Query}}{{end}}">General Fiction</a>
-    <a href="/?category=Crime_Mystery_Thriller{{if .Query}}&q={{.Query}}{{end}}">Crime / Thriller</a>
-    <a href="/?category=Womens_Fiction{{if .Query}}&q={{.Query}}{{end}}">Women's Fiction</a>
-    <a href="/?category=Childrens{{if .Query}}&q={{.Query}}{{end}}">Children's</a>
-    <a href="/?category=Poetry_Plays{{if .Query}}&q={{.Query}}{{end}}">Poetry / Plays</a>
-    <a href="/?category=Non_Fiction{{if .Query}}&q={{.Query}}{{end}}">Non-Fiction</a>
-    <a href="/?category=Historical_Fiction{{if .Query}}&q={{.Query}}{{end}}">Historical Fiction</a>
-  </div>
-</div>
-
-      <form action="/" method="GET" class="search-box header-search">
-        <input type="text" name="q" placeholder="Search..." value="{{.Query}}">
-      </form>
-    </div>
-
-    <div class="auth-links">
-      {{if .IsAuthenticated}}
-        <form action="/auth/logout" method="POST">
-          <button class="text-btn">Logout</button>
-        </form>
-      {{else}}
-        <a href="/auth/register">Register</a>
-        <a href="/auth/login">Login</a>
-      {{end}}
-    </div>
-  </header>
-
-  <!-- Content -->
-  <main class="center-panel">
-
-    {{if .IsAuthenticated}}
-      <a href="/post/create" class="primary-btn">+ Create Post</a>
-    {{end}}
-
-    <div class="feed">
-      {{if .Posts}}
-        {{range .Posts}}
-        <article class="post-card">
-          <div class="post-header">
-            <h3>
-              <a href="/post/{{.Post.ID}}">
-                {{.Post.Title}}
-              </a>
-            </h3>
-            <span class="post-date">{{.FormattedDate}}</span>
-          </div>
-
-          <p class="post-meta">
-            <a href="/u/{{.AuthorName}}" class="clean-link"><strong> By {{.AuthorName}}</strong></a>
-            {{if .Post.BookID}} · Book #{{.Post.BookID}} {{end}}
-          </p>
-
-          {{if .Post.ImagePath}}
-          <div class="post-image">
-            <img src="{{.Post.ImagePath}}" alt="Post image">
-          </div>
-          {{end}}
-
-          <p class="post-preview">
-            {{.Post.Content}}
-          </p>
-
-          <div class="post-footer">
-            <form action="/post/{{.Post.ID}}/like" method="POST">
-              <button class="like-btn" type="submit">
-                ❤️ <span>{{.LikeCount}}</span>
-              </button>
-            </form>
-            <a href="/post/{{.Post.ID}}" class="read-more secondary-btn">
-              Full Post
-            </a>
-          </div>
-        </article>
-        {{end}}
-      {{else}}
-        <p>No posts found. Create one!</p>
-      {{end}}
-    </div>
-
-  </main>
-</div>
-
-</body>
+   </body>
 </html>

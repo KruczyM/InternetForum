@@ -1,69 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Add a Book</title>
-  <link rel="stylesheet" href="/static/main.css">
-</head>
-<body>
-
-<div class="forum-shell">
-
-  <main class="center-panel">
-    <div class="create-post-form-container">
-
-      <a href="/post/create" class="secondary-btn">
-        Back to Create Post
-      </a>
-
-      <h1>Add a New Book</h1>
-      <p style="text-align:center; margin-bottom: 20px; color:#7a5a44;">
-        Can't find the book you are looking for? Add it here.
-      </p>
-
-      {{if .Flash}}
-        <div class="hint" style="text-align:center; margin-bottom:14px;">
-          {{.Flash}}
-        </div>
-      {{end}}
-
-      <form action="/book/create" method="POST" class="create-post-form">
-
-        <div class="form-group">
-          <label>Book Title</label>
-          <input
-            type="text"
-            name="title"
-            required
-            placeholder="e.g. The Great Gatsby"
-          >
-        </div>
-
-        <div class="form-group">
-          <label>Author</label>
-          <input
-            type="text"
-            name="author"
-            required
-            placeholder="e.g. F. Scott Fitzgerald"
-          >
-        </div>
-
-        <div class="form-group">
-          <label>Description (Optional)</label>
-          <textarea name="description" rows="5"></textarea>
-        </div>
-
-        <button type="submit" class="primary-btn">
-          Add Book
-        </button>
-
-      </form>
-
-    </div>
-  </main>
-
-</div>
-
-</body>
+   <head>
+      <meta charset="UTF-8">
+      <title>Add a Book</title>
+      <link rel="stylesheet" href="/static/main.css">
+   </head>
+   <body>
+      <div class="forum-shell">
+         <main class="center-panel">
+            <div class="create-post-form-container">
+               <a href="/post/create" class="secondary-btn">
+               Back to Create Post
+               </a>
+               <h1>Add a New Book</h1>
+               <p style="text-align:center; margin-bottom: 20px; color:#7a5a44;">
+                  Can't find the book you are looking for? Add it here.
+               </p>
+               {{if .Flash}}
+               <div class="hint" style="text-align:center; margin-bottom:14px;">
+                  {{.Flash}}
+               </div>
+               {{end}}
+               <form action="/book/create" method="POST" class="create-post-form">
+                  <div class="form-group">
+                     <label>Book Title</label>
+                     <input
+                        type="text"
+                        name="title"
+                        required
+                        placeholder="e.g. The Great Gatsby"
+                        >
+                  </div>
+                  <div class="form-group">
+                     <label>Author</label>
+                     <input
+                        type="text"
+                        name="author"
+                        required
+                        placeholder="e.g. F. Scott Fitzgerald"
+                        >
+                  </div>
+                  <div class="form-group">
+                     <label>Description (Optional)</label>
+                     <textarea name="description" rows="5"></textarea>
+                  </div>
+                  <button type="submit" class="primary-btn">
+                  Add Book
+                  </button>
+               </form>
+            </div>
+         </main>
+      </div>
+   </body>
 </html>

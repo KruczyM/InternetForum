@@ -28,7 +28,7 @@ func (h *Handler) serverError(w http.ResponseWriter, err error) {
 	//its giveing whole stack trace so we know in which line in code it happening
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
 	h.ErrorLog.Output(2, trace)
-	
+
 	w.WriteHeader(http.StatusInternalServerError)
 	h.render(w, http.StatusInternalServerError, "error.html", nil)
 }
@@ -50,44 +50,43 @@ func (h *Handler) isAuthenticated(r *http.Request) bool {
 	return isAuthenticated
 }
 
-
 func (h *Handler) render(w http.ResponseWriter, status int, page string, data *templateData) {
-	       ts, ok := h.TemplateCache[page]
-	       if !ok {
-		       h.serverError(w, fmt.Errorf("template %s does not exist", page))
-		       return
-	       }
+	ts, ok := h.TemplateCache[page]
+	if !ok {
+		h.serverError(w, fmt.Errorf("template %s does not exist", page))
+		return
+	}
 
-		       buf := new(bytes.Buffer)
-		       err := ts.Execute(buf, data)
-		       if err != nil {
-			       h.serverError(w, err)
-			       return
-		       }
-		       w.WriteHeader(status)
-		       buf.WriteTo(w)
+	buf := new(bytes.Buffer)
+	err := ts.Execute(buf, data)
+	if err != nil {
+		h.serverError(w, err)
+		return
+	}
+	w.WriteHeader(status)
+	buf.WriteTo(w)
 }
 
 func NewTemplateCache() (map[string]*template.Template, error) {
-       cache := map[string]*template.Template{}
-       funcMap := template.FuncMap{
-	       "upper": strings.ToUpper,
-       }
-       pages, err := fs.Glob(ui.Files, "html/*.html")
-       if err != nil {
-	       return nil, err
-       }
+	cache := map[string]*template.Template{}
+	funcMap := template.FuncMap{
+		"upper": strings.ToUpper,
+	}
+	pages, err := fs.Glob(ui.Files, "html/*.html")
+	if err != nil {
+		return nil, err
+	}
 
-       for _, page := range pages {
-	       name := filepath.Base(page)
-	       templateSet, err := template.New(name).Funcs(funcMap).ParseFS(ui.Files, page)
-	       if err != nil {
-		       return nil, err
-	       }
-	       cache[name] = templateSet
-       }
+	for _, page := range pages {
+		name := filepath.Base(page)
+		templateSet, err := template.New(name).Funcs(funcMap).ParseFS(ui.Files, page)
+		if err != nil {
+			return nil, err
+		}
+		cache[name] = templateSet
+	}
 
-       return cache, nil
+	return cache, nil
 }
 
 func (h *Handler) test500(w http.ResponseWriter, r *http.Request) {
