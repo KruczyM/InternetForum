@@ -593,6 +593,22 @@ body {
   flex-direction: column;
 }
 
+.clean-link {
+    text-decoration: none; 
+    color: inherit;         
+    cursor: pointer;      
+    display: block;        
+}
+
+.clean-link:visited {
+    color: inherit;
+}
+
+.clean-link:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
 /* Mobile */
 @media (max-width: 900px) {
 }
