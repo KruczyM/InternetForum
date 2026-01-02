@@ -11,7 +11,7 @@
     <!-- Header -->
     <header class="forum-header">
       <div class="header-left">
-        <div class="logo">BOOK FORUM</div>
+        <div class="logo"><a href="/" class="clean-link">BOOK FORUM</a></div>
         <nav class="main-nav">
           <a href="/" class="nav-link">Posts</a>
             {{if .IsAuthenticated}}
@@ -87,7 +87,7 @@
           </div>
 
           <p class="post-meta">
-            By <strong>{{.AuthorName}}</strong>
+            <a href="/u/{{.AuthorName}}" class="clean-link"><strong> By {{.AuthorName}}</strong></a>
             {{if .Post.BookID}} · Book #{{.Post.BookID}} {{end}}
           </p>
 

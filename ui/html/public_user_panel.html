@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>User Profile · Book Forum</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/main.css">
+    <link rel="stylesheet" href="/static/public-profile.css">
+</head>
+
+<body>
+
+    {{ $user := index .AnyData "user" }}
+    {{ $tab := index .AnyData "tab" }}
+
+    <div class="forum-shell">
+
+        <!-- Header -->
+        <header class="forum-header">
+            <div class="header-left">
+                <div class="logo"><a href="/" class="clean-link">BOOK FORUM</a></div>
+                <nav class="main-nav">
+                    <a href="/" class="nav-link">Posts</a>
+                    <a href="/chat/" class="nav-link">Chat</a>
+                    <div class="nav-dropdown">
+                        <button class="nav-link dropdown-toggle" type="button">
+                            My Account ▾
+                        </button>
+                        <div class="dropdown-menu">
+                            <a href="/profile?tab=profile">Profile</a>
+                            <a href="/profile?tab=posts">My Posts</a>
+                            <a href="/profile?tab=comments">My Comments</a>
+                            <a href="/profile?tab=likes">My Likes</a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+
+            <div class="auth-links">
+                {{if .IsAuthenticated}}
+                <form action="/auth/logout" method="POST">
+                    <button class="text-btn">Logout</button>
+                </form>
+                {{else}}
+                <a href="/auth/register">Register</a>
+                <a href="/auth/login">Login</a>
+                {{end}}
+            </div>
+        </header>
+
+        <!-- MAIN -->
+        <main class="center-panel public-profile">
+
+            <!-- USER INFO -->
+            <section class="profile-header">
+                <img class="avatar"
+                    src="{{if $user.AvatarPath}}{{ $user.AvatarPath }}{{else}}/static/uploads/avatars/default.png{{end}}"
+                    alt="User avatar">
+
+                <div class="profile-meta">
+                    <h1>{{ $user.Username }}</h1>
+                    <p>{{ $user.FirstName }} {{ $user.LastName }}</p>
+                    <p class="muted">
+                        Member since {{ $user.CreatedAt.Format "January 2006" }}
+                    </p>
+                </div>
+            </section>
+
+            <!-- TABS -->
+            <nav class="profile-tabs">
+                <a href="/u/{{ $user.Username }}?tab=posts" class="{{ if eq $tab " posts" }}active{{ end }}">
+                    Posts
+                </a>
+                <a href="/u/{{ $user.Username }}?tab=comments" class="{{ if eq $tab " comments" }}active{{ end }}">
+                    Comments
+                </a>
+                <a href="/u/{{ $user.Username }}?tab=likes" class="{{ if eq $tab " likes" }}active{{ end }}">
+                    Likes
+                </a>
+            </nav>
+
+            <!-- TAB CONTENT -->
+
+            <!-- POSTS -->
+            {{ if eq $tab "posts" }}
+            {{ range index .AnyData "posts" }}
+            <article class="post-card">
+                <a href="/post/{{ .ID }}">
+                    <strong>{{ .Title }}</strong>
+                </a>
+                <p class="post-meta">
+                    {{ .CreatedAt.Format "02 Jan 2006 · 15:04" }}
+                </p>
+            </article>
+            {{ else }}
+            <p class="empty">This user hasn’t written any posts yet.</p>
+            {{ end }}
+            {{ end }}
+
+            <!-- COMMENTS -->
+            {{ if eq $tab "comments" }}
+            {{ range index .AnyData "comments" }}
+            <article class="post-card">
+                Post Title: <a href="/post/{{ .ID }}">
+                    <strong>{{ .PostTitle }}</strong>
+                </a>
+                <p class="txt-content">Comment: {{ .Content }}</p>
+            </article>
+            {{ else }}
+            <p class="empty">This user hasn’t written any comments yet.</p>
+            {{ end }}
+            {{ end }}
+
+            <!-- LIKES -->
+            {{ if eq $tab "likes" }}
+            {{ range index .AnyData "likes" }}
+            <article class="post-card">
+                <a href="/post/{{ .PostID }}"> </a>
+
+                {{ if eq .TargetType "post" }}
+                <span class="badge post">💬POST</span>
+                <a href="/post/{{ .PostID }}"> {{ .Title }} </a>
+                <p class="txt-content">Post content: {{ .Content }}</p>
+                {{ else if eq .TargetType "comment" }}
+                <span class="badge post">❤️COMMENT</span>
+                <a href="/post/{{ .PostID }}"> {{ .Title }}</a>
+                <p>Comment content: {{ .Content }}</p>
+                {{end}}
+
+
+            </article>
+            {{ else }}
+            <p class="empty">This user hasn’t liked anything yet.</p>
+            {{ end }}
+            {{ end }}
+
+        </main>
+
+    </div>
+
+</body>
+
+</html>

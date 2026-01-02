@@ -181,5 +181,5 @@ func (h *Handler) userLogoutPost(w http.ResponseWriter, r *http.Request) {
 		Msg:  "You've been logged out successfully!",
 	})
 	// Redirect the user to the application home page.
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 }

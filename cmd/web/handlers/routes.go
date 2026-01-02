@@ -88,5 +88,14 @@ func (h *Handler) Routes() http.Handler {
 	r.Post("/avatar", h.changeAvatar)
 })
 
+    //public user panel
+    router.Route("/u/{username}", func(r chi.Router) {
+        r.Use(h.requireAuth)
+        r.Get("/", h.publicUserProfile)
+    })
+
+	//test 500 error
+	router.Get("/test500", h.test500)
+	
 	return router
 }

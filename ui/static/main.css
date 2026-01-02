@@ -634,6 +634,59 @@ body {
   flex-direction: column;
 }
 
+.clean-link {
+    text-decoration: none; 
+    color: inherit;         
+    cursor: pointer;      
+    display: block;        
+}
+
+.clean-link:visited {
+    color: inherit;
+}
+
+.clean-link:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+@media (max-width: 700px) {
+  .public-profile .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-tabs {
+    justify-content: center;
+    gap: 18px;
+  }
+
+  .user-panel .profile-block form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .user-panel .profile-block button {
+    width: 100%;
+  }
+}
+
+.comment-content, .post-preview, .txt-content {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.post-content {
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
 /* Mobile */
 @media (max-width: 900px) {
 }

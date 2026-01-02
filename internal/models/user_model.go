@@ -52,12 +52,12 @@ func InsertUser(db *sql.DB, user *User) ( error ) {
 // retrieves a user by username
 func GetUserByUsername(db *sql.DB, username string) (*User, error) {
 	query := `
-	SELECT id, username, first_name, last_name, email, password_hash 
+	SELECT id, username, first_name, last_name, email, password_hash, avatar_path 
 	FROM users 
 	WHERE username = ?`
 	row := db.QueryRow(query, username)
 	var user User
-	if err := row.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName, &user.Email, &user.PasswordHash); err != nil {
+	if err := row.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName, &user.Email, &user.PasswordHash, &user.AvatarPath); err != nil {
 		return nil, err
 	}
 	return &user, nil

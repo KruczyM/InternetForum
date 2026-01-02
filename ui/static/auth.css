@@ -144,6 +144,22 @@ button:hover {
   text-align: center;
 }
 
+.clean-link {
+    text-decoration: none; 
+    color: inherit;         
+    cursor: pointer;      
+    display: block;        
+}
+
+.clean-link:visited {
+    color: inherit;
+}
+
+.clean-link:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
 @media (max-width: 480px) {
   .auth-card {
     width: 100%;
