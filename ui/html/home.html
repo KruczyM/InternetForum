@@ -87,7 +87,7 @@
           </div>
 
           <p class="post-meta">
-            By <strong>{{.AuthorName}}</strong>
+            <a href="/u/{{.AuthorName}}" class="clean-link"><strong> By {{.AuthorName}}</strong></a>
             {{if .Post.BookID}} · Book #{{.Post.BookID}} {{end}}
           </p>
 

@@ -46,7 +46,7 @@
             <div id="chat-box" style="border: 2px solid #C9B79C; height: 340px; overflow-y: scroll; padding: 1.2em; margin-bottom: 1.5em; background: #FFF8F0; border-radius: 12px; box-shadow: 0 1px 4px #e6d6c5;">
                 {{range .AnyData.Chat.Messages}}
                     <div class="chat-message" style="margin-bottom: 1.1em; display: flex; align-items: flex-start;">
-                        <span class="chat-meta" style="color: #7B3F00; font-size: 1.08em; font-weight: bold; margin-right: 0.5em;">{{.UserID}}:</span>
+                        <span class="chat-meta" style="color: #7B3F00; font-size: 1.08em; font-weight: bold; margin-right: 0.5em;"><a href="/u/{{.UserID}}" class="clean-link">{{.UserID}}:</a></span>
                         <span style="color: #BFA77A; font-size: 0.95em; margin-right: 0.7em;">({{.CreatedAt.Format "15:04"}})</span>
                         <span style="color: #3E2C13; font-size: 1.08em; background: #FFF3E6; border-radius: 7px; padding: 0.5em 0.9em; box-shadow: 0 1px 2px #e6d6c5; flex:1;">{{.Content}}</span>
                     </div>
