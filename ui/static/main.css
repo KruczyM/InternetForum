@@ -237,12 +237,6 @@ body {
   cursor: pointer;
 }
 
-.read-more {
-  font-size: 0.85em;
-  color: #8c5e3c;
-  text-decoration: none;
-}
-
 .feed .post-image {
   display: flex;
   justify-content: center;
@@ -348,6 +342,46 @@ body {
   font-family: "Libre Baskerville", Georgia, serif;
 }
 
+/* Related book actions */
+
+.related-book-actions {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  position: relative;
+  top: -20px; 
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.secondary-btn {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid #d7c3af;
+  background: #fffaf4;
+  color: #7a5a44;
+  font-size: 0.85em;
+  font-family: "Libre Baskerville", Georgia, serif;
+  text-decoration: none;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.secondary-btn:hover {
+  background: #f3e6d8;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.related-book-actions .hint {
+  font-size: 0.75em;
+  color: #8b6a4a;
+  line-height: 1.4;
+  padding-left: 4px;
+}
+
 /* FILE UPLOAD */
 .file-upload-group {
   font-family: "Libre Baskerville", Georgia, serif;
@@ -416,14 +450,26 @@ body {
   text-align: center;
 }
 
-.action-btn {
-  background: linear-gradient(180deg, #c69c6d, #a87a4f);
-  border: none;
-  border-radius: 30px;
-  padding: 8px 18px;
-  color: #fff;
-  cursor: pointer;
-  font-size: 0.85em;
+.confirm-delete {
+  margin-left: 8px;
+  font-size: 0.75em;
+  color: #8b6a4a;
+  font-family: "Libre Baskerville", Georgia, serif;
+}
+
+.confirm-delete input {
+  margin-right: 4px;
+}
+
+.secondary-btn.danger {
+  border-color: #d6a3a3;
+  color: #8b3a3a;
+  background: #fff5f5;
+}
+
+.secondary-btn.danger:hover {
+  background: #f6dddd;
+  box-shadow: 0 2px 6px rgba(139, 58, 58, 0.25);
 }
 
 .full-post .post-image {
@@ -443,11 +489,6 @@ body {
   font-family: "Libre Baskerville", Georgia, serif;
   font-size: 1.7em;
   font-weight: 700;
-}
-
-.action-btn:hover {
-  background: linear-gradient(180deg, #d3ad7d, #b88a5c);
-  box-shadow: 0 6px 14px rgba(168, 122, 79, 0.35);
 }
 
 .comments-area {
@@ -575,15 +616,15 @@ body {
   text-decoration: underline;
 }
 
-.full-post + div button,
-.comment-author button {
+.full-post + div button:not(.secondary-btn),
+.comment-author button:not(.secondary-btn) {
   background: linear-gradient(180deg, #c69c6d, #a87a4f);
   border: none;
   color: #fff;
 }
 
-.full-post + div button:hover,
-.comment-author button:hover {
+.full-post + div button:not(.secondary-btn):hover,
+.comment-author button:not(.secondary-btn):hover {
   background: linear-gradient(180deg, #d3ad7d, #b88a5c);
   box-shadow: 0 6px 14px rgba(168, 122, 79, 0.35);
 }

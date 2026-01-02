@@ -55,8 +55,6 @@
     <!-- Content -->
     <main class="center-panel">
 
-      <a href="/" class="back-link">← Back to Feed</a>
-
       <!-- Post -->
       <article class="post-card full-post">
 
@@ -78,13 +76,13 @@
         {{end}}
 
         <div class="post-content">
-          {{.Post.Post.Content}}
+{{.Post.Post.Content}}
         </div>
 
         <div class="post-footer">
           <form action="/post/{{.Post.Post.ID}}/like" method="POST">
             <button type="submit" class="like-btn">
-              ❤️ <span>{{.Post.LikeCount}}</span>
+              ❤️<span>{{.Post.LikeCount}}</span>
             </button>
           </form>
         </div>
@@ -95,15 +93,19 @@
       {{if eq .Post.Post.UserID .AuthenticatedUser}}
       <div class="post-actions">
         <form action="/post/{{.Post.Post.ID}}/edit" method="GET" style="display:inline;">
-          <button type="submit" class="action-btn">Edit Post</button>
-        </form>
+  <button type="submit" class="action-btn secondary-btn">
+    Edit Post
+  </button>
+</form>
 
-        <form action="/post/{{.Post.Post.ID}}/delete" method="POST" style="display:inline;">
-          <button type="submit" class="action-btn danger">Delete Post</button>
-          <label class="confirm-delete">
-            <input type="checkbox" required> Confirm
-          </label>
-        </form>
+<form action="/post/{{.Post.Post.ID}}/delete" method="POST" style="display:inline;">
+  <button type="submit" class="action-btn secondary-btn danger">
+    Delete Post
+  </button>
+  <label class="confirm-delete">
+    <input type="checkbox" required> Confirm
+  </label>
+</form>
       </div>
       {{end}}
 
@@ -121,7 +123,7 @@
 
             {{if eq .UserID $.AuthenticatedUser}}
             <form action="/comment/{{.ID}}/delete?post_id={{$.Post.Post.ID}}" method="POST" style="display:inline;">
-              <button type="submit" class="action-btn">Delete</button>
+              <button type="submit" class="action-btn secondary-btn danger">Delete</button>
             </form>
             {{end}}
           </div>

@@ -88,9 +88,13 @@
               <option value="{{.ID}}">{{.Title}}</option>
             {{end}}
           </select>
-          <a href="/book/create">Add Missing Book</a>
-                <div class="hint">Linking a book makes your post appear in that book's category filter.</div>
-        </div>
+           <div class="related-book-actions">
+    <a href="/book/create" class="secondary-btn">Add Missing Book</a>
+    <div class="hint">
+      Linking a book makes your post appear in that book's category filter.
+    </div>
+  </div>
+</div>
 
         <div class="form-group">
           <label>Chapter</label>
