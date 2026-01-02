@@ -6,12 +6,13 @@
     <title>My Account · Book Forum</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/main.css">
+    <link rel="stylesheet" href="/static/user-panel.css">
 </head>
 
 <body>
 
-        {{ $tab := index .AnyData "tab" }}
-        {{ $user := index .AnyData "user" }}
+    {{ $tab := index .AnyData "tab" }}
+    {{ $user := index .AnyData "user" }}
     <div class="forum-shell">
         <!-- Header -->
         <header class="forum-header">
@@ -29,7 +30,8 @@
                                 {{end}}>Profile</a>
                             <a href="/profile?tab=posts" {{if eq $tab "posts" }}style="font-weight:bold;" {{end}}>My
                                 Posts</a>
-                            <a href="/profile?tab=comments" {{if eq $tab "comments" }}style="font-weight:bold;" {{end}}>My
+                            <a href="/profile?tab=comments" {{if eq $tab "comments" }}style="font-weight:bold;"
+                                {{end}}>My
                                 Comments</a>
                             <a href="/profile?tab=likes" {{if eq $tab "likes" }}style="font-weight:bold;" {{end}}>My
                                 Likes</a>
@@ -37,10 +39,6 @@
                     </div>
 
                 </nav>
-            </div>
-
-
-            <div class="header-tools">
             </div>
 
             <div class="auth-links">
@@ -54,7 +52,7 @@
                 {{end}}
             </div>
         </header>
-        <main class="center-panel">
+        <main class="center-panel user-panel">
 
             {{ with .Flash }}
             <div class="flash {{ .Type }}">{{ .Msg }}</div>
@@ -64,7 +62,7 @@
             {{ if eq $tab "profile" }}
 
             <h1>My Profile</h1>
-
+            <!--  AVATAT -->
             <section class="profile-block">
                 <h3>Avatar</h3>
 
@@ -80,7 +78,7 @@
                 <a class="link" href="/profile?tab=profile&edit=avatar">Edit avatar</a>
                 {{end}}
             </section>
-
+            <!--  PROFILE INFO -->
             <section class="profile-block">
                 <h3>Profile information</h3>
 
@@ -99,7 +97,7 @@
                     <input type="text" name="last_name" value="{{ $user.LastName }}" placeholder="Last name">
 
                     <button type="submit">Save</button>
-                    <a class="link" href="/me?tab=profile">Cancel</a>
+                    <a class="link" href="/profile?tab=profile">Cancel</a>
                 </form>
 
                 {{ else }}
@@ -112,7 +110,7 @@
 
                 {{ end }}
             </section>
-
+            <!--  PASSWORD -->
             <section class="profile-block">
                 <h3>Security</h3>
 
@@ -136,7 +134,7 @@
                     <input type="password" name="confirm_password" placeholder="Confirm new password">
 
                     <button type="submit">Change password</button>
-                    <a class="link" href="/me?tab=profile">Cancel</a>
+                    <a class="link" href="profile?tab=profile">Cancel</a>
                 </form>
 
                 {{ else }}
@@ -157,7 +155,7 @@
             {{ range index .AnyData "posts" }}
             <article class="post-card">
                 <a href="/post/{{ .ID }}"><strong>{{ .Title }}</strong></a>
-                <p class="post-meta">{{ .CreatedAt }}</p>
+                <p class="post-meta">{{ .CreatedAt.Format "02 Jan 15:04" }}</p>
                 <a class="link" href="/post/{{ .ID }}/edit">Edit</a>
             </article>
             {{ else }}
@@ -172,8 +170,8 @@
             <h1>My Comments</h1>
 
             {{ range index .AnyData "comments" }}
-             <article class="post-card">
-                <p>Comment content: {{ .Content }}</p>
+            <article class="post-card">
+                <p>Comment: {{ .Content }}</p>
                 <a class="link" href="/post/{{ .PostID }}">Go to post</a>
             </article>
             {{ else }}
@@ -188,21 +186,21 @@
             <h1>My Likes</h1>
 
             {{ range index .AnyData "likes" }}
-           <article class="post-card" id="likes-list">
+            <article class="post-card" id="likes-list">
                 <a href="/post/{{ .PostID }}"> </a>
 
                 {{ if eq .TargetType "post" }}
-                 <span class="badge post">💬POST</span>
-                     <a href="/post/{{ .PostID }}"> {{ .Title }} </a>
-                     <p>Post content: {{ .Content }}</p>
+                <span class="badge post">💬POST</span>
+                <a href="/post/{{ .PostID }}"> {{ .Title }} </a>
+                <p>Post content: {{ .Content }}</p>
                 {{ else if eq .TargetType "comment" }}
                 <span class="badge post">❤️COMMENT</span>
-                    <a href="/post/{{ .PostID }}"> {{ .Title }}</a>
-                    <p>Comment content: {{ .Content }}</p>
+                <a href="/post/{{ .PostID }}"> {{ .Title }}</a>
+                <p>Comment content: {{ .Content }}</p>
                 {{end}}
-                    
-                
-             </article>
+
+
+            </article>
             {{ else }}
             <p>You haven't liked any posts yet.</p>
             {{ end }}

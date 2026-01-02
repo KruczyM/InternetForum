@@ -1,0 +1,173 @@
+
+h1 {
+  margin-bottom: 26px;
+}
+
+.profile-block {
+  background: #fff;
+  border: 1px solid #e6d6c5;
+  border-radius: 14px;
+  padding: 20px 22px;
+  margin-bottom: 26px;
+}
+
+.profile-block h3 {
+  margin-top: 0;
+  margin-bottom: 14px;
+  font-size: 1.1em;
+}
+
+.profile-block .avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #d7c3af;
+}
+
+.post-card > a:first-child {
+  font-size: 1.05em;
+  font-weight: 600;
+  color: #4a3428;
+  text-decoration: none;
+}
+
+.post-card > a:first-child:hover {
+  text-decoration: underline;
+}
+
+.post-card .post-meta {
+  font-size: 0.8em;
+  color: #8a6a54;
+  margin: 6px 0 12px;
+}
+
+.post-card + .post-card {
+  margin-top: 22px;
+}
+
+.post-card {
+    display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.post-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(168, 122, 79, 0.15);
+}
+
+
+.post-card .link,
+.post-card a[href*="edit"] {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 0.85em;
+  color: #8c5e3c;
+  text-decoration: none;
+}
+
+.post-card .link:hover {
+  text-decoration: underline;
+}
+
+
+.badge {
+  display: inline-block;
+  font-size: 0.7em;
+  padding: 4px 8px;
+  border-radius: 12px;
+  margin-right: 8px;
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+.badge.post {
+  background: rgba(168, 122, 79, 0.15);
+  color: #7a5a44;
+}
+
+.badge.comment {
+  background: rgba(198, 156, 109, 0.2);
+  color: #8c5e3c;
+}
+
+
+.profile-block form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.profile-block input[type="text"],
+.profile-block input[type="password"],
+.profile-block input[type="file"] {
+  padding: 10px 14px;
+  border: 1px solid #d7c3af;
+  border-radius: 8px;
+  font-size: 0.95em;
+  font-family: "Libre Baskerville", Georgia, serif;
+}
+
+.profile-block input:focus {
+  outline: none;
+  border-color: #a87a4f;
+  box-shadow: 0 0 0 2px rgba(168, 122, 79, 0.2);
+}
+
+
+.profile-block button {
+  background: linear-gradient(180deg, #c69c6d, #a87a4f);
+  border: none;
+  border-radius: 30px;
+  padding: 9px 20px;
+  color: #fff;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+
+.profile-block .link {
+  color: #8c5e3c;
+  text-decoration: none;
+}
+
+.profile-block .link:hover {
+  text-decoration: underline;
+}
+
+
+.profile-block .error {
+  width: 100%;
+  font-size: 0.85em;
+  color: #8b2f2f;
+  background: rgba(139, 47, 47, 0.08);
+  border-left: 3px solid #8b2f2f;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+
+input[type="file"]::file-selector-button {
+  background: linear-gradient(180deg, #e6d2b8, #d1b08a);
+  border: none;
+  border-radius: 20px;
+  padding: 6px 14px;
+  margin-right: 10px;
+  font-size: 0.85em;
+  cursor: pointer;
+}
+
+
+@media (max-width: 700px) {
+.profile-block form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+.profile-block button {
+    width: 100%;
+  }
+}
