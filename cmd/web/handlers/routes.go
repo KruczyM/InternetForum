@@ -51,6 +51,7 @@ func (h *Handler) Routes() http.Handler {
 		router.With(h.requireAuth).Get("/{id}/edit", h.EditPost)
 		router.With(h.requireAuth).Post("/{id}/edit", h.UpdatePost)
 		router.With(h.requireAuth).Post("/{id}/like", h.PostLike)
+		router.With(h.requireAuth).Post("/{id}/dislike", h.PostDislike)
 
 	})
 	router.With(h.requireAuth).Post("/comment/{id}/delete", h.DeleteComment)

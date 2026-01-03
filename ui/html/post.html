@@ -45,6 +45,9 @@
          </header>
          <!-- Content -->
          <main class="center-panel">
+            <div style="text-align: right; margin-bottom: 10px;">
+               <a href="/profile?tab=likes" class="secondary-btn">My Likes</a>
+            </div>
             <!-- Post -->
             <article class="post-card full-post">
                <div class="post-header">
@@ -67,10 +70,11 @@
 {{.Post.Post.Content}}
                </div>
                <div class="post-footer">
-                  <form action="/post/{{.Post.Post.ID}}/like" method="POST">
-                     <button type="submit" class="like-btn">
-                     ❤️<span>{{.Post.LikeCount}}</span>
-                     </button>
+                  <form action="/post/{{.Post.Post.ID}}/like" method="POST" style="display:inline;">
+                     <button type="submit" class="like-btn">❤️ <span>{{.Post.LikeCount}}</span></button>
+                  </form>
+                  <form action="/post/{{.Post.Post.ID}}/dislike" method="POST" style="display:inline;">
+                     <button type="submit" class="like-btn">👎 <span>{{.Post.DislikeCount}}</span></button>
                   </form>
                </div>
             </article>

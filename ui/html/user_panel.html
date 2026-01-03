@@ -185,22 +185,22 @@
 
             <h1>My Likes</h1>
 
-            {{ range index .AnyData "likes" }}
-            <article class="post-card" id="likes-list">
-                <a href="/post/{{ .PostID }}"> </a>
+                        {{ range index .AnyData "likes" }}
+                        <article class="post-card" id="likes-list">
+                                <a href="/post/{{ .PostID }}"> </a>
 
-                {{ if eq .TargetType "post" }}
-                <span class="badge post">💬POST</span>
-                <a href="/post/{{ .PostID }}" class="link"> {{ .Title }} </a>
-                <p class="txt-content">Post content: {{ .Content }}</p>
-                {{ else if eq .TargetType "comment" }}
-                <span class="badge post">❤️COMMENT</span>
-                <a href="/post/{{ .PostID }}" class="link"> {{ .Title }}</a>
-                <p class="txt-content">Comment content: {{ .Content }}</p>
-                {{end}}
-
-
-            </article>
+                                {{ if eq .TargetType "post" }}
+                                <span class="badge post">💬POST</span>
+                                <a href="/post/{{ .PostID }}" class="link"> {{ .Title }} </a>
+                                <p class="txt-content">Post content: {{ .Content }}
+                                    {{ if eq .Value 1 }}<span title="You liked this post">❤️</span>{{ else if eq .Value -1 }}<span title="You disliked this post">👎</span>{{ end }}
+                                </p>
+                                {{ else if eq .TargetType "comment" }}
+                                <span class="badge post">❤️COMMENT</span>
+                                <a href="/post/{{ .PostID }}" class="link"> {{ .Title }}</a>
+                                <p class="txt-content">Comment content: {{ .Content }}</p>
+                                {{end}}
+                        </article>
             {{ else }}
             <p>You haven't liked any posts yet.</p>
             {{ end }}

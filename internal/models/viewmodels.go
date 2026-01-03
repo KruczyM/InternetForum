@@ -5,6 +5,7 @@ type PostView struct {
 	AuthorName		string
 	BookTitle		string
 	LikeCount		int
+	DislikeCount	int
 	CommentCount	int
 	FormattedDate	string
 	Comments		[]Comment

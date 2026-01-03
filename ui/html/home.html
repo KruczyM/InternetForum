@@ -90,13 +90,14 @@
                   <p class="post-preview">
                      {{.Post.Content}}
                   </p>
-                  <div class="post-footer">
-                     <form action="/post/{{.Post.ID}}/like" method="POST">
-                        <button class="like-btn" type="submit">
-                        ❤️ <span>{{.LikeCount}}</span>
-                        </button>
+                  <div class="post-footer" style="position: relative; min-height: 40px;">
+                     <form action="/post/{{.Post.ID}}/like" method="POST" style="display:inline;">
+                        <button class="like-btn" type="submit">❤️ <span>{{.LikeCount}}</span></button>
                      </form>
-                     <a href="/post/{{.Post.ID}}" class="read-more secondary-btn">
+                     <form action="/post/{{.Post.ID}}/dislike" method="POST" style="display:inline; margin-left: 4px;">
+                        <button class="like-btn" type="submit">👎 <span>{{.DislikeCount}}</span></button>
+                     </form>
+                     <a href="/post/{{.Post.ID}}" class="read-more secondary-btn" style="position: absolute; right: 0; top: 0;">
                      Full Post
                      </a>
                   </div>

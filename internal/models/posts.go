@@ -11,12 +11,13 @@ type PostModel struct {
 
 func (m *PostModel) GetAllPosts(category string, bookID int) ([]PostView, error) {
 	stmt := `
-    SELECT p.id, p.user_id, p.title, p.content, p.image_path, p.post_type, p.book_id, p.chapter, p.created_at, u.username,
-    COALESCE(SUM(l.value), 0)
-    FROM posts p
-    LEFT JOIN users u ON p.user_id = u.id
-    LEFT JOIN likes l ON p.id = l.target_id AND l.target_type = 'post'
-	WHERE 1=1`
+	SELECT p.id, p.user_id, p.title, p.content, p.image_path, p.post_type, p.book_id, p.chapter, p.created_at, u.username,
+	COALESCE(SUM(CASE WHEN l.value = 1 THEN 1 ELSE 0 END), 0) as like_count,
+	COALESCE(SUM(CASE WHEN l.value = -1 THEN 1 ELSE 0 END), 0) as dislike_count
+	FROM posts p
+	LEFT JOIN users u ON p.user_id = u.id
+	LEFT JOIN likes l ON p.id = l.target_id AND l.target_type = 'post'
+   WHERE 1=1`
 
 	var args []interface{}
 
@@ -46,18 +47,19 @@ func (m *PostModel) GetAllPosts(category string, bookID int) ([]PostView, error)
 		var bookIDNull sql.NullInt64
 		var chapterNull sql.NullString
 
-		err := rows.Scan(
-			&pv.Post.ID,
-			&pv.Post.UserID,
-			&pv.Post.Title,
-			&pv.Post.Content,
-			&pv.Post.ImagePath,
-			&pv.Post.PostType,
-			&bookIDNull,
-			&chapterNull,
-			&pv.Post.CreatedAt,
-			&pv.AuthorName,
-			&pv.LikeCount,
+		   err := rows.Scan(
+			   &pv.Post.ID,
+			   &pv.Post.UserID,
+			   &pv.Post.Title,
+			   &pv.Post.Content,
+			   &pv.Post.ImagePath,
+			   &pv.Post.PostType,
+			   &bookIDNull,
+			   &chapterNull,
+			   &pv.Post.CreatedAt,
+			   &pv.AuthorName,
+			   &pv.LikeCount,
+			   &pv.DislikeCount,
 		)
 		if err != nil {
 			fmt.Println("Scan Error:", err)
@@ -147,23 +149,24 @@ func (m *PostModel) GetPostsByUserID(userID string) ([]PostView, error) {
 
 func (m *PostModel) GetPost(id int) (*PostView, error) {
 	stmt := `
-    SELECT 
-        p.id, 
-        p.user_id, 
-        p.title, 
-        p.content,
+	SELECT 
+		p.id, 
+		p.user_id, 
+		p.title, 
+		p.content,
 		p.image_path,
-        p.post_type, 
-        COALESCE(b.title, '') as book_title,
+		p.post_type, 
+		COALESCE(b.title, '') as book_title,
 		p.book_id,
-        COALESCE(p.chapter, '') as chapter,
-        p.created_at, 
-        u.username,
-        (SELECT COUNT(*) FROM likes WHERE target_id = p.id AND target_type = 'post') as like_count
-    FROM posts p
-    LEFT JOIN users u ON p.user_id = u.id
+		COALESCE(p.chapter, '') as chapter,
+		p.created_at, 
+		u.username,
+		(SELECT COUNT(*) FROM likes WHERE target_id = p.id AND target_type = 'post' AND value = 1) as like_count,
+		(SELECT COUNT(*) FROM likes WHERE target_id = p.id AND target_type = 'post' AND value = -1) as dislike_count
+	FROM posts p
+	LEFT JOIN users u ON p.user_id = u.id
 	LEFT JOIN books b ON p.book_id = b.id
-    WHERE p.id = ?`
+	WHERE p.id = ?`
 
 	row := m.DB.QueryRow(stmt, id)
 
@@ -182,6 +185,7 @@ func (m *PostModel) GetPost(id int) (*PostView, error) {
 		&pv.Post.CreatedAt,
 		&pv.AuthorName,
 		&pv.LikeCount,
+		&pv.DislikeCount,
 	)
 	if err != nil {
 		return nil, err
@@ -267,26 +271,51 @@ func (m *PostModel) UpdatePost(id int, title, content string) error {
 	return nil
 }
 
+// ToggleLike sets a like (1) for the post, or switches from dislike (-1) to like (1).
 func (m *PostModel) ToggleLike(userID string, postID int) error {
 	stmt := `SELECT value FROM likes WHERE user_id = ? AND target_type = 'post' AND target_id = ?`
-
 	var value int
 	err := m.DB.QueryRow(stmt, userID, postID).Scan(&value)
-
 	if err == sql.ErrNoRows {
+	
 		stmt = `INSERT INTO likes (user_id, target_type, target_id, value) VALUES (?, 'post', ?, 1)`
 		_, err = m.DB.Exec(stmt, userID, postID)
 		return err
 	} else if err != nil {
 		return err
 	}
-
 	if value == 1 {
-		stmt := `DELETE FROM likes WHERE user_id = ? AND target_type = 'post' AND target_id = ?`
+		// Already liked, remove reaction
+		stmt = `DELETE FROM likes WHERE user_id = ? AND target_type = 'post' AND target_id = ?`
 		_, err = m.DB.Exec(stmt, userID, postID)
-
 	} else {
-		stmt := `UPDATE likes SET value = 1 WHERE user_id = ? AND target_type = 'post' AND target_id = ?`
+		// Was disliked, switch to like
+		stmt = `UPDATE likes SET value = 1 WHERE user_id = ? AND target_type = 'post' AND target_id = ?`
+		_, err = m.DB.Exec(stmt, userID, postID)
+	}
+	return err
+}
+
+// ToggleDislike sets a dislike (-1) for the post, or switches from like (1) to dislike (-1).
+func (m *PostModel) ToggleDislike(userID string, postID int) error {
+	stmt := `SELECT value FROM likes WHERE user_id = ? AND target_type = 'post' AND target_id = ?`
+	var value int
+	err := m.DB.QueryRow(stmt, userID, postID).Scan(&value)
+	if err == sql.ErrNoRows {
+		// No reaction yet, insert dislike
+		stmt = `INSERT INTO likes (user_id, target_type, target_id, value) VALUES (?, 'post', ?, -1)`
+		_, err = m.DB.Exec(stmt, userID, postID)
+		return err
+	} else if err != nil {
+		return err
+	}
+	if value == -1 {
+		// Already disliked, remove reaction
+		stmt = `DELETE FROM likes WHERE user_id = ? AND target_type = 'post' AND target_id = ?`
+		_, err = m.DB.Exec(stmt, userID, postID)
+	} else {
+		// Was liked, switch to dislike
+		stmt = `UPDATE likes SET value = -1 WHERE user_id = ? AND target_type = 'post' AND target_id = ?`
 		_, err = m.DB.Exec(stmt, userID, postID)
 	}
 	return err
@@ -471,37 +500,40 @@ type LikeView struct {
 	PostID     int
 	Title      string
 	Content    string
+	Value      int // 1 for like, -1 for dislike
 }
 
 func (m *PostModel) GetLikesByUserID(userID string) ([]LikeView, error) {
-	stmt := `
-	-- liked POSTS
-	SELECT 
-		'post' AS target_type,
-		p.id AS target_id,
-		p.id AS post_id,
-		p.title,
-		p.content
-	FROM likes l
-	JOIN posts p ON l.target_id = p.id
-	WHERE l.user_id = ? AND l.target_type = 'post'
+	   stmt := `
+	   -- liked POSTS
+	   SELECT 
+		   'post' AS target_type,
+		   p.id AS target_id,
+		   p.id AS post_id,
+		   p.title,
+		   p.content,
+		   l.value
+	   FROM likes l
+	   JOIN posts p ON l.target_id = p.id
+	   WHERE l.user_id = ? AND l.target_type = 'post'
 
-	UNION ALL
+	   UNION ALL
 
-	-- liked COMMENTS
-	SELECT
-		'comment' AS target_type,
-		c.id AS target_id,
-		p.id AS post_id,
-		p.title,
-		c.content
-	FROM likes l
-	JOIN comments c ON l.target_id = c.id
-	JOIN posts p ON c.post_id = p.id
-	WHERE l.user_id = ? AND l.target_type = 'comment'
+	   -- liked COMMENTS
+	   SELECT
+		   'comment' AS target_type,
+		   c.id AS target_id,
+		   p.id AS post_id,
+		   p.title,
+		   c.content,
+		   l.value
+	   FROM likes l
+	   JOIN comments c ON l.target_id = c.id
+	   JOIN posts p ON c.post_id = p.id
+	   WHERE l.user_id = ? AND l.target_type = 'comment'
 
-	ORDER BY post_id DESC
-	`
+	   ORDER BY post_id DESC
+	   `
 
 	rows, err := m.DB.Query(stmt, userID, userID)
 	if err != nil {
@@ -511,20 +543,21 @@ func (m *PostModel) GetLikesByUserID(userID string) ([]LikeView, error) {
 
 	var likes []LikeView
 
-	for rows.Next() {
-		var lv LikeView
-		err := rows.Scan(
-			&lv.TargetType,
-			&lv.TargetID,
-			&lv.PostID,
-			&lv.Title,
-			&lv.Content,
-		)
-		if err != nil {
-			return nil, err
-		}
-		likes = append(likes, lv)
-	}
+	   for rows.Next() {
+		   var lv LikeView
+		   err := rows.Scan(
+			   &lv.TargetType,
+			   &lv.TargetID,
+			   &lv.PostID,
+			   &lv.Title,
+			   &lv.Content,
+			   &lv.Value,
+		   )
+		   if err != nil {
+			   return nil, err
+		   }
+		   likes = append(likes, lv)
+	   }
 
 	return likes, rows.Err()
 }
