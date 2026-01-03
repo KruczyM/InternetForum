@@ -223,9 +223,6 @@ body {
 }
 
 .post-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-top: 14px;
 }
 .comment .like-btn {
