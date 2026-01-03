@@ -86,7 +86,6 @@ func (m *PostModel) GetAllPosts(category string, bookID int) ([]PostView, error)
 	return posts, nil
 }
 
-
 func (m *PostModel) GetPostsByUserID(userID string) ([]PostView, error) {
 	stmt := `
 	SELECT 
@@ -147,7 +146,6 @@ func (m *PostModel) GetPostsByUserID(userID string) ([]PostView, error) {
 
 	return posts, rows.Err()
 }
-
 
 func (m *PostModel) GetPost(id int) (*PostView, error) {
 	stmt := `
@@ -374,11 +372,9 @@ func (m *PostModel) SearchPosts(query, category string) ([]PostView, error) {
     WHERE (p.title LIKE ? OR u.username LIKE ?)
     `
 
-	// Используем query% для поиска, который начинается с введённой строки
 	likeQuery := query + "%"
 	args := []interface{}{likeQuery, likeQuery}
 
-	// Фильтр по категории
 	if category != "" {
 		baseStmt += " AND p.post_type = ?"
 		args = append(args, category)
@@ -427,12 +423,11 @@ func (m *PostModel) SearchPosts(query, category string) ([]PostView, error) {
 }
 
 type CommentView struct {
-	ID            int
-	Content       string
-	PostID        int
-	PostTitle     string
+	ID        int
+	Content   string
+	PostID    int
+	PostTitle string
 }
-
 
 func (m *PostModel) GetCommentsByUserID(userID string) ([]CommentView, error) {
 	stmt := `
@@ -444,7 +439,7 @@ func (m *PostModel) GetCommentsByUserID(userID string) ([]CommentView, error) {
 	WHERE c.user_id = ?
 	ORDER BY c.created_at DESC
 	`
- 
+
 	rows, err := m.DB.Query(stmt, userID)
 	if err != nil {
 		return nil, err

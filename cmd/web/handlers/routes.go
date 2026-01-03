@@ -16,8 +16,8 @@ func (h *Handler) Routes() http.Handler {
 	router := chi.NewRouter()
 
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) {
-        http.Redirect(w, r, "/", http.StatusSeeOther) 
-    })
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	})
 
 	//Middlewares function like layers of an onion—the request passes through them from the outermost layer to the innermost.
 	//Using router.Use(middleware) registers the middleware for all routes within the router.
@@ -38,8 +38,6 @@ func (h *Handler) Routes() http.Handler {
 	uploadServer := http.FileServer(http.Dir("./ui/static/uploads"))
 	router.Handle("/static/uploads/*", http.StripPrefix("/static/uploads/", uploadServer))
 
-
-
 	//In the Chi router, we map handlers directly to HTTP methods. We use router.Get("/", handler) for retrieval, and similarly Post, Put, Patch, or Delete for other actions.
 	router.Get("/", h.home)
 	//Create a route group for /post, each sub will start from /post
@@ -53,7 +51,7 @@ func (h *Handler) Routes() http.Handler {
 		router.With(h.requireAuth).Get("/{id}/edit", h.EditPost)
 		router.With(h.requireAuth).Post("/{id}/edit", h.UpdatePost)
 		router.With(h.requireAuth).Post("/{id}/like", h.PostLike)
-		
+
 	})
 	router.With(h.requireAuth).Post("/comment/{id}/delete", h.DeleteComment)
 	router.With(h.requireAuth).Post("/comment/{id}/like", h.CommentLike)
@@ -80,22 +78,22 @@ func (h *Handler) Routes() http.Handler {
 
 	//user_panel
 	router.Route("/profile", func(r chi.Router) {
-	r.Use(h.requireAuth)
+		r.Use(h.requireAuth)
 
-	r.Get("/", h.userProfile)
-	r.Post("/edit", h.userProfileEditPost)
-	r.Post("/password", h.userProfilePasswordPost)
-	r.Post("/avatar", h.changeAvatar)
-})
+		r.Get("/", h.userProfile)
+		r.Post("/edit", h.userProfileEditPost)
+		r.Post("/password", h.userProfilePasswordPost)
+		r.Post("/avatar", h.changeAvatar)
+	})
 
-    //public user panel
-    router.Route("/u/{username}", func(r chi.Router) {
-        r.Use(h.requireAuth)
-        r.Get("/", h.publicUserProfile)
-    })
+	//public user panel
+	router.Route("/u/{username}", func(r chi.Router) {
+		r.Use(h.requireAuth)
+		r.Get("/", h.publicUserProfile)
+	})
 
 	//test 500 error
 	router.Get("/test500", h.test500)
-	
+
 	return router
 }

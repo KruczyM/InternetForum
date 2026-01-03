@@ -253,17 +253,15 @@ body {
 }
 
 /* Everything related to post creation */
-.create-post-form {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
 
 .create-post-form .form-group {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-bottom: 14px;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto 20px auto;
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  column-gap: 24px;
+  align-items: start;
 }
 
 .create-post-form-container h1 {
@@ -273,29 +271,30 @@ body {
   padding: 18px 24px;
   font-size: 2em;
   gap: 20px;
-  position: relative;
-  top: -20px;
+}
+
+.create-post-form label {
+  text-align: right;
+  padding-top: 10px;
+  font-size: 0.9em;
+  color: #4a3428;
 }
 
 .create-post-form input[type="text"],
 .create-post-form select,
-.create-post-form textarea {
+.create-post-form textarea,
+.create-post-form input[type="file"] {
   padding: 10px 14px;
   border: 1px solid #d7c3af;
   border-radius: 8px;
   font-size: 0.95em;
   font-family: "Libre Baskerville", Georgia, serif;
   outline: none;
-  position: relative;
-  top: -26px;
-  display: inline-block;
-  vertical-align: middle;
   width: 100%;
   max-width: 500px;
-  margin: 0 auto 8px auto;
+  margin: 0;
   box-sizing: border-box;
 }
-
 .create-post-form textarea {
   min-height: 120px;
   resize: vertical;
@@ -332,10 +331,6 @@ body {
   cursor: pointer;
 }
 
-.form-group {
-  position: relative;
-}
-
 .create-post-form select option {
   background: #fffaf4;
   color: #4a3428;
@@ -347,13 +342,13 @@ body {
 .related-book-actions {
   width: 100%;
   max-width: 500px;
-  margin: 0 auto;
-  position: relative;
-  top: -20px; 
+  margin-top: 6px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 6px;
+  grid-column: 2;
+  margin-top: 6px;
 }
 
 .secondary-btn {
@@ -384,10 +379,9 @@ body {
 
 /* FILE UPLOAD */
 .file-upload-group {
-  font-family: "Libre Baskerville", Georgia, serif;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  width: 100%;
+  align-items: center;
+  grid-column: 2;
 }
 
 .file-name {
