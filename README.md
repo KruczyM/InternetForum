@@ -74,6 +74,10 @@ Using Docker is the easiest way to build and run the application without install
 
 From the root of the project (where the `Dockerfile` is located), run:
 
+⚠️ Important for Windows Users: You must run the build command inside your WSL (Windows Subsystem for Linux) terminal (e.g., Ubuntu). Do not use PowerShell or Command Prompt, as this may cause build errors
+
+From the root of the project (where the Dockerfile is located), run:
+
 ```bash
 docker build -t forum .
 ```
