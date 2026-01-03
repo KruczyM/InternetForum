@@ -200,7 +200,8 @@ func (m *PostModel) GetPost(id int) (*PostView, error) {
         c.created_at, 
         c.user_id, 
         u.username,
-        (SELECT COUNT(*) FROM likes WHERE target_id = c.id AND target_type = 'comment')
+		(SELECT COUNT(*) FROM likes WHERE target_id = c.id AND target_type = 'comment' AND value = 1) as like_count,
+		(SELECT COUNT(*) FROM likes WHERE target_id = c.id AND target_type = 'comment' AND value = -1) as dislike_count
     FROM comments c
     LEFT JOIN users u ON c.user_id = u.id
     WHERE c.post_id = ?
@@ -214,8 +215,7 @@ func (m *PostModel) GetPost(id int) (*PostView, error) {
 
 	for rows.Next() {
 		var c Comment
-
-		err = rows.Scan(&c.ID, &c.Content, &c.CreatedAt, &c.UserID, &c.UserName, &c.LikeCount)
+		err = rows.Scan(&c.ID, &c.Content, &c.CreatedAt, &c.UserID, &c.UserName, &c.LikeCount, &c.DislikeCount)
 		if err != nil {
 			return nil, err
 		}
@@ -277,7 +277,7 @@ func (m *PostModel) ToggleLike(userID string, postID int) error {
 	var value int
 	err := m.DB.QueryRow(stmt, userID, postID).Scan(&value)
 	if err == sql.ErrNoRows {
-	
+		// No reaction yet, insert like
 		stmt = `INSERT INTO likes (user_id, target_type, target_id, value) VALUES (?, 'post', ?, 1)`
 		_, err = m.DB.Exec(stmt, userID, postID)
 		return err
@@ -347,18 +347,53 @@ func (m *PostModel) DeleteComment(id int, userID string) error {
 	return nil
 }
 
-func (m *PostModel) LikeComment(commentID int, userID string) error {
-	stmt := `SELECT EXISTS(SELECT 1 FROM likes WHERE user_id = ? AND target_id = ? AND target_type = 'comment')`
-	var exists bool
-	err := m.DB.QueryRow(stmt, userID, commentID).Scan(&exists)
-	if err != nil {
+
+// ToggleLikeComment sets a like (1) for the comment, or switches from dislike (-1) to like (1).
+func (m *PostModel) ToggleLikeComment(userID string, commentID int) error {
+	stmt := `SELECT value FROM likes WHERE user_id = ? AND target_type = 'comment' AND target_id = ?`
+	var value int
+	err := m.DB.QueryRow(stmt, userID, commentID).Scan(&value)
+	if err == sql.ErrNoRows {
+		// No reaction yet, insert like
+		stmt = `INSERT INTO likes (user_id, target_type, target_id, value) VALUES (?, 'comment', ?, 1)`
+		_, err = m.DB.Exec(stmt, userID, commentID)
+		return err
+	} else if err != nil {
 		return err
 	}
-
-	if exists {
-		_, err = m.DB.Exec(`DELETE FROM likes WHERE user_id = ? AND target_id = ? AND target_type = 'comment'`, userID, commentID)
+	if value == 1 {
+		// Already liked, remove reaction
+		stmt = `DELETE FROM likes WHERE user_id = ? AND target_type = 'comment' AND target_id = ?`
+		_, err = m.DB.Exec(stmt, userID, commentID)
 	} else {
-		_, err = m.DB.Exec(`INSERT INTO likes (user_id, target_id, target_type, value) VALUES (?, ?, 'comment', 1)`, userID, commentID)
+		// Was disliked, switch to like
+		stmt = `UPDATE likes SET value = 1 WHERE user_id = ? AND target_type = 'comment' AND target_id = ?`
+		_, err = m.DB.Exec(stmt, userID, commentID)
+	}
+	return err
+}
+
+// ToggleDislikeComment sets a dislike (-1) for the comment, or switches from like (1) to dislike (-1).
+func (m *PostModel) ToggleDislikeComment(userID string, commentID int) error {
+	stmt := `SELECT value FROM likes WHERE user_id = ? AND target_type = 'comment' AND target_id = ?`
+	var value int
+	err := m.DB.QueryRow(stmt, userID, commentID).Scan(&value)
+	if err == sql.ErrNoRows {
+		// No reaction yet, insert dislike
+		stmt = `INSERT INTO likes (user_id, target_type, target_id, value) VALUES (?, 'comment', ?, -1)`
+		_, err = m.DB.Exec(stmt, userID, commentID)
+		return err
+	} else if err != nil {
+		return err
+	}
+	if value == -1 {
+		// Already disliked, remove reaction
+		stmt = `DELETE FROM likes WHERE user_id = ? AND target_type = 'comment' AND target_id = ?`
+		_, err = m.DB.Exec(stmt, userID, commentID)
+	} else {
+		// Was liked, switch to dislike
+		stmt = `UPDATE likes SET value = -1 WHERE user_id = ? AND target_type = 'comment' AND target_id = ?`
+		_, err = m.DB.Exec(stmt, userID, commentID)
 	}
 	return err
 }

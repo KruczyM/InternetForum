@@ -1,3 +1,4 @@
+
 package handlers
 
 import (
@@ -12,6 +13,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 )
+
 
 func (h *Handler) ViewPost(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
@@ -233,6 +235,7 @@ func (h *Handler) PostLike(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
 }
 
+// PostDislike toggles a dislike for a post, or switches from like to dislike.
 func (h *Handler) PostDislike(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil || id < 1 {
@@ -289,6 +292,7 @@ func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/post/"+postID, http.StatusSeeOther)
 }
 
+
 func (h *Handler) CommentLike(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
@@ -304,7 +308,32 @@ func (h *Handler) CommentLike(w http.ResponseWriter, r *http.Request) {
 	}
 
 	postsModel := &models.PostModel{DB: h.DB}
-	err = postsModel.LikeComment(id, userID)
+	err = postsModel.ToggleLikeComment(userID, id)
+	if err != nil {
+		h.serverError(w, err)
+		return
+	}
+
+	postID := r.URL.Query().Get("post_id")
+	http.Redirect(w, r, "/post/"+postID, http.StatusSeeOther)
+}
+
+func (h *Handler) CommentDislike(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil || id < 1 {
+		h.notFound(w)
+		return
+	}
+
+	userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+	if userID == "" {
+		http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
+		return
+	}
+
+	postsModel := &models.PostModel{DB: h.DB}
+	err = postsModel.ToggleDislikeComment(userID, id)
 	if err != nil {
 		h.serverError(w, err)
 		return

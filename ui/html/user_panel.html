@@ -193,7 +193,7 @@
                                 <span class="badge post">💬POST</span>
                                 <a href="/post/{{ .PostID }}" class="link"> {{ .Title }} </a>
                                 <p class="txt-content">Post content: {{ .Content }}
-                                    {{ if eq .Value 1 }}<span title="You liked this post">❤️</span>{{ else if eq .Value -1 }}<span title="You disliked this post">👎</span>{{ end }}
+                                    {{ if eq .Value 1 }}<span title="You liked this post">❤️</span>{{ else if eq .Value -1 }}<span title="You disliked this post">💔</span>{{ end }}
                                 </p>
                                 {{ else if eq .TargetType "comment" }}
                                 <span class="badge post">❤️COMMENT</span>

@@ -21,6 +21,7 @@ type Comment struct {
 	Content   string
 	CreatedAt time.Time
 	LikeCount int
+	DislikeCount int
 }
 
 // one vote per person per post + 1 or -1
