@@ -64,8 +64,6 @@ func (m *PostModel) GetAllPosts(category string, bookID int) ([]PostView, error)
 			return nil, err
 		}
 
-		fmt.Printf("Post ID: %d, ImagePath: '%s'\n", pv.Post.ID, pv.Post.ImagePath)
-
 		if bookIDNull.Valid {
 			bID := int(bookIDNull.Int64)
 			pv.Post.BookID = &bID
