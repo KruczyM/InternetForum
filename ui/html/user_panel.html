@@ -191,11 +191,11 @@
 
                 {{ if eq .TargetType "post" }}
                 <span class="badge post">💬POST</span>
-                <a href="/post/{{ .PostID }}"> {{ .Title }} </a>
+                <a href="/post/{{ .PostID }}" class="link"> {{ .Title }} </a>
                 <p class="txt-content">Post content: {{ .Content }}</p>
                 {{ else if eq .TargetType "comment" }}
                 <span class="badge post">❤️COMMENT</span>
-                <a href="/post/{{ .PostID }}"> {{ .Title }}</a>
+                <a href="/post/{{ .PostID }}" class="link"> {{ .Title }}</a>
                 <p class="txt-content">Comment content: {{ .Content }}</p>
                 {{end}}
 
