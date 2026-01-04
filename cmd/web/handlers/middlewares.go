@@ -60,6 +60,10 @@ func (h *Handler) requireAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// If the user is not authenticated, redirect them to the login page and return from the middleware chain so that no subsequent handlers in the chain are executed.
 		if !h.isAuthenticated(r){
+			h.SessionManager.Put(r.Context(), "flash", &FlashMessage{
+				Type: "error",
+				Msg:  "Please log in to perform this action.",
+			})
 			http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 			return
 		}
