@@ -3,8 +3,36 @@ package models
 import (
 	"database/sql"
 	"strings"
+	"time"
+
 	"golang.org/x/crypto/bcrypt"
 )
+
+type User struct {
+	ID           string
+	Email        string
+	Username     string
+	FirstName    string
+	LastName     string
+	PasswordHash string
+	AvatarPath   string
+	CreatedAt    time.Time
+}
+
+type UserBookPreference struct {
+	UserID    string
+	BookID    int
+	Rating    *int
+	Liked     *bool
+	CreatedAt time.Time
+}
+
+type Session struct {
+	ID        string 
+	UserID    string
+	ExpiresAt time.Time
+}
+
 
 //hashed password
 func HashPassword(password string) (string, error) {

@@ -5,6 +5,14 @@ import (
 	"time"
 )
 
+type ChatMessage struct {
+	ID        int
+	UserID    string
+	Content   string
+	Category  string // Added for filtering by category
+	CreatedAt time.Time
+}
+
 // In-memory chat storage: map[category][]ChatMessage
 var (
 	chatStorage = make(map[string][]ChatMessage)
