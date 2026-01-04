@@ -108,7 +108,7 @@ func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
 		content := r.FormValue("content")
 		category := r.FormValue("post_type")
 
-		userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+		userID := h.authenticatedUserID(r)
 		if userID == "" {
 			http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 			return

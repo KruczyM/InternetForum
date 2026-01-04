@@ -10,8 +10,6 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/go-chi/chi/v5"
 )
 
 type userProfileForm struct {
@@ -28,7 +26,7 @@ type userPasswordForm struct {
 }
 
 func (h *Handler) userProfile(w http.ResponseWriter, r *http.Request) {
-	userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+	userID := h.authenticatedUserID(r)
 	if userID == "" {
 		http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 		return
@@ -47,7 +45,7 @@ func (h *Handler) userProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := h.newTemplateData(r)
+	data := h.newTemplateData(w,r)
 
 	data.Form = &validator.Validator{}
 
@@ -90,11 +88,11 @@ func (h *Handler) userProfileEditPost(w http.ResponseWriter, r *http.Request) {
 	form.CheckField(validator.NotBlank(form.lastName), "last_name", "Last name is required")
 
 	if !form.Valid() {
-		data := h.newTemplateData(r)
+		data := h.newTemplateData(w,r)
 		data.AnyData = map[string]any{}
 		data.Form = form
 
-		userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+		userID := h.authenticatedUserID(r)
 		user, _ := models.GetUserByID(h.DB, userID)
 
 		data.AnyData["tab"] = "profile"
@@ -105,19 +103,15 @@ func (h *Handler) userProfileEditPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+	userID := h.authenticatedUserID(r)
 	err = models.UpdateUserNameFields(h.DB, userID, form.firstName, form.lastName)
 	if err != nil {
 		h.serverError(w, err)
 		return
 	}
+	h.setFlash(w, "success", "Profile updated successfully")
 
-	h.SessionManager.Put(r.Context(), "flash", &FlashMessage{
-		Type: "success",
-		Msg:  "Profile updated successfully",
-	})
-
-	http.Redirect(w, r, "/me?tab=profile", http.StatusSeeOther)
+	http.Redirect(w, r, "/profile?tab=profile", http.StatusSeeOther)
 }
 
 func (h *Handler) userProfilePasswordPost(w http.ResponseWriter, r *http.Request) {
@@ -138,11 +132,11 @@ func (h *Handler) userProfilePasswordPost(w http.ResponseWriter, r *http.Request
 	form.CheckField(validator.MinChars(form.newPassword, 5), "new_password", "Password must be at least 5 characters")
 	form.CheckField(form.newPassword == form.confirmPassword, "confirm_password", "Passwords do not match")
 
-	userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+	userID := h.authenticatedUserID(r)
 	user, _ := models.GetUserByID(h.DB, userID)
 
 	if !form.Valid() {
-		data := h.newTemplateData(r)
+		data := h.newTemplateData(w,r)
 		data.AnyData = map[string]any{}
 		data.Form = form
 
@@ -157,7 +151,7 @@ func (h *Handler) userProfilePasswordPost(w http.ResponseWriter, r *http.Request
 	if !models.CheckPassword(form.currentPassword, user.PasswordHash) {
 		form.AddFieldError("current_password", "Incorrect current password")
 
-		data := h.newTemplateData(r)
+		data := h.newTemplateData(w,r)
 		data.AnyData = map[string]any{}
 		data.Form = form
 
@@ -180,13 +174,9 @@ func (h *Handler) userProfilePasswordPost(w http.ResponseWriter, r *http.Request
 		h.serverError(w, err)
 		return
 	}
+	h.setFlash(w,"success", "Password changed successfully")
 
-	h.SessionManager.Put(r.Context(), "flash", &FlashMessage{
-		Type: "success",
-		Msg:  "Password changed successfully",
-	})
-
-	http.Redirect(w, r, "/me?tab=profile", http.StatusSeeOther)
+	http.Redirect(w, r, "/profile?tab=profile", http.StatusSeeOther)
 }
 
 func (h *Handler) changeAvatar(w http.ResponseWriter, r *http.Request) {
@@ -236,28 +226,28 @@ func (h *Handler) changeAvatar(w http.ResponseWriter, r *http.Request) {
 		imagePath = "/static/uploads/avatars/" + fileName
 	}
 
-	userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+	userID := h.authenticatedUserID(r)
 
 	err = models.UpdateUserAvatarPath(h.DB, userID, imagePath)
 	if err != nil {
 		h.serverError(w, err)
 		return
 	}
-
-	h.SessionManager.Put(r.Context(), "flash", &FlashMessage{
-		Type: "success",
-		Msg:  "Avatart changed successfully",
-	})
+	h.setFlash(w, "success", "Avatart changed successfully")
 
 	http.Redirect(w, r, "/profile?tab=profile", http.StatusSeeOther)
 }
 
 func (h *Handler) publicUserProfile(w http.ResponseWriter, r *http.Request) {
-    username := chi.URLParam(r, "username")
-    if username == "" {
-        h.notFound(w)
-        return
-    }
+	path := strings.TrimPrefix(r.URL.Path, "/u/")
+	parts := strings.Split(path, "/")
+
+	if len(parts) != 1 || parts[0] == "" {
+		h.notFound(w)
+		return
+	}
+
+	username := parts[0]
 
     tab := r.URL.Query().Get("tab")
     if tab == "" {
@@ -270,7 +260,7 @@ func (h *Handler) publicUserProfile(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    data := h.newTemplateData(r)
+    data := h.newTemplateData(w,r)
     data.AnyData["user"] = user
     data.AnyData["tab"] = tab
 

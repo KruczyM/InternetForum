@@ -25,15 +25,14 @@ type userLoginForm struct {
 	validator.Validator
 }
 
-// i make i sepatare to make it easier to read
+
 func (h *Handler) userRegister(w http.ResponseWriter, r *http.Request) {
-	data := h.newTemplateData(r)
+	data := h.newTemplateData(w,r)
 	data.Form = userRegisterForm{}
 	h.render(w, http.StatusOK, "register.html", data)
 }
 
 func (h *Handler) userRegisterPost(w http.ResponseWriter, r *http.Request) {
-	//more secure is to use http.Request.ParseForm and then r.PostForm.Get("") instead of r.FormValue("")
 	err := r.ParseForm()
 	if err != nil {
 		h.clientError(w, http.StatusBadRequest)
@@ -57,7 +56,7 @@ func (h *Handler) userRegisterPost(w http.ResponseWriter, r *http.Request) {
 	form.CheckField(validator.MinChars(form.password, 5), "password", "Password must be at least 5 characters")
 
 	if !form.Valid() {
-		data := h.newTemplateData(r)
+		data := h.newTemplateData(w,r)
 		data.Form = form
 		h.render(w, http.StatusUnprocessableEntity, "register.html", data)
 		return
@@ -93,22 +92,20 @@ func (h *Handler) userRegisterPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		data := h.newTemplateData(r)
+		data := h.newTemplateData(w,r)
 		data.Form = form
 		h.render(w, http.StatusUnprocessableEntity, "register.html", data)
 		return
 	}
 
-	h.SessionManager.Put(r.Context(), "flash", &FlashMessage{
-		Type: "success",
-		Msg:  "Your signup was successful. Please log in.",
-	})
+	h.setFlash(w, "success", "Your signup was successful. Please log in.")
+
 	http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 
 }
 
 func (h *Handler) userLogin(w http.ResponseWriter, r *http.Request) {
-	data := h.newTemplateData(r)
+	data := h.newTemplateData(w,r)
 	data.Form = userLoginForm{}
 	h.render(w, http.StatusOK, "login.html", data)
 
@@ -130,7 +127,7 @@ func (h *Handler) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	form.CheckField(validator.NotBlank(form.password), "password", "Password is required")
 
 	if !form.Valid() {
-		data := h.newTemplateData(r)
+		data := h.newTemplateData(w,r)
 		data.Form = form
 		h.render(w, http.StatusUnprocessableEntity, "login.html", data)
 		return
@@ -138,10 +135,7 @@ func (h *Handler) userLoginPost(w http.ResponseWriter, r *http.Request) {
 
 	user, err := models.GetUserByEmail(h.DB, form.email)
 	if err != nil {
-		h.SessionManager.Put(r.Context(), "flash", &FlashMessage{
-			Type: "error",
-			Msg:  "Invalid email or password",
-		})
+		h.setFlash(w, "error", "Invalid email or password")
 		h.ErrorLog.Println(err)
 		http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 		return
@@ -149,37 +143,21 @@ func (h *Handler) userLoginPost(w http.ResponseWriter, r *http.Request) {
 
 	if !models.CheckPassword(form.password, user.PasswordHash) {
 		h.ErrorLog.Println("Invalid password")
-		h.SessionManager.Put(r.Context(), "flash", &FlashMessage{
-			Type: "error",
-			Msg:  "Invalid email or password",
-		})
+		h.setFlash(w, "error", "Invalid email or password")
 		h.ErrorLog.Println(err)
 		http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 		return
 	}
 
-	h.SessionManager.Put(r.Context(), "authenticatedUserID", user.ID)
+	h.setUserSession(w, user.ID)
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (h *Handler) userLogoutPost(w http.ResponseWriter, r *http.Request) {
-	// Use the RenewToken() method on the current session to change the session
-	// ID again.
-	err := h.SessionManager.RenewToken(r.Context())
-	if err != nil {
-		h.serverError(w, err)
-		return
-	}
-	// Remove the authenticatedUserID from the session data so that the user is
-	// 'logged out'.
-	h.SessionManager.Remove(r.Context(), "authenticatedUserID")
-	// Add a flash message to the session to confirm to the user that they've been
-	// logged out.
-	h.SessionManager.Put(r.Context(), "flash", &FlashMessage{
-		Type: "success",
-		Msg:  "You've been logged out successfully!",
-	})
-	// Redirect the user to the application home page.
+
+	h.clearUserSession(w)
+	h.setFlash(w, "success", "You've been logged out successfully!")
+
 	http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 }

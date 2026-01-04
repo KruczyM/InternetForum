@@ -22,17 +22,14 @@ type templateData struct {
 	AnyData           map[string]any
 }
 
-func (h *Handler) newTemplateData(r *http.Request) *templateData {
+func (h *Handler) newTemplateData(w http.ResponseWriter, r *http.Request) *templateData {
 	data := &templateData{
 		CurrentYear:       2025,
-		IsAuthenticated:   h.isAuthenticated(r),
-		AuthenticatedUser: h.SessionManager.GetString(r.Context(), "authenticatedUserID"),
+		IsAuthenticated: h.isAuthenticated(r),
+		AuthenticatedUser: h.authenticatedUserID(r),
 		AnyData:           make(map[string]any),
+		Flash: h.getFlash(w, r),
 	}
 
-	flash := h.SessionManager.Pop(r.Context(), "flash")
-	if f, ok := flash.(*FlashMessage); ok {
-		data.Flash = f
-	}
 	return data
 }

@@ -1,4 +1,3 @@
-
 package handlers
 
 import (
@@ -10,14 +9,18 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-
-	"github.com/go-chi/chi/v5"
 )
 
-
 func (h *Handler) ViewPost(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.Atoi(idStr)
+	path := strings.TrimPrefix(r.URL.Path, "/post/")
+	parts := strings.Split(path, "/")
+
+	if len(parts) != 1 {
+		h.notFound(w)
+		return
+	}
+
+	id, err := strconv.Atoi(parts[0])
 	if err != nil || id < 1 {
 		h.notFound(w)
 		return
@@ -42,7 +45,7 @@ func (h *Handler) ViewPost(w http.ResponseWriter, r *http.Request) {
 	}{
 		Post:              postView,
 		IsAuthenticated:   h.isAuthenticated(r),
-		AuthenticatedUser: h.SessionManager.GetString(r.Context(), "authenticatedUserID"),
+		AuthenticatedUser: h.authenticatedUserID(r),
 	}
 
 	ts, err := template.ParseFiles("ui/html/post.html")
@@ -55,8 +58,15 @@ func (h *Handler) ViewPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
-	postID, err := strconv.Atoi(idStr)
+	path := strings.TrimPrefix(r.URL.Path, "/post/")
+	parts := strings.Split(path, "/")
+
+	if len(parts) != 2 || parts[1] != "comment" {
+		h.notFound(w)
+		return
+	}
+
+	postID, err := strconv.Atoi(parts[0])
 	if err != nil || postID < 1 {
 		h.notFound(w)
 		return
@@ -74,8 +84,9 @@ func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+	userID := h.authenticatedUserID(r)
 	if userID == "" {
+		h.setFlash(w, "error", "Please log in to perform this action.")
 		http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 		return
 	}
@@ -91,15 +102,21 @@ func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.Atoi(idStr)
+	path := strings.TrimPrefix(r.URL.Path, "/post/")
+	parts := strings.Split(path, "/")
+
+	if len(parts) != 2 || parts[1] != "delete" {
+		h.notFound(w)
+		return
+	}
+
+	id, err := strconv.Atoi(parts[0])
 	if err != nil || id < 1 {
 		h.notFound(w)
 		return
 	}
 
-	currentUserID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
-
+	currentUserID := h.authenticatedUserID(r)
 	postsModel := &models.PostModel{DB: h.DB}
 
 	post, err := postsModel.GetPost(id)
@@ -127,8 +144,16 @@ func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) EditPost(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.Atoi(idStr)
+
+	path := strings.TrimPrefix(r.URL.Path, "/post/")
+	parts := strings.Split(path, "/")
+
+	if len(parts) != 2 || parts[1] != "edit" {
+		h.notFound(w)
+		return
+	}
+
+	id, err := strconv.Atoi(parts[0])
 	if err != nil || id < 1 {
 		h.notFound(w)
 		return
@@ -145,7 +170,7 @@ func (h *Handler) EditPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currentUserID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+	currentUserID := h.authenticatedUserID(r)
 	if postView.Post.UserID != currentUserID {
 		h.clientError(w, http.StatusForbidden)
 		return
@@ -168,8 +193,16 @@ func (h *Handler) EditPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.Atoi(idStr)
+
+	path := strings.TrimPrefix(r.URL.Path, "/post/")
+	parts := strings.Split(path, "/")
+
+	if len(parts) != 2 || parts[1] != "edit" {
+		h.notFound(w)
+		return
+	}
+
+	id, err := strconv.Atoi(parts[0])
 	if err != nil || id < 1 {
 		h.notFound(w)
 		return
@@ -195,7 +228,7 @@ func (h *Handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currentUserID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+	currentUserID := h.authenticatedUserID(r)
 	if postView.Post.UserID != currentUserID {
 		h.clientError(w, http.StatusForbidden)
 		return
@@ -212,14 +245,24 @@ func (h *Handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) PostLike(w http.ResponseWriter, r *http.Request) {
 
-	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	path := strings.TrimPrefix(r.URL.Path, "/post/")
+	parts := strings.Split(path, "/")
+
+	if len(parts) != 2 || parts[1] != "like" {
+		h.notFound(w)
+		return
+	}
+
+	id, err := strconv.Atoi(parts[0])
 	if err != nil || id < 1 {
 		h.notFound(w)
 		return
 	}
 
-	userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+	userID := h.authenticatedUserID(r)
+
 	if userID == "" {
+		h.setFlash(w, "error", "Please log in to perform this action.")
 		http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 		return
 	}
@@ -237,14 +280,23 @@ func (h *Handler) PostLike(w http.ResponseWriter, r *http.Request) {
 
 // PostDislike toggles a dislike for a post, or switches from like to dislike.
 func (h *Handler) PostDislike(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	path := strings.TrimPrefix(r.URL.Path, "/post/")
+	parts := strings.Split(path, "/")
+
+	if len(parts) != 2 || parts[1] != "dislike" {
+		h.notFound(w)
+		return
+	}
+
+	id, err := strconv.Atoi(parts[0])
 	if err != nil || id < 1 {
 		h.notFound(w)
 		return
 	}
 
-	userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+	userID := h.authenticatedUserID(r)
 	if userID == "" {
+		h.setFlash(w, "error", "Please log in to perform this action.")
 		http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 		return
 	}
@@ -261,17 +313,24 @@ func (h *Handler) PostDislike(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("--- DEBUG: HANDLER WAS HIT! ---")
-	idStr := chi.URLParam(r, "id")
 
-	id, err := strconv.Atoi(idStr)
+	path := strings.TrimPrefix(r.URL.Path, "/comment/")
+	parts := strings.Split(path, "/")
+
+	if len(parts) != 2 || parts[1] != "delete" {
+		h.notFound(w)
+		return
+	}
+
+	id, err := strconv.Atoi(parts[0])
 	if err != nil || id < 1 {
 		h.notFound(w)
 		return
 	}
 
-	userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+	userID := h.authenticatedUserID(r)
 	if userID == "" {
+		h.setFlash(w, "error", "Please log in to perform this action.")
 		http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 		return
 	}
@@ -292,17 +351,24 @@ func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/post/"+postID, http.StatusSeeOther)
 }
 
-
 func (h *Handler) CommentLike(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.Atoi(idStr)
+	path := strings.TrimPrefix(r.URL.Path, "/comment/")
+	parts := strings.Split(path, "/")
+
+	if len(parts) != 2 || parts[1] != "like" {
+		h.notFound(w)
+		return
+	}
+
+	id, err := strconv.Atoi(parts[0])
 	if err != nil || id < 1 {
 		h.notFound(w)
 		return
 	}
 
-	userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+	userID := h.authenticatedUserID(r)
 	if userID == "" {
+		h.setFlash(w, "error", "Please log in to perform this action.")
 		http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 		return
 	}
@@ -319,15 +385,23 @@ func (h *Handler) CommentLike(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CommentDislike(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.Atoi(idStr)
+	path := strings.TrimPrefix(r.URL.Path, "/comment/")
+	parts := strings.Split(path, "/")
+
+	if len(parts) != 2 || parts[1] != "dislike" {
+		h.notFound(w)
+		return
+	}
+
+	id, err := strconv.Atoi(parts[0])
 	if err != nil || id < 1 {
 		h.notFound(w)
 		return
 	}
 
-	userID := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
+	userID := h.authenticatedUserID(r)
 	if userID == "" {
+		h.setFlash(w, "error", "Please log in to perform this action.")
 		http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 		return
 	}
@@ -369,7 +443,7 @@ func (h *Handler) SearchPosts(w http.ResponseWriter, r *http.Request) {
 		Posts:             results,
 		Query:             query,
 		IsAuthenticated:   h.isAuthenticated(r),
-		AuthenticatedUser: h.SessionManager.GetString(r.Context(), "authenticatedUserID"),
+		AuthenticatedUser: h.authenticatedUserID(r),
 	}
 
 	ts, err := template.ParseFiles("ui/html/search.html")

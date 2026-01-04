@@ -23,7 +23,8 @@ func (h *Handler) recoverPanic(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-//to add status code to response
+
+// to add status code to response
 type responseRecorder struct {
 	http.ResponseWriter
 	status int
@@ -40,7 +41,7 @@ func (h *Handler) logRequest(next http.Handler) http.Handler {
 
 		rr := &responseRecorder{
 			ResponseWriter: w,
-			status: http.StatusOK,
+			status:         http.StatusOK,
 		}
 
 		start := time.Now()
@@ -59,40 +60,44 @@ func (h *Handler) logRequest(next http.Handler) http.Handler {
 func (h *Handler) requireAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// If the user is not authenticated, redirect them to the login page and return from the middleware chain so that no subsequent handlers in the chain are executed.
-		if !h.isAuthenticated(r){
-			h.SessionManager.Put(r.Context(), "flash", &FlashMessage{
-				Type: "error",
-				Msg:  "Please log in to perform this action.",
-			})
+		if !h.isAuthenticated(r) {
+			h.setFlash(w, "error", "Please log in to perform this action.")
 			http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 			return
 		}
 		// Otherwise set the "Cache-Control: no-store" header so that pages require authentication are not stored in the users browser cache (or other intermediary cache).
 		w.Header().Add("Cache-Control", "no-store")
-		// just call next handler 
+		// just call next handler
 		next.ServeHTTP(w, r)
 	})
 }
 
-func (h *Handler) authenticate (next http.Handler) http.Handler {
+func (h *Handler) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Retrieve the authenticatedUserID value from the session using the GetString() method. This will return the "" value for an string ("") ifno
-		// "authenticatedUserID" value is in the session -- in which case we call the next handler in the chain as normal and return.
-		id := h.SessionManager.GetString(r.Context(), "authenticatedUserID")
-		if id == "" {
+
+		userID := h.getUserID(r)
+		if userID == "" {
 			next.ServeHTTP(w, r)
-			return 
-		}
-		// Otherwise, we check to see if a user with that ID exists in our database.
-		exists, err := models.ExistsUser(h.DB, id)
-		if err != nil {
-			h.serverError(w,err)
 			return
 		}
+		// Otherwise, we check to see if a user with that ID exists in our database.
+		exists, err := models.ExistsUser(h.DB, userID)
+		if err != nil {
+			h.serverError(w, err)
+			return
+		}
+
+		if !exists {
+			h.clearUserSession(w)
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		// If a matching user is found, we know that the request is coming from an authenticated user who exists in our database. We create a new copy of the request (with an
 		//isAuthenticatedContextKey value of true in the request context) and assign it to r.
-		if exists{
+		if exists {
 			ctx := context.WithValue(r.Context(), "isAuthenticated", true)
+			ctx = context.WithValue(ctx, "authenticatedUserID", userID)
 			r = r.WithContext(ctx)
 		}
 		next.ServeHTTP(w, r)

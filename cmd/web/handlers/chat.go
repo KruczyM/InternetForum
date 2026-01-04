@@ -14,7 +14,7 @@ type ChatData struct {
 
 // ChatHandler serves the chat page and handles form submissions
 func (h *Handler) ChatHandler(w http.ResponseWriter, r *http.Request) {
-       data := h.newTemplateData(r)
+       data := h.newTemplateData(w,r)
        // Handle POST (send message)
        if r.Method == http.MethodPost {
 	       userID := data.AuthenticatedUser

@@ -7,10 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
-
-	"github.com/alexedwards/scs/sqlite3store"
-	"github.com/alexedwards/scs/v2"
 )
 
 func main() {
@@ -25,18 +21,9 @@ func main() {
 	}
 	defer db.Close()
 
-	// create a new session manager with information about the cookies and the store
-	sessionManager := scs.New()
-	sessionManager.Lifetime = 24 * time.Hour
-	sessionManager.IdleTimeout = 30 * time.Minute
-	sessionManager.Cookie.HttpOnly = true
-	sessionManager.Cookie.SameSite = http.SameSiteLaxMode
 
-	// localy false but when we deploy it to the server we should set it to true
-	sessionManager.Cookie.Secure = false
 
-	// it will manage the sessions and store them in the database
-	sessionManager.Store = sqlite3store.New(db)
+
 	templateCache, err := handlers.NewTemplateCache()
 	if err != nil {
 		errorLog.Fatal(err)
@@ -46,12 +33,15 @@ func main() {
 		DB:             db,
 		InfoLog:        infoLog,
 		ErrorLog:       errorLog,
-		SessionManager: sessionManager,
 		TemplateCache:  templateCache,
 	}
 
 	appRouter := handler.Routes()
 	log.Println("Server starting on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", sessionManager.LoadAndSave(appRouter)))
+
+	err = http.ListenAndServe(":8080", appRouter)
+	if err != nil {
+	log.Fatal(err)
+}
 
 }

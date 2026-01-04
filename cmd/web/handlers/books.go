@@ -11,7 +11,7 @@ import (
 func (h *Handler) CreateBook(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodGet {
-		data := h.newTemplateData(r)
+		data := h.newTemplateData(w,r)
 
 		ts, err := template.ParseFiles("ui/html/create_book.html")
 		if err != nil {
@@ -34,7 +34,7 @@ func (h *Handler) CreateBook(w http.ResponseWriter, r *http.Request) {
         description := r.FormValue("description")
 
 		if strings.TrimSpace(title) == "" || strings.TrimSpace(author) == "" {
-			h.SessionManager.Put(r.Context(), "flash", "Title and Author are required!")
+			h.setFlash(w, "error", "Title and Author are required!")
 			http.Redirect(w, r, "/book/create", http.StatusSeeOther)
 			return
 		}
@@ -45,8 +45,7 @@ func (h *Handler) CreateBook(w http.ResponseWriter, r *http.Request) {
 			h.serverError(w, err)
 			return
 		}
-
-		h.SessionManager.Put(r.Context(), "flash", "Book added successfully!")
+		h.setFlash(w,"success","Book added successfully!")
 		http.Redirect(w, r, "/post/create", http.StatusSeeOther)
 	}
 }
