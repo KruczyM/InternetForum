@@ -80,9 +80,7 @@ func (h *Handler) Routes() http.Handler {
 		})),
 	)
 
-	mux.Handle(
-		"/post/",
-		h.requireAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mux.HandleFunc("/post/", func(w http.ResponseWriter, r *http.Request) {
 			path := strings.TrimPrefix(r.URL.Path, "/post/")
 			parts := strings.Split(path, "/")
 
@@ -91,6 +89,7 @@ func (h *Handler) Routes() http.Handler {
 				return
 			}
 
+	protectedActions := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if len(parts) == 2 {
 				switch parts[1] {
 				case "edit":
@@ -124,10 +123,10 @@ func (h *Handler) Routes() http.Handler {
 					}
 				}
 			}
-
 			http.NotFound(w, r)
-		})),
-	)
+		})
+		h.requireAuth(protectedActions).ServeHTTP(w, r)
+})
 
 	mux.Handle(
 		"/comment/",
@@ -199,7 +198,7 @@ func (h *Handler) Routes() http.Handler {
 
 	mux.Handle(
 		"/u/",
-		h.requireAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.HandlerFunc(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			h.publicUserProfile(w, r)
 		})),
 	)
