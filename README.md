@@ -41,6 +41,13 @@ Before you begin, ensure you have met the following requirements:
 
 ---
 
+## Database Design
+
+Entity Relationship Diagram (ERD) is available in:
+data/ERD.png
+
+---
+
 ## 🐳 Installing Docker
 
 If you don't have Docker installed, follow the official Docker installation guide for your operating system:
@@ -127,7 +134,7 @@ If you prefer to run the project locally without Docker:
 2. From the project root, run:
 
 ```bash
-go run .
+go run ./cmd/web
 ```
 
 ---
