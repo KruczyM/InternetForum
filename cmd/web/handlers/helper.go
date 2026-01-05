@@ -13,14 +13,12 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/alexedwards/scs/v2"
 )
 
 type Handler struct {
 	DB             *sql.DB
 	InfoLog        *log.Logger
 	ErrorLog       *log.Logger
-	SessionManager *scs.SessionManager
 	TemplateCache  map[string]*template.Template
 }
 
