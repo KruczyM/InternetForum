@@ -80,7 +80,12 @@
                   </div>
                   <p class="post-meta">
                      <a href="/u/{{.AuthorName}}" class="clean-link"><strong> By {{.AuthorName}}</strong></a>
-                     {{if .Post.BookID}} · Book #{{.Post.BookID}} {{end}}
+                     {{if .Post.BookID}} · {{if .BookTitle}}
+                     <strong>{{.BookTitle}}</strong>
+                     {{else}}
+                        #{{.Post.BookID}}
+                     {{end}}
+                  {{end}}
                   </p>
                   {{if .Post.ImagePath}}
                   <div class="post-image">

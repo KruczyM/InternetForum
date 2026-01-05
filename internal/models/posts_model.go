@@ -26,11 +26,12 @@ type PostModel struct {
 
 func (m *PostModel) GetAllPosts(category string, bookID int) ([]PostView, error) {
 	stmt := `
-	SELECT p.id, p.user_id, p.title, p.content, p.image_path, p.post_type, p.book_id, p.chapter, p.created_at, u.username,
+	SELECT p.id, p.user_id, p.title, p.content, p.image_path, p.post_type, p.book_id,COALESCE(b.title, '') as book_title, p.chapter, p.created_at, u.username,
 	COALESCE(SUM(CASE WHEN l.value = 1 THEN 1 ELSE 0 END), 0) as like_count,
 	COALESCE(SUM(CASE WHEN l.value = -1 THEN 1 ELSE 0 END), 0) as dislike_count
 	FROM posts p
 	LEFT JOIN users u ON p.user_id = u.id
+	LEFT JOIN books b ON p.book_id = b.id
 	LEFT JOIN likes l ON p.id = l.target_id AND l.target_type = 'post'
    WHERE 1=1`
 
@@ -70,6 +71,7 @@ func (m *PostModel) GetAllPosts(category string, bookID int) ([]PostView, error)
 			   &pv.Post.ImagePath,
 			   &pv.Post.PostType,
 			   &bookIDNull,
+			   &pv.BookTitle,
 			   &chapterNull,
 			   &pv.Post.CreatedAt,
 			   &pv.AuthorName,
