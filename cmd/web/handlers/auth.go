@@ -11,11 +11,11 @@ import (
 )
 
 type userRegisterForm struct {
-	userName  string
-	firstName string
-	lastName  string
-	email     string
-	password  string
+	UserName  string
+	FirstName string
+	LastName  string
+	Email     string
+	Password  string
 	validator.Validator
 }
 
@@ -40,20 +40,20 @@ func (h *Handler) userRegisterPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	form := &userRegisterForm{
-		email:     strings.TrimSpace(r.PostForm.Get("email")),
-		password:  r.PostForm.Get("password"),
-		firstName: strings.TrimSpace(r.PostForm.Get("first_name")),
-		lastName:  strings.TrimSpace(r.PostForm.Get("last_name")),
-		userName:  strings.TrimSpace(r.PostForm.Get("user_name")),
+		Email:     strings.TrimSpace(r.PostForm.Get("email")),
+		Password:  r.PostForm.Get("password"),
+		FirstName: strings.TrimSpace(r.PostForm.Get("first_name")),
+		LastName:  strings.TrimSpace(r.PostForm.Get("last_name")),
+		UserName:  strings.TrimSpace(r.PostForm.Get("user_name")),
 	}
 
-	form.CheckField(validator.NotBlank(form.userName), "user_name", "Username is required")
-	form.CheckField(validator.NotBlank(form.firstName), "first_name", "First name is required")
-	form.CheckField(validator.NotBlank(form.lastName), "last_name", "Last name is required")
-	form.CheckField(validator.NotBlank(form.email), "email", "Email is required")
-	form.CheckField(validator.NotBlank(form.password), "password", "Password is required")
-	form.CheckField(validator.Matches(form.email, validator.EmailRX), "email", "Email is invalid")
-	form.CheckField(validator.MinChars(form.password, 5), "password", "Password must be at least 5 characters")
+	form.CheckField(validator.NotBlank(form.UserName), "user_name", "Username is required")
+	form.CheckField(validator.NotBlank(form.FirstName), "first_name", "First name is required")
+	form.CheckField(validator.NotBlank(form.LastName), "last_name", "Last name is required")
+	form.CheckField(validator.NotBlank(form.Email), "email", "Email is required")
+	form.CheckField(validator.NotBlank(form.Password), "password", "Password is required")
+	form.CheckField(validator.Matches(form.Email, validator.EmailRX), "email", "Email is invalid")
+	form.CheckField(validator.MinChars(form.Password, 5), "password", "Password must be at least 5 characters")
 
 	if !form.Valid() {
 		data := h.newTemplateData(w,r)
@@ -62,7 +62,7 @@ func (h *Handler) userRegisterPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hashedPassword, err := models.HashPassword(form.password)
+	hashedPassword, err := models.HashPassword(form.Password)
 	if err != nil {
 		h.ErrorLog.Println("Hashing password failed:", err)
 		http.Error(w, "Internal Server Error", 500)
@@ -71,10 +71,10 @@ func (h *Handler) userRegisterPost(w http.ResponseWriter, r *http.Request) {
 
 	user := &models.User{
 		ID:           uuid.NewString(),
-		Username:     form.userName,
-		FirstName:    form.firstName,
-		LastName:     form.lastName,
-		Email:        form.email,
+		Username:     form.UserName,
+		FirstName:    form.FirstName,
+		LastName:     form.LastName,
+		Email:        form.Email,
 		PasswordHash: hashedPassword,
 	}
 

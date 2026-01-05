@@ -4,7 +4,6 @@
     <title>Register · Book Forum</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/auth.css">
-    </title>
   </head>
   <body>
     <div class="auth-container">
@@ -17,7 +16,7 @@
             <div class="error">{{.}}</div>
             {{end}}
             <div class="input-group">
-              <input type="text" name="user_name" placeholder=" ">
+              <input type="text" name="user_name" placeholder=" " value="{{.Form.UserName}}">
               <span class="floating-text">USERNAME</span>
             </div>
           </div>
@@ -26,7 +25,7 @@
             <div class="error">{{.}}</div>
             {{end}}
             <div class="input-group">
-              <input type="text" name="first_name" placeholder=" ">
+              <input type="text" name="first_name" placeholder=" " value="{{.Form.FirstName}}">
               <span class="floating-text">FIRST NAME</span>
             </div>
           </div>
@@ -35,7 +34,7 @@
             <div class="error">{{.}}</div>
             {{end}}
             <div class="input-group">
-              <input type="text" name="last_name" placeholder=" ">
+              <input type="text" name="last_name" placeholder=" " value="{{.Form.LastName}}">
               <span class="floating-text">LAST NAME</span>
             </div>
           </div>
@@ -44,7 +43,7 @@
             <div class="error">{{.}}</div>
             {{end}}
             <div class="input-group">
-              <input type="email" name="email" placeholder=" ">
+              <input type="email" name="email" placeholder=" " value="{{.Form.Email}}">
               <span class="floating-text">EMAIL</span>
             </div>
           </div>
