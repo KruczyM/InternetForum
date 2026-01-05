@@ -55,7 +55,7 @@
         <main class="center-panel user-panel">
 
             {{ with .Flash }}
-            <div class="flash {{ .Type }}">{{ .Msg }}</div>
+            <div class="flash {{ .Type }}">{{ .Msg | safeHTML }}</div>
             {{ end }}
 
             <!--  PROFILE -->

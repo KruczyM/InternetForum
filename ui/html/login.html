@@ -11,7 +11,7 @@
         <h1><a href="/" class="clean-link">BOOK FORUM</a></h1>
         <p class="subtitle">Welcome back to your reading space</p>
         {{ with .Flash }}
-        <p class="{{ .Type }}">{{ .Msg }}</p>
+        <p class="{{ .Type }}">{{ .Msg | safeHTML }}</p>
         {{ end }}
         <form action="/auth/login" method="POST" novalidate>
           <div class="field">

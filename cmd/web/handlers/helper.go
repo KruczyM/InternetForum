@@ -73,6 +73,9 @@ func NewTemplateCache() (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
 	funcMap := template.FuncMap{
 		"upper": strings.ToUpper,
+		"safeHTML": func(s string) template.HTML {
+			return template.HTML(s)
+		},
 	}
 	pages, err := fs.Glob(ui.Files, "html/*.html")
 	if err != nil {
