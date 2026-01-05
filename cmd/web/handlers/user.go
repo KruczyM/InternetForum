@@ -243,7 +243,7 @@ func (h *Handler) publicUserProfile(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(path, "/")
 
 	if len(parts) != 1 || parts[0] == "" {
-		h.notFound(w)
+		h.notFound(w,r)
 		return
 	}
 
@@ -256,7 +256,7 @@ func (h *Handler) publicUserProfile(w http.ResponseWriter, r *http.Request) {
 
     user, err := models.GetUserByUsername(h.DB, username)
     if err != nil {
-        h.notFound(w)
+        h.notFound(w,r)
         return
     }
 

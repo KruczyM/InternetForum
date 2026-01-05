@@ -1,0 +1,25 @@
+.notfound-container {
+    text-align: center;
+    margin-top: 4rem;
+}
+
+.notfound-code {
+    font-size: 6rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #c0392b;
+}
+
+.notfound-title {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+}
+
+.notfound-text {
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.notfound-actions .primary-btn {
+    padding: 0.6rem 1.2rem;
+}

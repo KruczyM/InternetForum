@@ -37,8 +37,10 @@ func (h *Handler) serverError(w http.ResponseWriter, err error) {
 func (h *Handler) clientError(w http.ResponseWriter, status int) {
 	http.Error(w, http.StatusText(status), status)
 }
-func (h *Handler) notFound(w http.ResponseWriter) {
-	h.clientError(w, http.StatusNotFound)
+
+func (h *Handler) notFound(w http.ResponseWriter, r *http.Request) {
+	data := h.newTemplateData(w,r)
+	h.render(w, http.StatusNotFound, "404.html", data)
 }
 
 // Return true if the current request is from an authenticated user, otherwise return false.

@@ -31,8 +31,13 @@ func (h *Handler) Routes() http.Handler {
 		),
 	)
 
-	mux.HandleFunc("/", h.home)
-
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			h.notFound(w, r)
+			return
+		}
+		h.home(w, r)
+	})
 
 	mux.HandleFunc("/auth/register", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
