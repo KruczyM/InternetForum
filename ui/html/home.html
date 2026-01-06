@@ -39,7 +39,7 @@
   <div class="header-tools">
     <form action="/" method="GET" class="header-search">
       <select name="category">
-        <option value="">All categories</option>
+        <option value="">Categories</option>
         <option value="Classics" {{if eq .Category "Classics"}}selected{{end}}>Classics</option>
         <option value="General_Fiction" {{if eq .Category "General_Fiction"}}selected{{end}}>General Fiction</option>
         <option value="Crime_Mystery_Thriller" {{if eq .Category "Crime_Mystery_Thriller"}}selected{{end}}>Crime / Thriller</option>
@@ -51,13 +51,19 @@
       </select>
 
       <select name="book">
-    <option value="">All books</option>
+    <option value="">Books</option>
     {{range .Books}}
       <option value="{{.ID}}" {{if eq $.SelectedBook .ID}}selected{{end}}>
         {{.Title}}
       </option>
     {{end}}
   </select>
+
+  <select name="sort">
+  <option value="">Sort by</option>
+  <option value="popular" {{if eq .Sort "popular"}}selected{{end}}>Most popular</option>
+  <option value="newest" {{if eq .Sort "newest"}}selected{{end}}>Newest</option>
+</select>
 
       <input type="text" name="q" placeholder="Search..." value="{{.Query}}">
       <button type="submit">Search</button>
@@ -94,14 +100,11 @@
                      <span class="post-date">{{.FormattedDate}}</span>
                   </div>
                   <p class="post-meta">
-                     <a href="/u/{{.AuthorName}}" class="clean-link"><strong> By {{.AuthorName}}</strong></a>
-                     {{if .Post.BookID}} · {{if .BookTitle}}
-                     <strong>{{.BookTitle}}</strong>
-                     {{else}}
-                        #{{.Post.BookID}}
-                     {{end}}
-                  {{end}}
-                  </p>
+  <a href="/u/{{.AuthorName}}" class="clean-link"><strong>By {{.AuthorName}}</strong></a>
+  {{if .Post.BookID}}
+    · <strong>{{if .BookTitle}}{{.BookTitle}}{{else}}Book #{{.Post.BookID}}{{end}}</strong>
+  {{end}}
+</p>
                   {{if .Post.ImagePath}}
                   <div class="post-image">
                      <img src="{{.Post.ImagePath}}" alt="Post image">

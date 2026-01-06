@@ -98,7 +98,7 @@ body {
 }
 
 .header-search select {
-  width: 150px;
+  width: 100px;
   padding: 6px 12px;
   font-size: 0.85em;
   border-radius: 20px;
@@ -132,7 +132,7 @@ body {
 }
 
 .header-search input {
-  width: 150px;
+  width: 100px;
   width: 100px;
   padding: 6px 10px;
   font-size: 0.85em;

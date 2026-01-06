@@ -19,6 +19,7 @@ func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 	query := strings.TrimSpace(r.URL.Query().Get("q"))
 	category := r.URL.Query().Get("category")
 	bookStr := r.URL.Query().Get("book")
+	sort := r.URL.Query().Get("sort")
 
 	bookID := 0
 	if bookStr != "" {
@@ -30,7 +31,7 @@ func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 	postModel := &models.PostModel{DB: h.DB}
 	bookModel := &models.BookModel{DB: h.DB}
 
-	posts, err := postModel.SearchPosts(query, category, bookID)
+	posts, err := postModel.SearchPosts(query, category, bookID, sort)
 	if err != nil {
 		h.serverError(w, err)
 		return
@@ -49,6 +50,7 @@ func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 		Query           string
 		Category        string
 		SelectedBook    int
+		Sort            string
 	}{
 		IsAuthenticated: h.isAuthenticated(r),
 		Posts:           posts,
@@ -56,6 +58,7 @@ func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 		Query:           query,
 		Category:        category,
 		SelectedBook:    bookID,
+		Sort:            r.URL.Query().Get("sort"),
 	}
 
 	ts, err := template.ParseFiles("ui/html/home.html")

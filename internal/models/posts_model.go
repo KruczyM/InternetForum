@@ -441,15 +441,29 @@ func (m *PostModel) GetAllBooks() ([]Book, error) {
 
 }
 
-func (m *PostModel) SearchPosts(query, category string, bookID int) ([]PostView, error) {
+func (m *PostModel) SearchPosts(query, category string, bookID int, sort string) ([]PostView, error) {
 	baseStmt := `
-    SELECT p.id, p.user_id, p.title, p.content, p.post_type, p.book_id, p.chapter, p.created_at, u.username,
-           COALESCE(SUM(l.value), 0)
+    SELECT 
+        p.id, 
+        p.user_id, 
+        p.title, 
+        p.content, 
+        p.post_type, 
+        p.book_id, 
+        p.chapter, 
+        p.created_at,
+        u.username,
+        COALESCE((
+            SELECT SUM(l.value) 
+            FROM likes l 
+            WHERE l.target_id = p.id AND l.target_type='post'
+        ), 0) AS likes,
+        b.title AS book_title
     FROM posts p
     LEFT JOIN users u ON p.user_id = u.id
-    LEFT JOIN likes l ON p.id = l.target_id AND l.target_type = 'post'
+    LEFT JOIN books b ON p.book_id = b.id
     WHERE 1=1
-    `
+`
 	args := []interface{}{}
 
 	// --- search query ---
@@ -471,10 +485,13 @@ func (m *PostModel) SearchPosts(query, category string, bookID int) ([]PostView,
 		args = append(args, bookID)
 	}
 
-	baseStmt += `
-    GROUP BY p.id, u.username
-    ORDER BY p.created_at DESC
-    `
+	// --- sorting ---
+	switch sort {
+	case "popular":
+		baseStmt += " ORDER BY likes DESC, p.created_at DESC"
+	default:
+		baseStmt += " ORDER BY p.created_at DESC"
+	}
 
 	rows, err := m.DB.Query(baseStmt, args...)
 	if err != nil {
@@ -485,8 +502,9 @@ func (m *PostModel) SearchPosts(query, category string, bookID int) ([]PostView,
 	var posts []PostView
 	for rows.Next() {
 		var pv PostView
-		var bookID sql.NullInt64
+		var dbBookID sql.NullInt64
 		var chapter sql.NullString
+		var bookTitle sql.NullString
 
 		if err := rows.Scan(
 			&pv.Post.ID,
@@ -494,13 +512,29 @@ func (m *PostModel) SearchPosts(query, category string, bookID int) ([]PostView,
 			&pv.Post.Title,
 			&pv.Post.Content,
 			&pv.Post.PostType,
-			&bookID,
+			&dbBookID,
 			&chapter,
 			&pv.Post.CreatedAt,
 			&pv.AuthorName,
 			&pv.LikeCount,
+			&bookTitle,
 		); err != nil {
 			return nil, err
+		}
+
+		if dbBookID.Valid {
+			id := int(dbBookID.Int64)
+			pv.Post.BookID = &id
+		}
+
+		if chapter.Valid {
+			pv.Post.Chapter = &chapter.String
+		}
+
+		if bookTitle.Valid {
+			pv.BookTitle = bookTitle.String
+		} else {
+			pv.BookTitle = ""
 		}
 
 		pv.FormattedDate = pv.Post.CreatedAt.Format("Jan 02, 2006 at 3:04 PM")
@@ -510,6 +544,7 @@ func (m *PostModel) SearchPosts(query, category string, bookID int) ([]PostView,
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
+
 	return posts, nil
 }
 

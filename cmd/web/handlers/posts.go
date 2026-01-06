@@ -421,6 +421,7 @@ func (h *Handler) SearchPosts(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("q")
 	category := r.URL.Query().Get("category")
 	bookStr := r.URL.Query().Get("book")
+	sort := r.URL.Query().Get("sort")
 
 	bookID := 0
 	if bookStr != "" {
@@ -436,7 +437,7 @@ func (h *Handler) SearchPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	results, err := postsModel.SearchPosts(query, category, bookID)
+	results, err := postsModel.SearchPosts(query, category, bookID, sort)
 	if err != nil {
 		h.serverError(w, err)
 		return
