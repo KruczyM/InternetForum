@@ -16,13 +16,13 @@ func (h *Handler) ViewPost(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(path, "/")
 
 	if len(parts) != 1 {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
 	id, err := strconv.Atoi(parts[0])
 	if err != nil || id < 1 {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
@@ -31,7 +31,7 @@ func (h *Handler) ViewPost(w http.ResponseWriter, r *http.Request) {
 	postView, err := postsModel.GetPost(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			h.notFound(w,r)
+			h.notFound(w, r)
 		} else {
 			h.serverError(w, err)
 		}
@@ -62,13 +62,13 @@ func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(path, "/")
 
 	if len(parts) != 2 || parts[1] != "comment" {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
 	postID, err := strconv.Atoi(parts[0])
 	if err != nil || postID < 1 {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
@@ -106,13 +106,13 @@ func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(path, "/")
 
 	if len(parts) != 2 || parts[1] != "delete" {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
 	id, err := strconv.Atoi(parts[0])
 	if err != nil || id < 1 {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
@@ -122,7 +122,7 @@ func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	post, err := postsModel.GetPost(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			h.notFound(w,r)
+			h.notFound(w, r)
 		} else {
 			h.serverError(w, err)
 		}
@@ -149,13 +149,13 @@ func (h *Handler) EditPost(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(path, "/")
 
 	if len(parts) != 2 || parts[1] != "edit" {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
 	id, err := strconv.Atoi(parts[0])
 	if err != nil || id < 1 {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
@@ -163,7 +163,7 @@ func (h *Handler) EditPost(w http.ResponseWriter, r *http.Request) {
 	postView, err := postModel.GetPost(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			h.notFound(w,r)
+			h.notFound(w, r)
 		} else {
 			h.serverError(w, err)
 		}
@@ -198,13 +198,13 @@ func (h *Handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(path, "/")
 
 	if len(parts) != 2 || parts[1] != "edit" {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
 	id, err := strconv.Atoi(parts[0])
 	if err != nil || id < 1 {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
@@ -221,7 +221,7 @@ func (h *Handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	postView, err := postsModel.GetPost(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			h.notFound(w,r)
+			h.notFound(w, r)
 		} else {
 			h.serverError(w, err)
 		}
@@ -249,13 +249,13 @@ func (h *Handler) PostLike(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(path, "/")
 
 	if len(parts) != 2 || parts[1] != "like" {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
 	id, err := strconv.Atoi(parts[0])
 	if err != nil || id < 1 {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
@@ -284,13 +284,13 @@ func (h *Handler) PostDislike(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(path, "/")
 
 	if len(parts) != 2 || parts[1] != "dislike" {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
 	id, err := strconv.Atoi(parts[0])
 	if err != nil || id < 1 {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
@@ -318,13 +318,13 @@ func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(path, "/")
 
 	if len(parts) != 2 || parts[1] != "delete" {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
 	id, err := strconv.Atoi(parts[0])
 	if err != nil || id < 1 {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
@@ -340,7 +340,7 @@ func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	err = postsModel.DeleteComment(id, userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			h.notFound(w,r)
+			h.notFound(w, r)
 		} else {
 			h.serverError(w, err)
 		}
@@ -356,13 +356,13 @@ func (h *Handler) CommentLike(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(path, "/")
 
 	if len(parts) != 2 || parts[1] != "like" {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
 	id, err := strconv.Atoi(parts[0])
 	if err != nil || id < 1 {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
@@ -389,13 +389,13 @@ func (h *Handler) CommentDislike(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(path, "/")
 
 	if len(parts) != 2 || parts[1] != "dislike" {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
 	id, err := strconv.Atoi(parts[0])
 	if err != nil || id < 1 {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
@@ -420,6 +420,14 @@ func (h *Handler) CommentDislike(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) SearchPosts(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("q")
 	category := r.URL.Query().Get("category")
+	bookStr := r.URL.Query().Get("book")
+
+	bookID := 0
+	if bookStr != "" {
+		if id, err := strconv.Atoi(bookStr); err == nil {
+			bookID = id
+		}
+	}
 
 	postsModel := &models.PostModel{DB: h.DB}
 
@@ -428,7 +436,7 @@ func (h *Handler) SearchPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	results, err := postsModel.SearchPosts(query, category)
+	results, err := postsModel.SearchPosts(query, category, bookID)
 	if err != nil {
 		h.serverError(w, err)
 		return
@@ -437,11 +445,13 @@ func (h *Handler) SearchPosts(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		Posts             []models.PostView
 		Query             string
+		Category          string
 		IsAuthenticated   bool
 		AuthenticatedUser string
 	}{
 		Posts:             results,
 		Query:             query,
+		Category:          category,
 		IsAuthenticated:   h.isAuthenticated(r),
 		AuthenticatedUser: h.authenticatedUserID(r),
 	}

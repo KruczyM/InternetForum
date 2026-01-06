@@ -3,21 +3,22 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 )
 
 type PostView struct {
-	Post		
-	AuthorName		string
-	BookTitle		string
-	LikeCount		int
-	DislikeCount	int
-	CommentCount	int
-	FormattedDate	string
-	Comments		[]Comment
+	Post
+	AuthorName    string
+	BookTitle     string
+	LikeCount     int
+	DislikeCount  int
+	CommentCount  int
+	FormattedDate string
+	Comments      []Comment
 }
 
 type PageData struct {
-	Posts	[]PostView
+	Posts []PostView
 }
 
 type PostModel struct {
@@ -63,20 +64,20 @@ func (m *PostModel) GetAllPosts(category string, bookID int) ([]PostView, error)
 		var bookIDNull sql.NullInt64
 		var chapterNull sql.NullString
 
-		   err := rows.Scan(
-			   &pv.Post.ID,
-			   &pv.Post.UserID,
-			   &pv.Post.Title,
-			   &pv.Post.Content,
-			   &pv.Post.ImagePath,
-			   &pv.Post.PostType,
-			   &bookIDNull,
-			   &pv.BookTitle,
-			   &chapterNull,
-			   &pv.Post.CreatedAt,
-			   &pv.AuthorName,
-			   &pv.LikeCount,
-			   &pv.DislikeCount,
+		err := rows.Scan(
+			&pv.Post.ID,
+			&pv.Post.UserID,
+			&pv.Post.Title,
+			&pv.Post.Content,
+			&pv.Post.ImagePath,
+			&pv.Post.PostType,
+			&bookIDNull,
+			&pv.BookTitle,
+			&chapterNull,
+			&pv.Post.CreatedAt,
+			&pv.AuthorName,
+			&pv.LikeCount,
+			&pv.DislikeCount,
 		)
 		if err != nil {
 			fmt.Println("Scan Error:", err)
@@ -364,7 +365,6 @@ func (m *PostModel) DeleteComment(id int, userID string) error {
 	return nil
 }
 
-
 // ToggleLikeComment sets a like (1) for the comment, or switches from dislike (-1) to like (1).
 func (m *PostModel) ToggleLikeComment(userID string, commentID int) error {
 	stmt := `SELECT value FROM likes WHERE user_id = ? AND target_type = 'comment' AND target_id = ?`
@@ -441,22 +441,34 @@ func (m *PostModel) GetAllBooks() ([]Book, error) {
 
 }
 
-func (m *PostModel) SearchPosts(query, category string) ([]PostView, error) {
+func (m *PostModel) SearchPosts(query, category string, bookID int) ([]PostView, error) {
 	baseStmt := `
     SELECT p.id, p.user_id, p.title, p.content, p.post_type, p.book_id, p.chapter, p.created_at, u.username,
            COALESCE(SUM(l.value), 0)
     FROM posts p
     LEFT JOIN users u ON p.user_id = u.id
     LEFT JOIN likes l ON p.id = l.target_id AND l.target_type = 'post'
-    WHERE (p.title LIKE ? OR u.username LIKE ?)
+    WHERE 1=1
     `
+	args := []interface{}{}
 
-	likeQuery := query + "%"
-	args := []interface{}{likeQuery, likeQuery}
+	// --- search query ---
+	if strings.TrimSpace(query) != "" {
+		baseStmt += " AND (p.title LIKE ? OR u.username LIKE ?)"
+		likeQuery := "%" + query + "%"
+		args = append(args, likeQuery, likeQuery)
+	}
 
+	// --- category filter ---
 	if category != "" {
 		baseStmt += " AND p.post_type = ?"
 		args = append(args, category)
+	}
+
+	// --- book filter ---
+	if bookID > 0 {
+		baseStmt += " AND p.book_id = ?"
+		args = append(args, bookID)
 	}
 
 	baseStmt += `
@@ -556,7 +568,7 @@ type LikeView struct {
 }
 
 func (m *PostModel) GetLikesByUserID(userID string) ([]LikeView, error) {
-	   stmt := `
+	stmt := `
 	   -- liked POSTS
 	   SELECT 
 		   'post' AS target_type,
@@ -595,21 +607,21 @@ func (m *PostModel) GetLikesByUserID(userID string) ([]LikeView, error) {
 
 	var likes []LikeView
 
-	   for rows.Next() {
-		   var lv LikeView
-		   err := rows.Scan(
-			   &lv.TargetType,
-			   &lv.TargetID,
-			   &lv.PostID,
-			   &lv.Title,
-			   &lv.Content,
-			   &lv.Value,
-		   )
-		   if err != nil {
-			   return nil, err
-		   }
-		   likes = append(likes, lv)
-	   }
+	for rows.Next() {
+		var lv LikeView
+		err := rows.Scan(
+			&lv.TargetType,
+			&lv.TargetID,
+			&lv.PostID,
+			&lv.Title,
+			&lv.Content,
+			&lv.Value,
+		)
+		if err != nil {
+			return nil, err
+		}
+		likes = append(likes, lv)
+	}
 
 	return likes, rows.Err()
 }
