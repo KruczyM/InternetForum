@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Homepage</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/main.css">
+    <link rel="stylesheet" href="/static/homepage.css">
+</head>
+
+<body>
+    <div class="forum-shell">
+        <!-- Header -->
+        <header class="forum-header">
+            <div class="header-left">
+                <div class="logo"><a href="/" class="clean-link">BOOK FORUM</a></div>
+                <nav class="main-nav">
+                    <a href="/posts" class="nav-link">Posts</a>
+                    {{if .IsAuthenticated}}
+                    <a href="/chat/" class="nav-link">Chat</a>
+                    <div class="nav-dropdown">
+                        <button class="nav-link dropdown-toggle" type="button">
+                            My Account ▾
+                        </button>
+                        <div class="dropdown-menu">
+                            <a href="/profile?tab=profile">Profile</a>
+                            <a href="/profile?tab=posts">My Posts</a>
+                            <a href="/profile?tab=comments">My Comments</a>
+                            <a href="/profile?tab=likes">My Likes</a>
+                        </div>
+                    </div>
+                    {{end}}
+                </nav>
+            </div>
+            <div class="auth-links">
+                {{if .IsAuthenticated}}
+                <form action="/auth/logout" method="POST">
+                    <button class="text-btn">Logout</button>
+                </form>
+                {{else}}
+                <a href="/auth/register">Register</a>
+                <a href="/auth/login">Login</a>
+                {{end}}
+            </div>
+        </header>
+
+
+        <main class="categories">
+            <h1 class="categories-title">Find Your Next Story</h1>
+            <p class="categories-subtitle">
+                Browse book discussions by category and join the conversation.
+            </p>
+
+            
+                <div class="categories-grid">
+                    {{ range .AnyData.categories }}
+                    <a href="/posts?category={{ .Slug }}" class="category-link">
+                    <article class="category-card">
+                        {{ if .AvatarPath }}
+                        <div class="category-avatar" style="background-image: url('{{ .AvatarPath }}');"
+                            alt="{{ .Name }}"></div>
+                        {{ else }}
+                        <div class="avatar-placeholder"></div>
+                        {{ end }}
+
+                        <div class="category-content">
+                            <h2>{{ .Name }}</h2>
+
+                            {{ if .Description }}
+                            <p class="category-description">{{ .Description }}</p>
+                            {{ end }}
+
+                            <div class="category-meta">
+                                <span>📚 {{ .PostCount }} posts</span>
+                                <span>💬 {{ .CommentCount }} comments</span>
+                            </div>
+                        </div>
+                    </article>
+            </a>
+            {{ else }}
+            <p>No categories found.</p>
+            {{ end }}
+    </div>
+    </main>
+    </div>
+</body>
+
+</html>

@@ -1,13 +1,40 @@
-FROM golang:1.24-alpine
+# build
+FROM golang:1.24-alpine AS builder
+
 RUN apk add --no-cache gcc musl-dev
-#gcc and musl are standard C tools needed cause sqlite3 uses C lang.
-WORKDIR /app
-#copy dependecies first allows docker to cache downloads for faster builds later
+
+WORKDIR /forum
+
+# dependencies first (cache-friendly)
 COPY go.mod go.sum ./
 RUN go mod download
-#copy the rest of code
+
+# source code
 COPY . .
-RUN go build -o forum-server ./cmd/web/main.go
-#inform docker the party is on port 8080
+
+# build binary
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 \
+    go build -o forum-server ./cmd/web/main.go
+
+#runtime
+
+FROM alpine:3.20
+
+RUN apk add --no-cache ca-certificates sqlite \
+    && mkdir -p /forum/data \
+    && mkdir -p /forum/ui/static/uploads
+
+WORKDIR /forum
+
+# binary
+COPY --from=builder /forum/forum-server .
+
+
+COPY data/forum.db /forum/data/forum.db
+
+COPY internal/db/migrations ./internal/db/migrations
+COPY ui ./ui
+
 EXPOSE 8080
+
 CMD ["./forum-server"]
