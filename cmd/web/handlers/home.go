@@ -9,39 +9,35 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
 func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 
+	// --- query params ---
+	query := strings.TrimSpace(r.URL.Query().Get("q"))
 	category := r.URL.Query().Get("category")
-	bookIDStr := r.URL.Query().Get("book_id")
-	query := r.URL.Query().Get("q")
+	bookStr := r.URL.Query().Get("book")
+	sort := r.URL.Query().Get("sort")
 
 	bookID := 0
-	if bookIDStr != "" {
-		if id, err := strconv.Atoi(bookIDStr); err == nil {
+	if bookStr != "" {
+		if id, err := strconv.Atoi(bookStr); err == nil {
 			bookID = id
 		}
 	}
 
-	postsModel := &models.PostModel{DB: h.DB}
+	postModel := &models.PostModel{DB: h.DB}
+	bookModel := &models.BookModel{DB: h.DB}
 
-	var posts []models.PostView
-	var err error
-
-	if query != "" {
-		posts, err = postsModel.SearchPosts(query, category)
-	} else {
-		posts, err = postsModel.GetAllPosts(category, bookID)
-	}
-
+	posts, err := postModel.SearchPosts(query, category, bookID, sort)
 	if err != nil {
 		h.serverError(w, err)
 		return
 	}
 
-	books, err := postsModel.GetAllBooks()
+	books, err := bookModel.GetAllBooks()
 	if err != nil {
 		h.serverError(w, err)
 		return
@@ -52,11 +48,17 @@ func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 		Posts           []models.PostView
 		Books           []models.Book
 		Query           string
+		Category        string
+		SelectedBook    int
+		Sort            string
 	}{
 		IsAuthenticated: h.isAuthenticated(r),
 		Posts:           posts,
 		Books:           books,
 		Query:           query,
+		Category:        category,
+		SelectedBook:    bookID,
+		Sort:            r.URL.Query().Get("sort"),
 	}
 
 	ts, err := template.ParseFiles("ui/html/home.html")
@@ -64,7 +66,11 @@ func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 		h.serverError(w, err)
 		return
 	}
-	ts.Execute(w, data)
+
+	err = ts.Execute(w, data)
+	if err != nil {
+		h.serverError(w, err)
+	}
 }
 
 func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {

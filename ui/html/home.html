@@ -8,59 +8,80 @@
    <body>
       <div class="forum-shell">
          <!-- Header -->
-         <header class="forum-header">
-            <div class="header-left">
-               <div class="logo"><a href="/" class="clean-link">BOOK FORUM</a></div>
-               <nav class="main-nav">
-                  <a href="/" class="nav-link">Posts</a>
-                  {{if .IsAuthenticated}}
-                  <a href="/chat/" class="nav-link">Chat</a>
-                  <div class="nav-dropdown">
-                     <button class="nav-link dropdown-toggle" type="button">
-                     My Account ▾
-                     </button>
-                     <div class="dropdown-menu">
-                        <a href="/profile?tab=profile">Profile</a>
-                        <a href="/profile?tab=posts">My Posts</a>
-                        <a href="/profile?tab=comments">My Comments</a>
-                        <a href="/profile?tab=likes">My Likes</a>
-                     </div>
-                  </div>
-                  {{end}}
-               </nav>
-            </div>
-            <div class="header-tools">
-               <div class="nav-dropdown">
-                  <button class="nav-link dropdown-toggle" type="button">
-                  Categories ▾
-                  </button>
-                  <div class="dropdown-menu">
-                     <a href="/">All</a>
-                     <a href="/?category=Classics{{if .Query}}&q={{.Query}}{{end}}">Classics</a>
-                     <a href="/?category=General_Fiction{{if .Query}}&q={{.Query}}{{end}}">General Fiction</a>
-                     <a href="/?category=Crime_Mystery_Thriller{{if .Query}}&q={{.Query}}{{end}}">Crime / Thriller</a>
-                     <a href="/?category=Womens_Fiction{{if .Query}}&q={{.Query}}{{end}}">Women's Fiction</a>
-                     <a href="/?category=Childrens{{if .Query}}&q={{.Query}}{{end}}">Children's</a>
-                     <a href="/?category=Poetry_Plays{{if .Query}}&q={{.Query}}{{end}}">Poetry / Plays</a>
-                     <a href="/?category=Non_Fiction{{if .Query}}&q={{.Query}}{{end}}">Non-Fiction</a>
-                     <a href="/?category=Historical_Fiction{{if .Query}}&q={{.Query}}{{end}}">Historical Fiction</a>
-                  </div>
-               </div>
-               <form action="/" method="GET" class="search-box header-search">
-                  <input type="text" name="q" placeholder="Search..." value="{{.Query}}">
-               </form>
-            </div>
-            <div class="auth-links">
-               {{if .IsAuthenticated}}
-               <form action="/auth/logout" method="POST">
-                  <button class="text-btn">Logout</button>
-               </form>
-               {{else}}
-               <a href="/auth/register">Register</a>
-               <a href="/auth/login">Login</a>
-               {{end}}
-            </div>
-         </header>
+      <header class="forum-header">
+
+  <div class="header-left">
+    <div class="logo">
+      <a href="/" class="clean-link">BOOK FORUM</a>
+    </div>
+
+    <nav class="main-nav">
+      <a href="/" class="nav-link">Posts</a>
+
+      {{if .IsAuthenticated}}
+        <a href="/chat/" class="nav-link">Chat</a>
+
+        <div class="nav-dropdown">
+          <button class="nav-link dropdown-toggle" type="button">
+            My Account ▾
+          </button>
+          <div class="dropdown-menu">
+            <a href="/profile?tab=profile">Profile</a>
+            <a href="/profile?tab=posts">My Posts</a>
+            <a href="/profile?tab=comments">My Comments</a>
+            <a href="/profile?tab=likes">My Likes</a>
+          </div>
+        </div>
+      {{end}}
+    </nav>
+  </div>
+
+  <div class="header-tools">
+    <form action="/" method="GET" class="header-search">
+      <select name="category">
+        <option value="">Categories</option>
+        <option value="Classics" {{if eq .Category "Classics"}}selected{{end}}>Classics</option>
+        <option value="General_Fiction" {{if eq .Category "General_Fiction"}}selected{{end}}>General Fiction</option>
+        <option value="Crime_Mystery_Thriller" {{if eq .Category "Crime_Mystery_Thriller"}}selected{{end}}>Crime / Thriller</option>
+        <option value="Womens_Fiction" {{if eq .Category "Womens_Fiction"}}selected{{end}}>Women's Fiction</option>
+        <option value="Childrens" {{if eq .Category "Childrens"}}selected{{end}}>Children's</option>
+        <option value="Poetry_Plays" {{if eq .Category "Poetry_Plays"}}selected{{end}}>Poetry / Plays</option>
+        <option value="Non_Fiction" {{if eq .Category "Non_Fiction"}}selected{{end}}>Non-Fiction</option>
+        <option value="Historical_Fiction" {{if eq .Category "Historical_Fiction"}}selected{{end}}>Historical Fiction</option>
+      </select>
+
+      <select name="book">
+    <option value="">Books</option>
+    {{range .Books}}
+      <option value="{{.ID}}" {{if eq $.SelectedBook .ID}}selected{{end}}>
+        {{.Title}}
+      </option>
+    {{end}}
+  </select>
+
+  <select name="sort">
+  <option value="">Sort by</option>
+  <option value="popular" {{if eq .Sort "popular"}}selected{{end}}>Most popular</option>
+  <option value="newest" {{if eq .Sort "newest"}}selected{{end}}>Newest</option>
+</select>
+
+      <input type="text" name="q" placeholder="Search..." value="{{.Query}}">
+      <button type="submit">Search</button>
+    </form>
+  </div>
+
+  <div class="auth-links">
+    {{if .IsAuthenticated}}
+      <form action="/auth/logout" method="POST">
+        <button class="text-btn">Logout</button>
+      </form>
+    {{else}}
+      <a href="/auth/register">Register</a>
+      <a href="/auth/login">Login</a>
+    {{end}}
+  </div>
+
+</header>
          <!-- Content -->
          <main class="center-panel">
             {{if .IsAuthenticated}}
@@ -79,14 +100,11 @@
                      <span class="post-date">{{.FormattedDate}}</span>
                   </div>
                   <p class="post-meta">
-                     <a href="/u/{{.AuthorName}}" class="clean-link"><strong> By {{.AuthorName}}</strong></a>
-                     {{if .Post.BookID}} · {{if .BookTitle}}
-                     <strong>{{.BookTitle}}</strong>
-                     {{else}}
-                        #{{.Post.BookID}}
-                     {{end}}
-                  {{end}}
-                  </p>
+  <a href="/u/{{.AuthorName}}" class="clean-link"><strong>By {{.AuthorName}}</strong></a>
+  {{if .Post.BookID}}
+    · <strong>{{if .BookTitle}}{{.BookTitle}}{{else}}Book #{{.Post.BookID}}{{end}}</strong>
+  {{end}}
+</p>
                   {{if .Post.ImagePath}}
                   <div class="post-image">
                      <img src="{{.Post.ImagePath}}" alt="Post image">

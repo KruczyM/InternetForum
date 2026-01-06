@@ -1,8 +1,8 @@
 package models
 
 import (
-	"time"
 	"database/sql"
+	"time"
 )
 
 type Book struct {
@@ -10,7 +10,7 @@ type Book struct {
 	Title       string
 	Author      string
 	Description string
-	CreatedAt time.Time
+	CreatedAt   time.Time
 }
 
 // BookCategory is a many-to-many relationship between Book and Category
@@ -35,4 +35,26 @@ func (m *BookModel) AddBook(title, author, description string) error {
 
 	_, err := m.DB.Exec(stmt, title, author, description)
 	return err
+}
+
+func (m *BookModel) GetAllBooks() ([]Book, error) {
+	rows, err := m.DB.Query(`
+		SELECT id, title
+		FROM books
+		ORDER BY title ASC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var books []Book
+	for rows.Next() {
+		var b Book
+		if err := rows.Scan(&b.ID, &b.Title); err != nil {
+			return nil, err
+		}
+		books = append(books, b)
+	}
+	return books, rows.Err()
 }

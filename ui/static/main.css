@@ -8,7 +8,7 @@ body {
 }
 
 .forum-shell {
-  max-width: 1100px;
+  max-width: 1150px;
   margin: 40px auto;
   background: #fffaf4;
   border-radius: 16px;
@@ -88,10 +88,51 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-left: 250px;
+  margin-left: auto;
+}
+
+.header-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-search select {
+  width: 115px;
+  padding: 6px 12px;
+  font-size: 0.85em;
+  border-radius: 20px;
+  border: 1px solid #d7c3af;
+  background: #fffaf4;
+  color: #4a3428;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  outline: none;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.header-search select:focus {
+  border-color: #a87a4f;
+  box-shadow: 0 0 0 2px rgba(168, 122, 79, 0.3);
+}
+
+.header-search button {
+  padding: 6px 14px;
+  font-size: 0.8em;
+  border-radius: 20px;
+  border: 1px solid #d7c3af;
+  background: linear-gradient(180deg, #c69c6d, #a87a4f);
+  color: white;
+  cursor: pointer;
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+.header-search button:hover {
+  box-shadow: 0 4px 10px rgba(168, 122, 79, 0.35);
 }
 
 .header-search input {
+  width: 115px;
   width: 100px;
   padding: 6px 10px;
   font-size: 0.85em;
