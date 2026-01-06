@@ -27,6 +27,8 @@ RUN apk add --no-cache ca-certificates sqlite \
 WORKDIR /forum
 
 # binary
+ENV DB_PATH=/forum/data/forum.db
+
 COPY --from=builder /forum/forum-server .
 
 
