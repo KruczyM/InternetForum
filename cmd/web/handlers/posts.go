@@ -80,10 +80,11 @@ func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 
 	content := r.FormValue("content")
 	if strings.TrimSpace(content) == "" {
-    w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-    w.WriteHeader(http.StatusBadRequest)
-    w.Write([]byte("400 Bad Request: content is required\n"))
-    return
+		h.setFlash(w, "error", "Conent is required!")
+		data := h.newTemplateData(w, r)
+		w.WriteHeader(http.StatusBadRequest)
+		h.render(w, http.StatusBadRequest, "create_book.html", data)
+		return
 	}
 
 	userID := h.authenticatedUserID(r)
