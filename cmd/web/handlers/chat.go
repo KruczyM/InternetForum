@@ -19,6 +19,10 @@ func (h *Handler) ChatHandler(w http.ResponseWriter, r *http.Request) {
        if r.Method == http.MethodPost {
 	       userID := data.AuthenticatedUser
 	       content := strings.TrimSpace(r.FormValue("content"))
+		   if userID == ""{
+			h.setFlash(w, "error", "Please log in to perform this action. Not registered yet? <a href='/auth/register'  class='back-link' style='display: inline-block;'>Register</a>")
+ 			http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
+		   }
 	       if userID != "" && content != "" {
 		       // Fetch first name for chat display
 		       user, err := models.GetUserByID(h.DB, userID)
