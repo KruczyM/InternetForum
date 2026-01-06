@@ -13,9 +13,12 @@
         <div class="header-left">
             <div class="logo" style="font-family: 'Georgia', serif; font-size: 2.2em; color: #7B3F00; letter-spacing: 2px;">Book Review Chat</div>
             <nav class="main-nav">
-                <a href="/posts" class="nav-link">Posts</a>
-                <a href="/chat/" class="nav-link nav-link-active">Chat</a>
+                        <div class="logo">
+          <a href="/" class="clean-link">BOOK FORUM</a>
+        </div>
+                
                  <div class="nav-dropdown">
+                     {{if .IsAuthenticated}}
             <button class="nav-link dropdown-toggle" type="button">
               My Account ▾
             </button>
@@ -25,6 +28,7 @@
               <a href="/profile?tab=comments">My Comments</a>
               <a href="/profile?tab=likes">My Likes</a>
             </div>
+            {{end}}
           </div>
             </nav>
         </div>
