@@ -8,7 +8,7 @@ body {
 }
 
 .forum-shell {
-  max-width: 1100px;
+  max-width: 1150px;
   margin: 40px auto;
   background: #fffaf4;
   border-radius: 16px;
@@ -98,7 +98,7 @@ body {
 }
 
 .header-search select {
-  width: 100px;
+  width: 115px;
   padding: 6px 12px;
   font-size: 0.85em;
   border-radius: 20px;
@@ -132,7 +132,7 @@ body {
 }
 
 .header-search input {
-  width: 100px;
+  width: 115px;
   width: 100px;
   padding: 6px 10px;
   font-size: 0.85em;
