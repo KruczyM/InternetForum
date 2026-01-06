@@ -1,4 +1,4 @@
-FROM docker.io/library/golang:1.24-alpine AS builder
+FROM docker.io/library/golang:1.24-alpine
 RUN apk add --no-cache gcc musl-dev
 #gcc and musl are standard C tools needed cause sqlite3 uses C lang.
 WORKDIR /app
