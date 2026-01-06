@@ -45,7 +45,7 @@ func (h *Handler) userProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := h.newTemplateData(w,r)
+	data := h.newTemplateData(w, r)
 
 	data.Form = &validator.Validator{}
 
@@ -88,7 +88,7 @@ func (h *Handler) userProfileEditPost(w http.ResponseWriter, r *http.Request) {
 	form.CheckField(validator.NotBlank(form.lastName), "last_name", "Last name is required")
 
 	if !form.Valid() {
-		data := h.newTemplateData(w,r)
+		data := h.newTemplateData(w, r)
 		data.AnyData = map[string]any{}
 		data.Form = form
 
@@ -136,7 +136,7 @@ func (h *Handler) userProfilePasswordPost(w http.ResponseWriter, r *http.Request
 	user, _ := models.GetUserByID(h.DB, userID)
 
 	if !form.Valid() {
-		data := h.newTemplateData(w,r)
+		data := h.newTemplateData(w, r)
 		data.AnyData = map[string]any{}
 		data.Form = form
 
@@ -151,7 +151,7 @@ func (h *Handler) userProfilePasswordPost(w http.ResponseWriter, r *http.Request
 	if !models.CheckPassword(form.currentPassword, user.PasswordHash) {
 		form.AddFieldError("current_password", "Incorrect current password")
 
-		data := h.newTemplateData(w,r)
+		data := h.newTemplateData(w, r)
 		data.AnyData = map[string]any{}
 		data.Form = form
 
@@ -174,7 +174,7 @@ func (h *Handler) userProfilePasswordPost(w http.ResponseWriter, r *http.Request
 		h.serverError(w, err)
 		return
 	}
-	h.setFlash(w,"success", "Password changed successfully")
+	h.setFlash(w, "success", "Password changed successfully")
 
 	http.Redirect(w, r, "/profile?tab=profile", http.StatusSeeOther)
 }
@@ -243,37 +243,37 @@ func (h *Handler) publicUserProfile(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(path, "/")
 
 	if len(parts) != 1 || parts[0] == "" {
-		h.notFound(w,r)
+		h.notFound(w, r)
 		return
 	}
 
 	username := parts[0]
 
-    tab := r.URL.Query().Get("tab")
-    if tab == "" {
-        tab = "posts"
-    }
+	tab := r.URL.Query().Get("tab")
+	if tab == "" {
+		tab = "posts"
+	}
 
-    user, err := models.GetUserByUsername(h.DB, username)
-    if err != nil {
-        h.notFound(w,r)
-        return
-    }
+	user, err := models.GetUserByUsername(h.DB, username)
+	if err != nil {
+		h.notFound(w, r)
+		return
+	}
 
-    data := h.newTemplateData(w,r)
-    data.AnyData["user"] = user
-    data.AnyData["tab"] = tab
+	data := h.newTemplateData(w, r)
+	data.AnyData["user"] = user
+	data.AnyData["tab"] = tab
 
-    postsModel := &models.PostModel{DB: h.DB}
+	postsModel := &models.PostModel{DB: h.DB}
 
-    switch tab {
-    case "posts":
-        data.AnyData["posts"], _ = postsModel.GetPostsByUserID(user.ID)
-    case "comments":
-        data.AnyData["comments"], _ = postsModel.GetCommentsByUserID(user.ID)
-    case "likes":
-        data.AnyData["likes"], _ = postsModel.GetLikesByUserID(user.ID)
-    }
+	switch tab {
+	case "posts":
+		data.AnyData["posts"], _ = postsModel.GetPostsByUserID(user.ID)
+	case "comments":
+		data.AnyData["comments"], _ = postsModel.GetCommentsByUserID(user.ID)
+	case "likes":
+		data.AnyData["likes"], _ = postsModel.GetLikesByUserID(user.ID)
+	}
 
-    h.render(w, http.StatusOK, "public_user_panel.html", data)
+	h.render(w, http.StatusOK, "public_user_panel.html", data)
 }

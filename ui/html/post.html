@@ -4,6 +4,12 @@
       <meta charset="UTF-8">
       <title>{{.Post.Post.Title}} – Book Forum</title>
       <link rel="stylesheet" href="/static/main.css">
+      <style>
+         .replies { margin-left: 1.5rem; border-left: 2px solid #eee; padding-left: 1rem; }
+         .replies.hidden { display: none; }
+         .comment.reply { margin-top: 0.5rem; }
+         .toggle-replies { background: none; border: none; color: #0366d6; cursor: pointer; padding: 0; margin: 0.5rem 0; }
+      </style>
    </head>
    <body>
       <div class="forum-shell">
@@ -95,7 +101,7 @@
             {{end}}
             <!-- Comments -->
             <section class="post-card comments-area">
-               <h3>Comments ({{len .Post.Comments}})</h3>
+                  <h3>Comments ({{len .Post.Comments}})</h3>
                {{range .Post.Comments}}
                <div class="comment">
                   <div class="comment-author">
@@ -116,6 +122,44 @@
                   <form action="/comment/{{.ID}}/dislike?post_id={{$.Post.Post.ID}}" method="POST" style="display:inline;">
                      <button type="submit" class="like-btn">💔 {{.DislikeCount}}</button>
                   </form>
+                  <details class="reply-box">
+                     <summary>Reply</summary>
+                     {{if $.IsAuthenticated}}
+                     <form action="/comment/{{.ID}}/reply" method="POST">
+                        <input type="hidden" name="post_id" value="{{$.Post.Post.ID}}">
+                        <textarea name="content" rows="3" required placeholder="Write your reply..."></textarea>
+                        <button type="submit" class="primary-btn">Reply</button>
+                     </form>
+                     {{else}}
+                     <p>Please <a href="/auth/login">Log In</a> to reply.</p>
+                     {{end}}
+                  </details>
+
+                  <details class="replies-details">
+                     <summary>Replies ({{len .Replies}})</summary>
+                     <div class="replies" id="replies-{{.ID}}">
+                        {{range .Replies}}
+                        <div class="comment reply">
+                           <div class="comment-author">
+                              <a href="/u/{{.UserName}}"><strong>{{.UserName}}</strong></a>
+                              <span class="comment-time">wrote on {{.CreatedAt.Format "Jan 02, 2006"}}</span>
+                              {{if eq .UserID $.AuthenticatedUser}}
+                              <form action="/comment/{{.ID}}/delete?post_id={{$.Post.Post.ID}}" method="POST" style="display:inline;">
+                                 <button type="submit" class="action-btn secondary-btn danger">Delete</button>
+                              </form>
+                              {{end}}
+                           </div>
+                           <div class="comment-content">{{.Content}}</div>
+                           <form action="/comment/{{.ID}}/like?post_id={{$.Post.Post.ID}}" method="POST" style="display:inline;">
+                              <button type="submit" class="like-btn">❤️ {{.LikeCount}}</button>
+                           </form>
+                           <form action="/comment/{{.ID}}/dislike?post_id={{$.Post.Post.ID}}" method="POST" style="display:inline;">
+                              <button type="submit" class="like-btn">💔 {{.DislikeCount}}</button>
+                           </form>
+                        </div>
+                        {{end}}
+                     </div>
+                  </details>
                </div>
                {{else}}
                <p>No comments yet.</p>
@@ -135,5 +179,6 @@
             {{end}}
          </main>
       </div>
+         
    </body>
 </html>

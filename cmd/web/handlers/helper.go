@@ -12,14 +12,13 @@ import (
 	"path/filepath"
 	"runtime/debug"
 	"strings"
-
 )
 
 type Handler struct {
-	DB             *sql.DB
-	InfoLog        *log.Logger
-	ErrorLog       *log.Logger
-	TemplateCache  map[string]*template.Template
+	DB            *sql.DB
+	InfoLog       *log.Logger
+	ErrorLog      *log.Logger
+	TemplateCache map[string]*template.Template
 }
 
 func (h *Handler) serverError(w http.ResponseWriter, err error) {
@@ -37,7 +36,7 @@ func (h *Handler) clientError(w http.ResponseWriter, status int) {
 }
 
 func (h *Handler) notFound(w http.ResponseWriter, r *http.Request) {
-	data := h.newTemplateData(w,r)
+	data := h.newTemplateData(w, r)
 	h.render(w, http.StatusNotFound, "404.html", data)
 }
 

@@ -25,9 +25,8 @@ type userLoginForm struct {
 	validator.Validator
 }
 
-
 func (h *Handler) userRegister(w http.ResponseWriter, r *http.Request) {
-	data := h.newTemplateData(w,r)
+	data := h.newTemplateData(w, r)
 	data.Form = userRegisterForm{}
 	h.render(w, http.StatusOK, "register.html", data)
 }
@@ -56,7 +55,7 @@ func (h *Handler) userRegisterPost(w http.ResponseWriter, r *http.Request) {
 	form.CheckField(validator.MinChars(form.Password, 5), "password", "Password must be at least 5 characters")
 
 	if !form.Valid() {
-		data := h.newTemplateData(w,r)
+		data := h.newTemplateData(w, r)
 		data.Form = form
 		h.render(w, http.StatusUnprocessableEntity, "register.html", data)
 		return
@@ -92,7 +91,7 @@ func (h *Handler) userRegisterPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		data := h.newTemplateData(w,r)
+		data := h.newTemplateData(w, r)
 		data.Form = form
 		h.render(w, http.StatusUnprocessableEntity, "register.html", data)
 		return
@@ -105,7 +104,7 @@ func (h *Handler) userRegisterPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) userLogin(w http.ResponseWriter, r *http.Request) {
-	data := h.newTemplateData(w,r)
+	data := h.newTemplateData(w, r)
 	data.Form = userLoginForm{}
 	h.render(w, http.StatusOK, "login.html", data)
 
@@ -127,7 +126,7 @@ func (h *Handler) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	form.CheckField(validator.NotBlank(form.password), "password", "Password is required")
 
 	if !form.Valid() {
-		data := h.newTemplateData(w,r)
+		data := h.newTemplateData(w, r)
 		data.Form = form
 		h.render(w, http.StatusUnprocessableEntity, "login.html", data)
 		return

@@ -218,6 +218,7 @@ func (m *PostModel) GetPost(id int) (*PostView, error) {
         c.created_at, 
         c.user_id, 
         u.username,
+		c.parent_id,
 		(SELECT COUNT(*) FROM likes WHERE target_id = c.id AND target_type = 'comment' AND value = 1) as like_count,
 		(SELECT COUNT(*) FROM likes WHERE target_id = c.id AND target_type = 'comment' AND value = -1) as dislike_count
     FROM comments c
@@ -231,14 +232,52 @@ func (m *PostModel) GetPost(id int) (*PostView, error) {
 	}
 	defer rows.Close()
 
+	// Read comments and build a nested replies tree
+	var comments []Comment
 	for rows.Next() {
 		var c Comment
-		err = rows.Scan(&c.ID, &c.Content, &c.CreatedAt, &c.UserID, &c.UserName, &c.LikeCount, &c.DislikeCount)
+		var parentNull sql.NullInt64
+		err = rows.Scan(&c.ID, &c.Content, &c.CreatedAt, &c.UserID, &c.UserName, &parentNull, &c.LikeCount, &c.DislikeCount)
 		if err != nil {
 			return nil, err
 		}
-		pv.Comments = append(pv.Comments, c)
+		if parentNull.Valid {
+			pid := int(parentNull.Int64)
+			c.ParentID = &pid
+		}
+		comments = append(comments, c)
 	}
+
+	// map comments by id for easy parent lookup
+	commentMap := make(map[int]*Comment)
+	for i := range comments {
+		commentMap[comments[i].ID] = &comments[i]
+	}
+
+	// First pass: attach children to their parents
+	for i := range comments {
+		c := &comments[i]
+		if c.ParentID != nil {
+			if parent, ok := commentMap[*c.ParentID]; ok {
+				parent.Replies = append(parent.Replies, *c)
+			}
+		}
+	}
+
+	// Second pass: collect top-level comments (including those who now have Replies)
+	for i := range comments {
+		c := &comments[i]
+		if c.ParentID == nil {
+			pv.Comments = append(pv.Comments, *c)
+		}
+		// if parent missing, treat as top-level
+		if c.ParentID != nil {
+			if _, ok := commentMap[*c.ParentID]; !ok {
+				pv.Comments = append(pv.Comments, *c)
+			}
+		}
+	}
+
 	return pv, nil
 }
 
@@ -259,15 +298,17 @@ func (m *PostModel) InsertPost(userID string, title, content, imagePath string, 
 	return int(id), nil
 }
 
-func (m *PostModel) InsertComment(postID int, userID string, content string) error {
-	stmt := `INSERT INTO comments (post_id, user_id, content, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)`
+func (m *PostModel) InsertComment(postID int, userID string, content string, parentID *int) error {
+	// parentID may be nil for top-level comments
+	stmt := `INSERT INTO comments (post_id, user_id, content, parent_id, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`
 
-	_, err := m.DB.Exec(stmt, postID, userID, content)
+	_, err := m.DB.Exec(stmt, postID, userID, content, parentID)
 	if err != nil {
 		return err
 	}
 	return nil
 }
+
 
 func (m *PostModel) DeletePost(id int) error {
 	stmt := `DELETE FROM posts WHERE id = ?`

@@ -21,19 +21,16 @@ func main() {
 	}
 	defer db.Close()
 
-
-
-
 	templateCache, err := handlers.NewTemplateCache()
 	if err != nil {
 		errorLog.Fatal(err)
 	}
 
 	handler := &handlers.Handler{
-		DB:             db,
-		InfoLog:        infoLog,
-		ErrorLog:       errorLog,
-		TemplateCache:  templateCache,
+		DB:            db,
+		InfoLog:       infoLog,
+		ErrorLog:      errorLog,
+		TemplateCache: templateCache,
 	}
 
 	appRouter := handler.Routes()
@@ -41,7 +38,7 @@ func main() {
 
 	err = http.ListenAndServe(":8080", appRouter)
 	if err != nil {
-	log.Fatal(err)
-}
+		log.Fatal(err)
+	}
 
 }
