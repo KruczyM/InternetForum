@@ -7,11 +7,10 @@ import (
 	"strings"
 )
 
-
 func (h *Handler) CreateBook(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodGet {
-		data := h.newTemplateData(w,r)
+		data := h.newTemplateData(w, r)
 
 		ts, err := template.ParseFiles("ui/html/create_book.html")
 		if err != nil {
@@ -30,12 +29,13 @@ func (h *Handler) CreateBook(w http.ResponseWriter, r *http.Request) {
 		}
 
 		title := r.FormValue("title")
-        author := r.FormValue("author")
-        description := r.FormValue("description")
+		author := r.FormValue("author")
+		description := r.FormValue("description")
 
 		if strings.TrimSpace(title) == "" || strings.TrimSpace(author) == "" {
-			h.setFlash(w, "error", "Title and Author are required!")
-			http.Redirect(w, r, "/book/create", http.StatusSeeOther)
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("400 Bad Request: title and author are required\n"))
 			return
 		}
 
@@ -45,7 +45,7 @@ func (h *Handler) CreateBook(w http.ResponseWriter, r *http.Request) {
 			h.serverError(w, err)
 			return
 		}
-		h.setFlash(w,"success","Book added successfully!")
+		h.setFlash(w, "success", "Book added successfully!")
 		http.Redirect(w, r, "/post/create", http.StatusSeeOther)
 	}
 }

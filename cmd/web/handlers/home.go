@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"forum/internal/models"
+	"forum/internal/validator"
 	"html/template"
 	"io"
 	"net/http"
@@ -73,125 +74,169 @@ func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+
+type PostForm struct {
+	Title    string
+	Content  string
+	Category string
+	BookID   string
+	Chapter  string
+	Errors   map[string]string
+}
+
+
 func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
 
-	// ===== GET =====
+	postsModel := &models.PostModel{DB: h.DB}
+
 	if r.Method == http.MethodGet {
 
-		postsModel := &models.PostModel{DB: h.DB}
+		books, err := postsModel.GetAllBooks()
+		if err != nil {
+			h.serverError(w, err)
+			return
+		}
+		data := h.newTemplateData(w, r)
+		data.AnyData["Books"] = books
+
+		h.render(w, http.StatusOK, "create.html", data)
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		h.clientError(w, http.StatusMethodNotAllowed)
+		return
+	}
+
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		h.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	formTitle := r.FormValue("title")
+	formContent := r.FormValue("content")
+	formCategory := r.FormValue("post_type")
+	formBookID := r.FormValue("book_id")
+	formChapter := r.FormValue("chapter")
+
+	v := validator.Validator{}
+
+
+	v.CheckField(validator.NotBlank(formTitle),"title","Title cannot be blank",)
+	v.CheckField(validator.MaxChars(formTitle, 150),"title","Title must be at most 150 characters",)
+	v.CheckField(validator.NotBlank(formContent),"content","Content cannot be blank",)
+	v.CheckField(validator.PermittedValue(
+			formCategory,
+			"Classics",
+			"General_Fiction",
+			"Crime_Mystery_Thriller",
+			"Womens_Fiction",
+			"Childrens",
+			"Poetry_Plays",
+			"Non_Fiction",
+			"Historical_Fiction",
+		),
+		"post_type",
+		"Invalid category selected",
+	)
+
+	var bookID *int
+	if formBookID != "" && formBookID != "0" {
+		id, err := strconv.Atoi(formBookID)
+		if err != nil {
+			v.AddFieldError("book_id", "Invalid book selected")
+		} else {
+			bookID = &id
+		}
+	}
+
+	var chapter *string
+	if validator.NotBlank(formChapter) {
+		chapter = &formChapter
+	}
+
+	var imagePath string
+
+	file, handler, err := r.FormFile("image")
+	if err != nil && err != http.ErrMissingFile {
+		v.AddFieldError("image", "Unable to upload image")
+	}
+
+	if file != nil {
+		defer file.Close()
+
+		fileName := fmt.Sprintf(
+			"%d_%s",
+			time.Now().UnixNano(),
+			filepath.Base(handler.Filename),
+		)
+
+		uploadDir := "./ui/static/uploads/posts_img"
+		filePath := filepath.Join(uploadDir, fileName)
+
+		if err := os.MkdirAll(uploadDir, 0755); err != nil {
+			h.serverError(w, err)
+			return
+		}
+
+		dst, err := os.Create(filePath)
+		if err != nil {
+			h.serverError(w, err)
+			return
+		}
+		defer dst.Close()
+
+		if _, err := io.Copy(dst, file); err != nil {
+			h.serverError(w, err)
+			return
+		}
+
+		imagePath = "/static/uploads/posts_img/" + fileName
+	}
+
+	if !v.Valid() {
+
 		books, err := postsModel.GetAllBooks()
 		if err != nil {
 			h.serverError(w, err)
 			return
 		}
 
-		data := struct {
-			Books           []models.Book
-			IsAuthenticated bool
-		}{
-			Books:           books,
-			IsAuthenticated: h.isAuthenticated(r),
+		data := h.newTemplateData(w, r)
+		data.AnyData["Books"] = books
+		data.AnyData["Form"] = map[string]any{
+			"title":     formTitle,
+			"content":   formContent,
+			"post_type": formCategory,
+			"book_id":   formBookID,
+			"chapter":   formChapter,
+			"errors":    v.FieldErrors,
 		}
 
-		ts, err := template.ParseFiles("ui/html/create.html")
-		if err != nil {
-			h.serverError(w, err)
-			return
-		}
-		ts.Execute(w, data)
+		w.WriteHeader(http.StatusBadRequest)
+		h.render(w, http.StatusBadRequest, "create.html", data)
 		return
 	}
 
-	// ===== POST =====
-	if r.Method == http.MethodPost {
-
-		if err := r.ParseMultipartForm(10 << 20); err != nil {
-			h.serverError(w, err)
-			return
-		}
-
-		title := r.FormValue("title")
-		content := r.FormValue("content")
-		category := r.FormValue("post_type")
-
-		userID := h.authenticatedUserID(r)
-		if userID == "" {
-			http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
-			return
-		}
-
-		// --- book ---
-		var bookID *int
-		rawBookID := r.FormValue("book_id")
-		if rawBookID != "" && rawBookID != "0" {
-			if id, err := strconv.Atoi(rawBookID); err == nil {
-				bookID = &id
-			}
-		}
-
-		// --- chapter ---
-		var chapter *string
-		rawChapter := r.FormValue("chapter")
-		if rawChapter != "" {
-			chapter = &rawChapter
-		}
-
-		// --- image upload ---
-		var imagePath string
-
-		file, handler, err := r.FormFile("image")
-		if err != nil && err != http.ErrMissingFile {
-			h.serverError(w, err)
-			return
-		}
-
-		if file != nil {
-			defer file.Close()
-
-			fileName := fmt.Sprintf(
-				"%d_%s",
-				time.Now().UnixNano(),
-				filepath.Base(handler.Filename),
-			)
-
-			uploadDir := "./ui/static/uploads/posts_img"
-			filePath := filepath.Join(uploadDir, fileName)
-
-			if err := os.MkdirAll(uploadDir, 0755); err != nil {
-				h.serverError(w, err)
-				return
-			}
-
-			dst, err := os.Create(filePath)
-			if err != nil {
-				h.serverError(w, err)
-				return
-			}
-			defer dst.Close()
-
-			if _, err := io.Copy(dst, file); err != nil {
-				h.serverError(w, err)
-				return
-			}
-
-			imagePath = "/static/uploads/posts_img/" + fileName
-		}
-
-		postsModel := &models.PostModel{DB: h.DB}
-		id, err := postsModel.InsertPost(
-			userID,
-			title,
-			content,
-			imagePath,
-			category,
-			bookID,
-			chapter,
-		)
-		if err != nil {
-			h.serverError(w, err)
-			return
-		}
-
-		http.Redirect(w, r, fmt.Sprintf("/post/%d", id), http.StatusSeeOther)
+	userID := h.authenticatedUserID(r)
+	if userID == "" {
+		http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
+		return
 	}
+
+	id, err := postsModel.InsertPost(
+		userID,
+		formTitle,
+		formContent,
+		imagePath,
+		formCategory,
+		bookID,
+		chapter,
+	)
+	if err != nil {
+		h.serverError(w, err)
+		return
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/post/%d", id), http.StatusSeeOther)
 }

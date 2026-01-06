@@ -1,139 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="UTF-8">
-      <title>{{.Post.Post.Title}} – Book Forum</title>
-      <link rel="stylesheet" href="/static/main.css">
-   </head>
-   <body>
-      <div class="forum-shell">
-         <!-- Header -->
-         <header class="forum-header">
-            <div class="header-left">
-               <div class="logo"><a href="/" class="clean-link">BOOK FORUM</a></div>
-               <nav class="main-nav">
-                  <a href="/posts" class="nav-link">Posts</a>
-                  <a href="/chat/" class="nav-link">Chat</a>
-                  <div class="nav-dropdown">
-                     <button class="nav-link dropdown-toggle" type="button">
+
+<head>
+   <meta charset="UTF-8">
+   <title>{{.Post.Post.Title}} – Book Forum</title>
+   <link rel="stylesheet" href="/static/main.css">
+</head>
+
+<body>
+   <div class="forum-shell">
+      <!-- Header -->
+      <header class="forum-header">
+         <div class="header-left">
+            <div class="logo"><a href="/" class="clean-link">BOOK FORUM</a></div>
+            <nav class="main-nav">
+               <a href="/posts" class="nav-link">Posts</a>
+               <a href="/chat/" class="nav-link">Chat</a>
+               <div class="nav-dropdown">
+                  <button class="nav-link dropdown-toggle" type="button">
                      My Account ▾
-                     </button>
-                     <div class="dropdown-menu">
-                        <a href="/profile?tab=profile">Profile</a>
-                        <a href="/profile?tab=posts">My Posts</a>
-                        <a href="/profile?tab=comments">My Comments</a>
-                        <a href="/profile?tab=likes">My Likes</a>
-                     </div>
-                  </div>
-               </nav>
-            </div>
-            <div class="header-tools">
-               <form action="/" method="GET" class="search-box header-search">
-                  <input type="text" name="q" placeholder="Search...">
-               </form>
-            </div>
-            <div class="auth-links">
-               {{if .IsAuthenticated}}
-               <form action="/auth/logout" method="POST">
-                  <button class="text-btn">Logout</button>
-               </form>
-               {{else}}
-               <a href="/auth/register">Register</a>
-               <a href="/auth/login">Login</a>
-               {{end}}
-            </div>
-         </header>
-         <!-- Content -->
-         <main class="center-panel">
-            <!-- Post -->
-            <article class="post-card full-post">
-               <div class="post-header">
-                  <h1>{{.Post.Post.Title}}</h1>
-                  <div class="meta">
-                     By <a href="/u/{{.Post.AuthorName}}" class=""><strong>{{.Post.AuthorName}}</strong></a> ·
-                     {{.Post.FormattedDate}}
-                     {{if .Post.BookID}}
-                     | Book: <strong>{{.Post.BookTitle}}</strong>
-                     {{if .Post.Post.Chapter}} (Ch. {{.Post.Post.Chapter}}) {{end}}
-                     {{end}}
-                  </div>
-               </div>
-                  {{if .Post.Post.ImagePath}}
-               <div class="post-image">
-                  <img src="{{.Post.Post.ImagePath}}" alt="Post Image">
-               </div>
-               {{end}}
-               <div class="post-content">
-{{.Post.Post.Content}}
-               </div>
-               <div class="post-footer">
-                  <form action="/post/{{.Post.Post.ID}}/like" method="POST" style="display:inline;">
-                     <button type="submit" class="like-btn">❤️ <span>{{.Post.LikeCount}}</span></button>
-                  </form>
-                  <form action="/post/{{.Post.Post.ID}}/dislike" method="POST" style="display:inline;">
-                        <button type="submit" class="like-btn">💔 <span>{{.Post.DislikeCount}}</span></button>
-                  </form>
-               </div>
-            </article>
-            <!-- Owner actions -->
-            {{if eq .Post.Post.UserID .AuthenticatedUser}}
-            <div class="post-actions">
-               <form action="/post/{{.Post.Post.ID}}/edit" method="GET" style="display:inline;">
-                  <button type="submit" class="action-btn secondary-btn">
-                  Edit Post
                   </button>
-               </form>
-               <form action="/post/{{.Post.Post.ID}}/delete" method="POST" style="display:inline;">
-                  <button type="submit" class="action-btn secondary-btn danger">
-                  Delete Post
-                  </button>
-                  <label class="confirm-delete">
-                  <input type="checkbox" required> Confirm
-                  </label>
-               </form>
-            </div>
-            {{end}}
-            <!-- Comments -->
-            <section class="post-card comments-area">
-               <h3>Comments ({{len .Post.Comments}})</h3>
-               {{range .Post.Comments}}
-               <div class="comment">
-                  <div class="comment-author">
-                     <a href="/u/{{.UserName}}"><strong>{{.UserName}}</strong></a>
-                     <span class="comment-time">
-                     wrote on {{.CreatedAt.Format "Jan 02, 2006"}}
-                     </span>
-                     {{if eq .UserID $.AuthenticatedUser}}
-                     <form action="/comment/{{.ID}}/delete?post_id={{$.Post.Post.ID}}" method="POST" style="display:inline;">
-                        <button type="submit" class="action-btn secondary-btn danger">Delete</button>
-                     </form>
-                     {{end}}
+                  <div class="dropdown-menu">
+                     <a href="/profile?tab=profile">Profile</a>
+                     <a href="/profile?tab=posts">My Posts</a>
+                     <a href="/profile?tab=comments">My Comments</a>
+                     <a href="/profile?tab=likes">My Likes</a>
                   </div>
-                  <div class="comment-content">{{.Content}}</div>
-                  <form action="/comment/{{.ID}}/like?post_id={{$.Post.Post.ID}}" method="POST" style="display:inline;">
-                     <button type="submit" class="like-btn">❤️ {{.LikeCount}}</button>
-                  </form>
-                  <form action="/comment/{{.ID}}/dislike?post_id={{$.Post.Post.ID}}" method="POST" style="display:inline;">
-                     <button type="submit" class="like-btn">💔 {{.DislikeCount}}</button>
-                  </form>
                </div>
-               {{else}}
-               <p>No comments yet.</p>
-               {{end}}
-            </section>
-            <!-- Add comment -->
+            </nav>
+         </div>
+         <div class="header-tools">
+            <form action="/" method="GET" class="search-box header-search">
+               <input type="text" name="q" placeholder="Search...">
+            </form>
+         </div>
+         <div class="auth-links">
             {{if .IsAuthenticated}}
-            <section class="post-card add-comment-section">
-               <h3>Leave a Comment</h3>
-               <form action="/post/{{.Post.Post.ID}}/comment" method="POST">
-                  <textarea name="content" rows="4" required placeholder="Write your comment here..."></textarea>
-                  <button type="submit" class="primary-btn">Submit Comment</button>
-               </form>
-            </section>
+            <form action="/auth/logout" method="POST">
+               <button class="text-btn">Logout</button>
+            </form>
             {{else}}
-            <p>Please <a href="/auth/login">Log In</a> to leave a comment.</p>
+            <a href="/auth/register">Register</a>
+            <a href="/auth/login">Login</a>
             {{end}}
-         </main>
-      </div>
-   </body>
+         </div>
+      </header>
+      <!-- Content -->
+      <main class="center-panel">
+         <!-- Post -->
+         <article class="post-card full-post">
+            <div class="post-header">
+               <h1>{{.Post.Post.Title}}</h1>
+               <div class="meta">
+                  By <a href="/u/{{.Post.AuthorName}}" class=""><strong>{{.Post.AuthorName}}</strong></a> ·
+                  {{.Post.FormattedDate}}
+                  {{if .Post.BookID}}
+                  | Book: <strong>{{.Post.BookTitle}}</strong>
+                  {{if .Post.Post.Chapter}} (Ch. {{.Post.Post.Chapter}}) {{end}}
+                  {{end}}
+               </div>
+            </div>
+            {{if .Post.Post.ImagePath}}
+            <div class="post-image">
+               <img src="{{.Post.Post.ImagePath}}" alt="Post Image">
+            </div>
+            {{end}}
+            <div class="post-content">
+               {{.Post.Post.Content}}
+            </div>
+            <div class="post-footer">
+               <form action="/post/{{.Post.Post.ID}}/like" method="POST" style="display:inline;">
+                  <button type="submit" class="like-btn">❤️ <span>{{.Post.LikeCount}}</span></button>
+               </form>
+               <form action="/post/{{.Post.Post.ID}}/dislike" method="POST" style="display:inline;">
+                  <button type="submit" class="like-btn">💔 <span>{{.Post.DislikeCount}}</span></button>
+               </form>
+            </div>
+         </article>
+         <!-- Owner actions -->
+         {{if eq .Post.Post.UserID .AuthenticatedUser}}
+         <div class="post-actions">
+            <form action="/post/{{.Post.Post.ID}}/edit" method="GET" style="display:inline;">
+               <button type="submit" class="action-btn secondary-btn">
+                  Edit Post
+               </button>
+            </form>
+            <form action="/post/{{.Post.Post.ID}}/delete" method="POST" style="display:inline;">
+               <button type="submit" class="action-btn secondary-btn danger">
+                  Delete Post
+               </button>
+               <label class="confirm-delete">
+                  <input type="checkbox" required> Confirm
+               </label>
+            </form>
+         </div>
+         {{end}}
+         <!-- Comments -->
+         <section class="post-card comments-area">
+            <h3>Comments ({{len .Post.Comments}})</h3>
+            {{range .Post.Comments}}
+            <div class="comment">
+               <div class="comment-author">
+                  <a href="/u/{{.UserName}}"><strong>{{.UserName}}</strong></a>
+                  <span class="comment-time">
+                     wrote on {{.CreatedAt.Format "Jan 02, 2006"}}
+                  </span>
+                  {{if eq .UserID $.AuthenticatedUser}}
+                  <form action="/comment/{{.ID}}/delete?post_id={{$.Post.Post.ID}}" method="POST"
+                     style="display:inline;">
+                     <button type="submit" class="action-btn secondary-btn danger">Delete</button>
+                  </form>
+                  {{end}}
+               </div>
+               <div class="comment-content">{{.Content}}</div>
+               <form action="/comment/{{.ID}}/like?post_id={{$.Post.Post.ID}}" method="POST" style="display:inline;">
+                  <button type="submit" class="like-btn">❤️ {{.LikeCount}}</button>
+               </form>
+               <form action="/comment/{{.ID}}/dislike?post_id={{$.Post.Post.ID}}" method="POST" style="display:inline;">
+                  <button type="submit" class="like-btn">💔 {{.DislikeCount}}</button>
+               </form>
+            </div>
+            {{else}}
+            <p>No comments yet.</p>
+            {{end}}
+         </section>
+         <!-- Add comment -->
+         {{if .IsAuthenticated}}
+         <section class="post-card add-comment-section">
+            <h3>Leave a Comment</h3>
+            <form action="/post/{{.Post.Post.ID}}/comment" method="POST">
+               <textarea name="content" rows="4" required placeholder="Write your comment here..."></textarea>
+               <button type="submit" class="primary-btn">Submit Comment</button>
+            </form>
+         </section>
+         {{else}}
+         <p>Please <a href="/auth/login">Log In</a> to leave a comment.</p>
+         {{end}}
+      </main>
+   </div>
+</body>
+
 </html>

@@ -80,8 +80,10 @@ func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 
 	content := r.FormValue("content")
 	if strings.TrimSpace(content) == "" {
-		h.clientError(w, http.StatusBadRequest)
-		return
+    w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+    w.WriteHeader(http.StatusBadRequest)
+    w.Write([]byte("400 Bad Request: content is required\n"))
+    return
 	}
 
 	userID := h.authenticatedUserID(r)
@@ -216,6 +218,11 @@ func (h *Handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 
 	title := r.Form.Get("title")
 	content := r.Form.Get("content")
+	if title == "" || content == "" {
+		h.setFlash(w, "error", "Title and Author are required!")
+		http.Redirect(w, r, "/book/create", http.StatusSeeOther)
+		return
+	}
 
 	postsModel := &models.PostModel{DB: h.DB}
 	postView, err := postsModel.GetPost(id)
