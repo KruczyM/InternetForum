@@ -127,8 +127,12 @@
                      {{if $.IsAuthenticated}}
                      <form action="/comment/{{.ID}}/reply" method="POST">
                         <input type="hidden" name="post_id" value="{{$.Post.Post.ID}}">
-                        <textarea name="content" rows="3" required placeholder="Write your reply..."></textarea>
-                        <button type="submit" class="primary-btn">Reply</button>
+                        <textarea name="content" rows="3" class="comment-textarea" required placeholder="Write your reply..."></textarea>
+                          <div class="comment-actions">
+    <button type="submit" class="primary-btn">
+      Submit Comment
+    </button>
+  </div>
                      </form>
                      {{else}}
                      <p>Please <a href="/auth/login">Log In</a> to reply.</p>
@@ -169,7 +173,7 @@
             {{if .IsAuthenticated}}
             <section class="post-card add-comment-section">
                <h3>Leave a Comment</h3>
-               <form action="/post/{{.Post.Post.ID}}/comment" method="POST">
+               <form action="/post/{{.Post.Post.ID}}/comment" method="POST" class="comment-textarea">
                   <textarea name="content" rows="4" required placeholder="Write your comment here..."></textarea>
                   <button type="submit" class="primary-btn">Submit Comment</button>
                </form>
