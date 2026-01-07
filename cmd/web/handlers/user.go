@@ -25,6 +25,11 @@ type userPasswordForm struct {
 	validator.Validator
 }
 
+type userAboutForm struct {
+    about string
+    validator.Validator
+}
+
 func (h *Handler) userProfile(w http.ResponseWriter, r *http.Request) {
 	userID := h.authenticatedUserID(r)
 	if userID == "" {
@@ -45,7 +50,7 @@ func (h *Handler) userProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := h.newTemplateData(w, r)
+	data := h.newTemplateData(w,r)
 
 	data.Form = &validator.Validator{}
 
@@ -82,13 +87,14 @@ func (h *Handler) userProfileEditPost(w http.ResponseWriter, r *http.Request) {
 	form := &userProfileForm{
 		firstName: strings.TrimSpace(r.PostForm.Get("first_name")),
 		lastName:  strings.TrimSpace(r.PostForm.Get("last_name")),
+
 	}
 
 	form.CheckField(validator.NotBlank(form.firstName), "first_name", "First name is required")
 	form.CheckField(validator.NotBlank(form.lastName), "last_name", "Last name is required")
 
 	if !form.Valid() {
-		data := h.newTemplateData(w, r)
+		data := h.newTemplateData(w,r)
 		data.AnyData = map[string]any{}
 		data.Form = form
 
@@ -136,7 +142,7 @@ func (h *Handler) userProfilePasswordPost(w http.ResponseWriter, r *http.Request
 	user, _ := models.GetUserByID(h.DB, userID)
 
 	if !form.Valid() {
-		data := h.newTemplateData(w, r)
+		data := h.newTemplateData(w,r)
 		data.AnyData = map[string]any{}
 		data.Form = form
 
@@ -151,7 +157,7 @@ func (h *Handler) userProfilePasswordPost(w http.ResponseWriter, r *http.Request
 	if !models.CheckPassword(form.currentPassword, user.PasswordHash) {
 		form.AddFieldError("current_password", "Incorrect current password")
 
-		data := h.newTemplateData(w, r)
+		data := h.newTemplateData(w,r)
 		data.AnyData = map[string]any{}
 		data.Form = form
 
@@ -174,7 +180,7 @@ func (h *Handler) userProfilePasswordPost(w http.ResponseWriter, r *http.Request
 		h.serverError(w, err)
 		return
 	}
-	h.setFlash(w, "success", "Password changed successfully")
+	h.setFlash(w,"success", "Password changed successfully")
 
 	http.Redirect(w, r, "/profile?tab=profile", http.StatusSeeOther)
 }
@@ -243,37 +249,73 @@ func (h *Handler) publicUserProfile(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(path, "/")
 
 	if len(parts) != 1 || parts[0] == "" {
-		h.notFound(w, r)
+		h.notFound(w,r)
 		return
 	}
 
 	username := parts[0]
 
-	tab := r.URL.Query().Get("tab")
-	if tab == "" {
-		tab = "posts"
-	}
+    tab := r.URL.Query().Get("tab")
+    if tab == "" {
+        tab = "posts"
+    }
 
-	user, err := models.GetUserByUsername(h.DB, username)
-	if err != nil {
-		h.notFound(w, r)
-		return
-	}
+    user, err := models.GetUserByUsername(h.DB, username)
+    if err != nil {
+        h.notFound(w,r)
+        return
+    }
 
-	data := h.newTemplateData(w, r)
-	data.AnyData["user"] = user
-	data.AnyData["tab"] = tab
+    data := h.newTemplateData(w,r)
+    data.AnyData["user"] = user
+    data.AnyData["tab"] = tab
 
-	postsModel := &models.PostModel{DB: h.DB}
+    postsModel := &models.PostModel{DB: h.DB}
 
-	switch tab {
-	case "posts":
-		data.AnyData["posts"], _ = postsModel.GetPostsByUserID(user.ID)
-	case "comments":
-		data.AnyData["comments"], _ = postsModel.GetCommentsByUserID(user.ID)
-	case "likes":
-		data.AnyData["likes"], _ = postsModel.GetLikesByUserID(user.ID)
-	}
+    switch tab {
+    case "posts":
+        data.AnyData["posts"], _ = postsModel.GetPostsByUserID(user.ID)
+    case "comments":
+        data.AnyData["comments"], _ = postsModel.GetCommentsByUserID(user.ID)
+    case "likes":
+        data.AnyData["likes"], _ = postsModel.GetLikesByUserID(user.ID)
+    }
 
-	h.render(w, http.StatusOK, "public_user_panel.html", data)
+    h.render(w, http.StatusOK, "public_user_panel.html", data)
+}
+
+func (h *Handler) userProfileAboutPost(w http.ResponseWriter, r *http.Request) {
+    err := r.ParseForm()
+    if err != nil {
+        h.clientError(w, http.StatusBadRequest)
+        return
+    }
+
+    form := &userAboutForm{
+        about: strings.TrimSpace(r.PostForm.Get("about")),
+    }
+    userID := h.authenticatedUserID(r)
+    user, _ := models.GetUserByID(h.DB, userID)
+
+    if !form.Valid() {
+        data := h.newTemplateData(w, r)
+        data.AnyData = map[string]any{}
+        data.Form = form
+
+        data.AnyData["tab"] = "profile"
+        data.AnyData["editMode"] = "about"
+        data.AnyData["user"] = user
+
+        h.render(w, http.StatusUnprocessableEntity, "user_panel.html", data)
+        return
+    }
+    err = models.UpdateAbout(h.DB, userID, form.about)
+    if err != nil {
+        h.serverError(w, err)
+        return
+    }
+
+    h.setFlash(w, "success", "Bio updated successfully")
+
+    http.Redirect(w, r, "/profile?tab=profile", http.StatusSeeOther)
 }
