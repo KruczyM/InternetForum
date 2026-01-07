@@ -88,16 +88,16 @@ func (h *Handler) Routes() http.Handler {
 		})),
 	)
 
-		mux.HandleFunc("/post/", func(w http.ResponseWriter, r *http.Request) {
-			path := strings.TrimPrefix(r.URL.Path, "/post/")
-			parts := strings.Split(path, "/")
+	mux.HandleFunc("/post/", func(w http.ResponseWriter, r *http.Request) {
+		path := strings.TrimPrefix(r.URL.Path, "/post/")
+		parts := strings.Split(path, "/")
 
-			if len(parts) == 1 && r.Method == http.MethodGet {
-				h.ViewPost(w, r)
-				return
-			}
+		if len(parts) == 1 && r.Method == http.MethodGet {
+			h.ViewPost(w, r)
+			return
+		}
 
-	protectedActions := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		protectedActions := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if len(parts) == 2 {
 				switch parts[1] {
 				case "edit":
@@ -134,7 +134,9 @@ func (h *Handler) Routes() http.Handler {
 			http.NotFound(w, r)
 		})
 		h.requireAuth(protectedActions).ServeHTTP(w, r)
-})
+	})
+
+	// (removed comment-replies API; replies rendered server-side)
 
 	mux.Handle(
 		"/comment/",
@@ -161,6 +163,11 @@ func (h *Handler) Routes() http.Handler {
 			case "dislike":
 				if r.Method == http.MethodPost {
 					h.CommentDislike(w, r)
+					return
+				}
+			case "reply":
+				if r.Method == http.MethodPost {
+					h.CreateReply(w, r)
 					return
 				}
 			}

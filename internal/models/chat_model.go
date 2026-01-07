@@ -51,4 +51,3 @@ func GetAllCategories() []string {
 	}
 	return cats
 }
-

@@ -61,9 +61,9 @@ func (h *Handler) requireAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// If the user is not authenticated, redirect them to the login page and return from the middleware chain so that no subsequent handlers in the chain are executed.
 		if !h.isAuthenticated(r) {
- 			h.setFlash(w, "error", "Please log in to perform this action. Not registered yet? <a href='/auth/register'  class='back-link' style='display: inline-block;'>Register</a>")
- 			http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
- 			return
+			h.setFlash(w, "error", "Please log in to perform this action. Not registered yet? <a href='/auth/register'  class='back-link' style='display: inline-block;'>Register</a>")
+			http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
+			return
 		}
 		// Otherwise set the "Cache-Control: no-store" header so that pages require authentication are not stored in the users browser cache (or other intermediary cache).
 		w.Header().Add("Cache-Control", "no-store")
