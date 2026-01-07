@@ -145,6 +145,10 @@
   margin-top: 6px;
 }
 
+.txt-user{
+white-space: pre-line;
+}
+
 
 @media (max-width: 700px) {
   .profile-header {

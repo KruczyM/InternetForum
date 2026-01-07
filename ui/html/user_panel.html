@@ -85,15 +85,18 @@
                 <h3>About Me</h3>
                 {{if eq (index .AnyData "editMode") "about"}}
 
-                <form method="POST" action="/profile/edit-about">
-                    <textarea name="about" rows="4">{{ $user.About}}</textarea>
+                <form method="POST" action="/profile/edit-about" class="about">
+                    <textarea name="about" rows="5" cols="30" maxlength="3000">{{ $user.About}}</textarea>
+                    <div>
                     <button type="submit">Save</button>
                     <a class="link" href="/profile?tab=profile">Cancel</a>
+                    </div>
+
                 </form>
 
                 {{ else }}
 
-                <p>{{ if $user.About }}{{ $user.About }}{{ else }}No bio yet.{{ end }}</p>
+                <p class="txt-user">{{ if $user.About }}{{ $user.About }}{{ else }}No bio yet.{{ end }}</p>
                 <a class="link" href="/profile?tab=profile&edit=about">Edit Bio</a>
 
                 {{ end }}

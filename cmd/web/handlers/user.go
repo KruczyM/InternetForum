@@ -292,7 +292,7 @@ func (h *Handler) userProfileAboutPost(w http.ResponseWriter, r *http.Request) {
     }
 
     form := &userAboutForm{
-        about: strings.TrimSpace(r.PostForm.Get("about")),
+        about:r.PostForm.Get("about"),
     }
     userID := h.authenticatedUserID(r)
     user, _ := models.GetUserByID(h.DB, userID)

@@ -160,7 +160,24 @@ input[type="file"]::file-selector-button {
   cursor: pointer;
 }
 
-
+.about {
+  flex-direction: column;
+}
+.about textarea {
+  white-space: pre-wrap;
+  padding: 10px 14px;
+  border: 1px solid #d7c3af;
+  border-radius: 8px;
+  font-size: 0.95em;
+  font-family: "Libre Baskerville", Georgia, serif;
+  outline: none;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+.txt-user{
+white-space: pre-line;
+}
 @media (max-width: 700px) {
 .profile-block form {
     flex-direction: column;
