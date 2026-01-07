@@ -36,7 +36,15 @@ func (h *Handler) Routes() http.Handler {
 			h.notFound(w, r)
 			return
 		}
-		h.home(w, r)
+		h.homepage(w, r)
+	})
+
+		mux.HandleFunc("/posts", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			h.home(w, r)
+			return
+		}
+		h.notFound(w, r)
 	})
 
 	mux.HandleFunc("/auth/register", func(w http.ResponseWriter, r *http.Request) {

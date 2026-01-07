@@ -38,8 +38,11 @@ CREATE TABLE IF NOT EXISTS books (
 CREATE TABLE IF NOT EXISTS categories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
-    kind TEXT NOT NULL                -- genre, theme, format, character, author
+    kind TEXT NOT NULL,                
+    description TEXT NOT NULL,
+    avatar_path TEXT NOT NULL
 );
+
 
 CREATE TABLE IF NOT EXISTS book_categories (
     book_id INTEGER NOT NULL,
@@ -63,7 +66,7 @@ CREATE TABLE IF NOT EXISTS posts (
     title TEXT NOT NULL,
     content TEXT NOT NULL,
     image_path TEXT DEFAULT '',
-    post_type TEXT NOT NULL DEFAULT 'discussion', -- discussion | analysis | review
+    post_type TEXT NOT NULL DEFAULT 'Classics',
     book_id INTEGER,                              -- nullable
     chapter TEXT,                                 -- nullable
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

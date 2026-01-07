@@ -1,111 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="UTF-8">
-      <title>Create Post – Book Forum</title>
-      <link rel="stylesheet" href="/static/main.css">
-   </head>
-   <body>
-      <div class="forum-shell">
-         <!-- Header -->
-         <header class="forum-header">
-            <div class="header-left">
-               <div class="logo"><a href="/" class="clean-link">BOOK FORUM</a></div>
-               <nav class="main-nav">
-                  <a href="/" class="nav-link">Posts</a>
-                  <a href="/chat/" class="nav-link">Chat</a>
-                  <div class="nav-dropdown">
-                     <button class="nav-link dropdown-toggle" type="button">
+
+<head>
+   <meta charset="UTF-8">
+   <title>Create Post – Book Forum</title>
+   <link rel="stylesheet" href="/static/main.css">
+</head>
+
+<body>
+   <div class="forum-shell">
+      <!-- Header -->
+      <header class="forum-header">
+         <div class="header-left">
+            <div class="logo"><a href="/" class="clean-link">BOOK FORUM</a></div>
+            <nav class="main-nav">
+               <a href="/posts" class="nav-link">Posts</a>
+               <a href="/chat/" class="nav-link">Chat</a>
+               <div class="nav-dropdown">
+                  <button class="nav-link dropdown-toggle" type="button">
                      My Account ▾
-                     </button>
-                     <div class="dropdown-menu">
-                        <a href="/profile?tab=profile">Profile</a>
-                        <a href="/profile?tab=posts">My Posts</a>
-                        <a href="/profile?tab=comments">My Comments</a>
-                        <a href="/profile?tab=likes">My Likes</a>
-                     </div>
+                  </button>
+                  <div class="dropdown-menu">
+                     <a href="/profile?tab=profile">Profile</a>
+                     <a href="/profile?tab=posts">My Posts</a>
+                     <a href="/profile?tab=comments">My Comments</a>
+                     <a href="/profile?tab=likes">My Likes</a>
                   </div>
-               </nav>
-            </div>
-            <div class="header-tools">
-               <form action="/" method="GET" class="search-box header-search">
-                  <input type="text" name="q" placeholder="Search...">
-               </form>
-            </div>
-            <div class="auth-links">
-               {{if .IsAuthenticated}}
-               <form action="/auth/logout" method="POST">
-                  <button class="text-btn">Logout</button>
-               </form>
-               {{else}}
-               <a href="/auth/register">Register</a>
-               <a href="/auth/login">Login</a>
-               {{end}}
-            </div>
-         </header>
-         <!-- Content -->
-         <main class="center-panel">
-            <div class="create-post-form-container">
-               <h1>Create a New Post</h1>
-               <form
-                  action="/post/create"
-                  method="POST"
-                  enctype="multipart/form-data"
-                  class="create-post-form"
-                  >
-                  <div class="form-group">
-                     <label>Title</label>
-                     <input type="text" name="title" required>
-                  </div>
-                  <div class="form-group">
-                     <label>Category</label>
-                     <select name="post_type" required>
-                        <option value="Classics">Classics</option>
-                        <option value="General_Fiction">General Fiction</option>
-                        <option value="Crime_Mystery_Thriller">Crime / Thriller</option>
-                        <option value="Womens_Fiction">Women's Fiction</option>
-                        <option value="Childrens">Children's</option>
-                        <option value="Poetry_Plays">Poetry / Plays</option>
-                        <option value="Non_Fiction">Non-Fiction</option>
-                        <option value="Historical_Fiction">Historical Fiction</option>
-                     </select>
-                  </div>
-                  <div class="form-group">
-                     <label>Related Book</label>
-                     <select name="book_id">
-                        <option value="0">No Specific Book</option>
-                        {{range .Books}}
-                        <option value="{{.ID}}">{{.Title}}</option>
-                        {{end}}
-                     </select>
-                     <div class="related-book-actions">
-                        <a href="/book/create" class="secondary-btn">Add Missing Book</a>
-                        <div class="hint">
-                           Linking a book makes your post appear in that book's category filter.
-                        </div>
-                     </div>
-                  </div>
-                  <div class="form-group">
-                     <label>Chapter</label>
-                     <input type="text" name="chapter" placeholder="e.g. Chapter 4">
-                  </div>
-                  <div class="form-group file-upload-group">
-                     <label for="image">Upload Image</label>
-                     <input
-                        type="file"
-                        id="image"
-                        name="image"
-                        accept="image/jpeg,image/png,image/gif"
-                        >
-                  </div>
-                  <div class="form-group">
-                     <label>Content</label>
-                     <textarea name="content" rows="6" required></textarea>
-                  </div>
-                  <button type="submit" class="primary-btn">Post</button>
-               </form>
-            </div>
-         </main>
+               </div>
+            </nav>
+         </div>
+         <div class="header-tools">
+            <form action="/" method="GET" class="search-box header-search">
+               <input type="text" name="q" placeholder="Search...">
+            </form>
+         </div>
+         <div class="auth-links">
+            {{if .IsAuthenticated}}
+            <form action="/auth/logout" method="POST">
+               <button class="text-btn">Logout</button>
+            </form>
+            {{else}}
+            <a href="/auth/register">Register</a>
+            <a href="/auth/login">Login</a>
+            {{end}}
+         </div>
+      </header>
+      <!-- Content -->
+      <main class="center-panel">
+         <div class="create-post-form-container">
+            <h1>Create a New Post</h1>
+            <form action="/post/create" method="POST" enctype="multipart/form-data" class="create-post-form">
+               <div class="form-group">
+                  <label>Title</label>
+                  <input type="text" name="title" value="{{with .AnyData.Form}}{{index . " title"}}{{end}}" required>
+                  {{with .AnyData.Form}}
+                  {{with index .errors "title"}}
+                  <div class="form-error">{{.}}</div>
+                  {{end}}
+                  {{end}}
+               </div>
+               <div class="form-group">
+                  <label>Category</label>
+                  <select name="post_type">
+                     {{ $selected := "" }}
+                     {{with .AnyData.Form}}{{ $selected = index . "post_type" }}{{end}}
+
+                     <option value="Classics" {{if eq $selected "Classics" }}selected{{end}}>Classics</option>
+                     <option value="General_Fiction" {{if eq $selected "General_Fiction" }}selected{{end}}>General
+                        Fiction</option>
+                     <option value="Crime_Mystery_Thriller" {{if eq $selected "Crime_Mystery_Thriller"
+                        }}selected{{end}}>Crime / Thriller</option>
+                     <option value="Womens_Fiction" {{if eq $selected "Womens_Fiction" }}selected{{end}}>Women's Fiction
+                     </option>
+                     <option value="Childrens" {{if eq $selected "Childrens" }}selected{{end}}>Children's</option>
+                     <option value="Poetry_Plays" {{if eq $selected "Poetry_Plays" }}selected{{end}}>Poetry / Plays
+                     </option>
+                     <option value="Non_Fiction" {{if eq $selected "Non_Fiction" }}selected{{end}}>Non-Fiction</option>
+                     <option value="Historical_Fiction" {{if eq $selected "Historical_Fiction" }}selected{{end}}>
+                        Historical Fiction</option>
+                  </select>
+
+                  {{with .AnyData.Form}}
+                  {{with index .errors "post_type"}}
+                  <div class="form-error">{{.}}</div>
+                  {{end}}
+                  {{end}}
+               </div>
+              
+<div class="form-group">
+   <label>Related Book</label>
+
+   {{ $selectedBookID := "0" }}
+   {{with .AnyData.Form}}
+      {{with index . "book_id"}}
+         {{ $selectedBookID = . }}
+      {{end}}
+   {{end}}
+
+   <select name="book_id">
+      <option value="0">No Specific Book</option>
+      {{range .AnyData.Books}}
+      <option value="{{.ID}}" {{if eq (printf "%d" .ID) $selectedBookID}}selected{{end}}>
+         {{.Title}}
+      </option>
+      {{end}}
+   </select>
+
+   {{with .AnyData.Form}}
+      {{with index .errors "book_id"}}
+      <div class="form-error">{{.}}</div>
+      {{end}}
+   {{end}}
+
+   <div class="related-book-actions">
+      <a href="/book/create" class="secondary-btn">Add Missing Book</a>
+      <div class="hint">
+         Linking a book makes your post appear in that book's category filter.
       </div>
-   </body>
+   </div>
+</div>
+
+
+
+               <div class="form-group">
+                  <label>Chapter</label>
+                  <input type="text" name="chapter" value="{{with .AnyData.Form}}{{index . " chapter"}}{{end}}"
+                     placeholder="e.g. Chapter 4">
+               </div>
+
+               <div class="form-group file-upload-group">
+                  <label for="image">Upload Image</label>
+                  <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/gif">
+                  {{with .AnyData.Form}}
+                  {{with index .errors "image"}}
+                  <div class="form-error">{{.}}</div>
+                  {{end}}
+                  {{end}}
+               </div>
+
+               <div class="form-group">
+                  <label>Content</label>
+                  <textarea name="content" rows="6"
+                     required>{{with .AnyData.Form}}{{index . "content"}}{{end}}</textarea>
+                  {{with .AnyData.Form}}
+                  {{with index .errors "content"}}
+                  <div class="form-error">{{.}}</div>
+                  {{end}}
+                  {{end}}
+               </div>
+
+               <button type="submit" class="primary-btn">Post</button>
+
+            </form>
+         </div>
+      </main>
+   </div>
+</body>
+
 </html>

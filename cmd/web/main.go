@@ -15,6 +15,11 @@ func main() {
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	gob.Register(&handlers.FlashMessage{})
 
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "data/forum.db"
+	}
+
 	db, err := database.InitDB("data/forum.db")
 	if err != nil {
 		log.Fatal(err)

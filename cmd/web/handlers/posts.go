@@ -156,7 +156,10 @@ func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 
 	content := r.FormValue("content")
 	if strings.TrimSpace(content) == "" {
-		h.clientError(w, http.StatusBadRequest)
+		h.setFlash(w, "error", "Conent is required!")
+		data := h.newTemplateData(w, r)
+		w.WriteHeader(http.StatusBadRequest)
+		h.render(w, http.StatusBadRequest, "create_book.html", data)
 		return
 	}
 
@@ -292,6 +295,11 @@ func (h *Handler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 
 	title := r.Form.Get("title")
 	content := r.Form.Get("content")
+	if title == "" || content == "" {
+		h.setFlash(w, "error", "Title and Author are required!")
+		http.Redirect(w, r, "/book/create", http.StatusSeeOther)
+		return
+	}
 
 	postsModel := &models.PostModel{DB: h.DB}
 	postView, err := postsModel.GetPost(id)
