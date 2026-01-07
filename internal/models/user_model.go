@@ -28,13 +28,12 @@ type UserBookPreference struct {
 }
 
 type Session struct {
-	ID        string 
+	ID        string
 	UserID    string
 	ExpiresAt time.Time
 }
 
-
-//hashed password
+// hashed password
 func HashPassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword(
 		[]byte(password),
@@ -56,7 +55,7 @@ func CheckPassword(password, hashed string) bool {
 }
 
 // inserts a new user into the database
-func InsertUser(db *sql.DB, user *User) ( error ) {
+func InsertUser(db *sql.DB, user *User) error {
 
 	// id will be genrated by UUID package - so it will be random number
 	query := `
@@ -104,6 +103,7 @@ func GetUserByEmail(db *sql.DB, email string) (*User, error) {
 	}
 	return &user, nil
 }
+
 // retrieves a user by id
 func GetUserByID(db *sql.DB, id string) (*User, error) {
 	query := `
@@ -111,7 +111,7 @@ func GetUserByID(db *sql.DB, id string) (*User, error) {
 	FROM users 
 	WHERE id = ?`
 	var user User
-	if err := db.QueryRow(query, id).Scan(&user.ID, &user.Email, &user.AvatarPath, &user.Username, &user.FirstName, &user.LastName,&user.PasswordHash, &user.CreatedAt,); err != nil {
+	if err := db.QueryRow(query, id).Scan(&user.ID, &user.Email, &user.AvatarPath, &user.Username, &user.FirstName, &user.LastName, &user.PasswordHash, &user.CreatedAt); err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -156,18 +156,13 @@ func CountUserComments(db *sql.DB, userID string) (int, error) {
 	return count, err
 }
 
-
-func ExistsUser(db *sql.DB, id string) (bool, error){
+func ExistsUser(db *sql.DB, id string) (bool, error) {
 	var exists bool
-	stmt :=`
+	stmt := `
 	SELECT EXISTS
 	(SELECT true 
 	FROM users 
 	WHERE id = ?)`
-	err := db.QueryRow(stmt,id).Scan(&exists)
+	err := db.QueryRow(stmt, id).Scan(&exists)
 	return exists, err
 }
-
-
-
-

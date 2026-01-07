@@ -702,6 +702,71 @@ body {
   overflow-wrap: anywhere;
 }
 
+.comment-form {
+  margin-top: 1.6rem;
+  padding: 1.2rem 1.4rem;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(74, 52, 40, 0.12);
+  border-radius: 14px;
+}
+
+.comment-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6a4a36;
+  letter-spacing: 0.3px;
+}
+
+.comment-textarea {
+  width: 96%;
+  min-height: 110px;
+   max-height: 240px;
+  resize: vertical;
+
+  padding: 0.75rem 0.9rem;
+
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #4a3428;
+
+  background: #fff;
+  border: 1px solid rgba(74, 52, 40, 0.18);
+  border-radius: 10px;
+
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.comment-textarea:focus {
+  outline: none;
+  border-color: #b58b63;
+  box-shadow: 0 0 0 3px rgba(181, 139, 99, 0.18);
+}
+.comment-textarea:hover {
+  border-color: rgba(74, 52, 40, 0.28);
+}
+
+
+.comment-textarea::placeholder {
+  color: #a08977;
+  font-style: italic;
+}
+
+.comment-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.8rem;
+}
+
+.reply-form .comment-textarea {
+  min-height: 80px;
+  font-size: 0.9rem;
+}
+
+
+
 /* Mobile */
 @media (max-width: 900px) {
 }

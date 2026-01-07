@@ -5,27 +5,28 @@ import (
 	"time"
 )
 
-
 type Post struct {
-	ID int
-	UserID string
-	Title   string
-	Content string
-	ImagePath	string
-	PostType string // "discussion", "analysis", "review"
-	BookID  *int    // can be null
-	Chapter *string // can be null
+	ID        int
+	UserID    string
+	Title     string
+	Content   string
+	ImagePath string
+	PostType  string  // "discussion", "analysis", "review"
+	BookID    *int    // can be null
+	Chapter   *string // can be null
 	CreatedAt time.Time
 }
 type Comment struct {
-	ID        int
-	PostID    int
-	UserID    string
-	UserName  string
-	Content   string
-	CreatedAt time.Time
-	LikeCount int
+	ID           int
+	PostID       int
+	UserID       string
+	UserName     string
+	Content      string
+	CreatedAt    time.Time
+	LikeCount    int
 	DislikeCount int
+	ParentID     *int
+	Replies      []Comment
 }
 
 // one vote per person per post + 1 or -1
@@ -34,7 +35,7 @@ type Like struct {
 	UserID     string
 	TargetType string // "post" | "comment"
 	TargetID   int
-	Value      int    // +1 or -1
+	Value      int // +1 or -1
 }
 
 // sets or updates a user's like/dislike for a post
@@ -50,8 +51,8 @@ func SetLike(db *sql.DB, userID, postID, value int) error {
 // returns the number of likes and dislikes for a post
 func GetPostLikes(db *sql.DB, postID int) (likes int, dislikes int, err error) {
 
-	// COALESCE is used to return 0 instead of NULL	
-	// sum all when value = 1, then +1 else +0 
+	// COALESCE is used to return 0 instead of NULL
+	// sum all when value = 1, then +1 else +0
 	query := `
 		SELECT
 			COALESCE(SUM(CASE WHEN value = 1 THEN 1 ELSE 0 END), 0),

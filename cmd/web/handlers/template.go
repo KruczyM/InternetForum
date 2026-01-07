@@ -25,10 +25,10 @@ type templateData struct {
 func (h *Handler) newTemplateData(w http.ResponseWriter, r *http.Request) *templateData {
 	data := &templateData{
 		CurrentYear:       2025,
-		IsAuthenticated: h.isAuthenticated(r),
+		IsAuthenticated:   h.isAuthenticated(r),
 		AuthenticatedUser: h.authenticatedUserID(r),
 		AnyData:           make(map[string]any),
-		Flash: h.getFlash(w, r),
+		Flash:             h.getFlash(w, r),
 	}
 
 	return data
