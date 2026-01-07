@@ -79,6 +79,27 @@
                 <a class="link" href="/profile?tab=profile&edit=avatar">Edit avatar</a>
                 {{end}}
             </section>
+
+            <!-- ABOUT ME-->
+            <section class="profile-block">
+                <h3>About Me</h3>
+                {{if eq (index .AnyData "editMode") "about"}}
+
+                <form method="POST" action="/profile/edit-about">
+                    <textarea name="about" rows="4">{{ $user.About}}</textarea>
+                    <button type="submit">Save</button>
+                    <a class="link" href="/profile?tab=profile">Cancel</a>
+                </form>
+
+                {{ else }}
+
+                <p>{{ if $user.About }}{{ $user.About }}{{ else }}No bio yet.{{ end }}</p>
+                <a class="link" href="/profile?tab=profile&edit=about">Edit Bio</a>
+
+                {{ end }}
+            </section>
+            </form>
+            </section>
             <!--  PROFILE INFO -->
             <section class="profile-block">
                 <h3>Profile information</h3>

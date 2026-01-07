@@ -25,6 +25,11 @@ type userPasswordForm struct {
 	validator.Validator
 }
 
+type userAboutForm struct {
+    about string
+    validator.Validator
+}
+
 func (h *Handler) userProfile(w http.ResponseWriter, r *http.Request) {
 	userID := h.authenticatedUserID(r)
 	if userID == "" {
@@ -82,6 +87,7 @@ func (h *Handler) userProfileEditPost(w http.ResponseWriter, r *http.Request) {
 	form := &userProfileForm{
 		firstName: strings.TrimSpace(r.PostForm.Get("first_name")),
 		lastName:  strings.TrimSpace(r.PostForm.Get("last_name")),
+
 	}
 
 	form.CheckField(validator.NotBlank(form.firstName), "first_name", "First name is required")
@@ -276,4 +282,40 @@ func (h *Handler) publicUserProfile(w http.ResponseWriter, r *http.Request) {
     }
 
     h.render(w, http.StatusOK, "public_user_panel.html", data)
+}
+
+func (h *Handler) userProfileAboutPost(w http.ResponseWriter, r *http.Request) {
+    err := r.ParseForm()
+    if err != nil {
+        h.clientError(w, http.StatusBadRequest)
+        return
+    }
+
+    form := &userAboutForm{
+        about: strings.TrimSpace(r.PostForm.Get("about")),
+    }
+    userID := h.authenticatedUserID(r)
+    user, _ := models.GetUserByID(h.DB, userID)
+
+    if !form.Valid() {
+        data := h.newTemplateData(w, r)
+        data.AnyData = map[string]any{}
+        data.Form = form
+
+        data.AnyData["tab"] = "profile"
+        data.AnyData["editMode"] = "about"
+        data.AnyData["user"] = user
+
+        h.render(w, http.StatusUnprocessableEntity, "user_panel.html", data)
+        return
+    }
+    err = models.UpdateAbout(h.DB, userID, form.about)
+    if err != nil {
+        h.serverError(w, err)
+        return
+    }
+
+    h.setFlash(w, "success", "Bio updated successfully")
+
+    http.Redirect(w, r, "/profile?tab=profile", http.StatusSeeOther)
 }

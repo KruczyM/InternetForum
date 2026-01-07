@@ -67,6 +67,11 @@
                 </div>
             </section>
 
+            <section class="profile-about">
+                <h3>About</h3>
+                <p>{{ if $user.About }}{{ $user.About }}{{ else }}This user hasn't written a bio yet.{{ end }}</p>
+            </section>
+
             <!-- TABS -->
             <nav class="profile-tabs">
                 <a href="/u/{{ $user.Username }}?tab=posts" class="{{ if eq $tab " posts" }}active{{ end }}">

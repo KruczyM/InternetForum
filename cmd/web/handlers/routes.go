@@ -198,6 +198,8 @@ func (h *Handler) Routes() http.Handler {
 				h.userProfilePasswordPost(w, r)
 			case r.URL.Path == "/profile/avatar" && r.Method == http.MethodPost:
 				h.changeAvatar(w, r)
+			case r.URL.Path == "/profile/edit-about" && r.Method == http.MethodPost:
+				h.userProfileAboutPost(w, r)
 			default:
 				http.NotFound(w, r)
 			}

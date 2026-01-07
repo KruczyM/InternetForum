@@ -16,6 +16,7 @@ type User struct {
 	LastName     string
 	PasswordHash string
 	AvatarPath   string
+	About		 string
 	CreatedAt    time.Time
 }
 
@@ -80,12 +81,12 @@ func InsertUser(db *sql.DB, user *User) ( error ) {
 // retrieves a user by username
 func GetUserByUsername(db *sql.DB, username string) (*User, error) {
 	query := `
-	SELECT id, username, first_name, last_name, email, password_hash, avatar_path 
+	SELECT id, username, first_name, last_name, email, password_hash, about, avatar_path 
 	FROM users 
 	WHERE username = ?`
 	row := db.QueryRow(query, username)
 	var user User
-	if err := row.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName, &user.Email, &user.PasswordHash, &user.AvatarPath); err != nil {
+	if err := row.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName, &user.Email, &user.PasswordHash, &user.About, &user.AvatarPath); err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -107,11 +108,11 @@ func GetUserByEmail(db *sql.DB, email string) (*User, error) {
 // retrieves a user by id
 func GetUserByID(db *sql.DB, id string) (*User, error) {
 	query := `
-	SELECT id, email,avatar_path, username, first_name, last_name, password_hash, created_at
+	SELECT id, email,avatar_path, username, first_name, last_name, password_hash,about, created_at
 	FROM users 
 	WHERE id = ?`
 	var user User
-	if err := db.QueryRow(query, id).Scan(&user.ID, &user.Email, &user.AvatarPath, &user.Username, &user.FirstName, &user.LastName,&user.PasswordHash, &user.CreatedAt,); err != nil {
+	if err := db.QueryRow(query, id).Scan(&user.ID, &user.Email, &user.AvatarPath, &user.Username, &user.FirstName, &user.LastName,&user.PasswordHash, &user.About, &user.CreatedAt,); err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -168,6 +169,20 @@ func ExistsUser(db *sql.DB, id string) (bool, error){
 	return exists, err
 }
 
+func UpdateUserProfile(db *sql.DB, userID, firstName, lastName string) error {
+	stmt := `UPDATE users SET first_name = ?, last_name = ?, WHERE id = ?`
 
+	_, err := db.Exec(stmt, userID, firstName, lastName)
+	return err
+}
 
-
+func UpdateAbout(db *sql.DB, id string, about string) error {
+    stmt := `UPDATE users SET about = ? WHERE id = ?`
+    
+    _, err := db.Exec(stmt, about, id)
+    if err != nil {
+        return err
+    }
+    
+    return nil
+}
