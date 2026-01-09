@@ -110,7 +110,8 @@ func (m *PostModel) GetPostsByUserID(userID string) ([]PostView, error) {
 		p.id, p.user_id, p.title, p.content, p.image_path,
 		p.post_type, p.book_id, p.chapter, p.created_at,
 		u.username,
-		COALESCE(SUM(l.value), 0)
+		COALESCE(SUM(CASE WHEN l.value = 1 THEN 1 ELSE 0 END), 0) as like_count,
+		COALESCE(SUM(CASE WHEN l.value = -1 THEN 1 ELSE 0 END), 0) as dislike_count
 	FROM posts p
 	JOIN users u ON p.user_id = u.id
 	LEFT JOIN likes l ON p.id = l.target_id AND l.target_type = 'post'
@@ -309,7 +310,6 @@ func (m *PostModel) InsertComment(postID int, userID string, content string, par
 	return nil
 }
 
-
 func (m *PostModel) DeletePost(id int) error {
 	stmt := `DELETE FROM posts WHERE id = ?`
 
@@ -494,11 +494,16 @@ func (m *PostModel) SearchPosts(query, category string, bookID int, sort string)
         p.chapter, 
         p.created_at,
         u.username,
-        COALESCE((
-            SELECT SUM(l.value) 
-            FROM likes l 
-            WHERE l.target_id = p.id AND l.target_type='post'
-        ), 0) AS likes,
+		COALESCE( (
+			SELECT SUM(CASE WHEN l.value = 1 THEN 1 ELSE 0 END) 
+			FROM likes l 
+			WHERE l.target_id = p.id AND l.target_type='post'
+		), 0) AS likes,
+		COALESCE( (
+			SELECT SUM(CASE WHEN l.value = -1 THEN 1 ELSE 0 END) 
+			FROM likes l 
+			WHERE l.target_id = p.id AND l.target_type='post'
+		), 0) AS dislike_count,
         b.title AS book_title
     FROM posts p
     LEFT JOIN users u ON p.user_id = u.id
@@ -558,6 +563,7 @@ func (m *PostModel) SearchPosts(query, category string, bookID int, sort string)
 			&pv.Post.CreatedAt,
 			&pv.AuthorName,
 			&pv.LikeCount,
+			&pv.DislikeCount,
 			&bookTitle,
 		); err != nil {
 			return nil, err
