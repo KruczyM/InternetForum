@@ -1,4 +1,4 @@
-# 🦁 Book Forum
+# 🦁 Internet Forum
 
 This project is a robust web forum designed to tame the "paper pandemonium" of traditional book discussions. It replaces scattered sticky notes and lost comments with a structured, persistent, and engaging online community. Members can spark lively discussions, dissect chapters, share interpretations, and archive insights for future readers.
 
